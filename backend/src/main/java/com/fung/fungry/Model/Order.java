@@ -1,5 +1,6 @@
 package com.fung.fungry.Model;
 
+import com.fung.fungry.Enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,15 +21,28 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderId;
-
     @OneToMany(
-            mappedBy = "orderItem",
-            fetch = FetchType.LAZY,
-
-
+            mappedBy = "order",
+            fetch = FetchType.LAZY
+            ,cascade=CascadeType.ALL
     )
-    List <OrderItem> orderItems=new ArrayList<>();
+    private List <OrderItem> orderItems=new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id",nullable = false)
+    private  User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+            @JoinColumn(name = "address_id",nullable = false)
+   private Address address;
+    private int expectedTimeInMinutes;
+    @ManyToOne(fetch = FetchType.LAZY)
+            @JoinColumn(name = "restaurant_id",nullable = false)
+   private Restaurant restaurant;
+    @Enumerated(EnumType.STRING)
+            @Column(nullable = false)
+    private OrderStatus status;
+    @Column(name = "total_amt")
+    private Double amount;
 
     @CreationTimestamp
-    LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 }
