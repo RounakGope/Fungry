@@ -26,7 +26,7 @@ public class User {
     @Column(name = "phone_Number",nullable = false)
     private Long phoneNumber;
     @OneToMany(
-            mappedBy = "user",//mappedBy must match the field name in the CHILD entity, not the table name.
+            mappedBy = "user",//mappedBy must match the field(variable ) name in the CHILD entity, not the table name.
            cascade = CascadeType.ALL
             ,fetch=FetchType.LAZY
     )
