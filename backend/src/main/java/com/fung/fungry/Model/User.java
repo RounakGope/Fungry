@@ -32,6 +32,9 @@ public class User {
     )
     private List<Address> addressList=new ArrayList<>();
 
+    @OneToOne(mappedBy = "user",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    private Cart cart;
+
     @OneToMany(
             mappedBy = "user",
             cascade = CascadeType.ALL
