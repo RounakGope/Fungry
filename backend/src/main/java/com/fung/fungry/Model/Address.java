@@ -23,9 +23,11 @@ public class Address {
     private Integer zipcode;
 
     @Column(name = "house_number")
-    private int houseNumber;
+    private Integer houseNumber;
     @Column(name = "landmark")
     private String landmark;
+    @Column(name = "state")
+    private String State;
     @Column(name = "address")
     private String address;
 
