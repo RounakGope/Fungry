@@ -28,7 +28,11 @@ public class Restaurant {
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "restaurant",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<MenuItem> menuItems=new ArrayList<>();
 
+    @OneToMany(fetch = FetchType.LAZY,mappedBy = "restaurant",cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<Order> orders=new ArrayList<>();
+
     @Column(name = "ratings")
     private Integer rating ;
+
 
 }

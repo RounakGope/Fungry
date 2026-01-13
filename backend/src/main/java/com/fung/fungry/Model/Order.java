@@ -10,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+//this is going to be in redis
 
 @Entity
 @Table(name = "orders")
@@ -27,6 +28,7 @@ public class Order {
             ,cascade=CascadeType.ALL
     )
     private List <OrderItem> orderItems=new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",nullable = false)
     private  User user;
@@ -42,6 +44,7 @@ public class Order {
     private OrderStatus status;
     @Column(name = "total_amt")
     private Double amount;
+
 
     @OneToOne(fetch = FetchType.LAZY,mappedBy = "order")
     private Payment payment;
