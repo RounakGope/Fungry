@@ -17,12 +17,9 @@ public class OrderDTO {
 
     private AddressDTO  addressDTO;
     private OrderItemDTO orderItemDTO;
-
-
     private Integer expecetedTimeInMinutes;
-
     private String restaurantName;
-    private OrderStatus Ssatus;
+    private OrderStatus status;
     private Double totalAmt;
     private LocalDateTime createdTime;
 
