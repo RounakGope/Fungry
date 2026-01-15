@@ -32,7 +32,7 @@ public class Restaurant {
     private List<Order> orders=new ArrayList<>();
 
     @Column(name = "ratings")
-    private Integer rating ;
+    private Double rating ;
 
 
 }
