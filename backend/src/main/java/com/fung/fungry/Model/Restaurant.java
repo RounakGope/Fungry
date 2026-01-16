@@ -22,6 +22,9 @@ public class Restaurant {
     @Column(name = "restaurant_name",nullable = false)
     private String name;
 
+    @OneToMany(fetch = FetchType.LAZY,mappedBy = "restaurant",cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<Cart> cartList;
+
     @Embedded
     private RestaurantAddress address;
 

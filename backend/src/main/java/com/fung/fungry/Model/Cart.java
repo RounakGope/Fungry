@@ -20,7 +20,8 @@ public class Cart {
     @OneToMany(mappedBy = "cart", fetch = FetchType.LAZY,orphanRemoval = true,cascade = CascadeType.ALL)
     private List<CartItem> cartItems=new ArrayList<>();
 
-    @Column(name = "restaurant",nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "restaurant_id",nullable = false)
     private Restaurant restaurant;
 
     @Column(name = "total_amt",nullable = false)
