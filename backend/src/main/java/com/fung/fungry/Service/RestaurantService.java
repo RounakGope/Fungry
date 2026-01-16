@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface RestaurantService {
 
-    public List<RestaurantDTO> getAllRestaurantByRatings(int page,int size,String direction,String sortBy);//pagination is neded
+    public List<RestaurantDTO> getAllRestaurantBy(int page,int size,String direction,String sortBy);//pagination is neded
     public List<MenuItemDTO> getMenuItem(Long restaurantId);
     public RestaurantDTO addRestaurant(RestaurantDTO restaurant,Long userId);//only for admin
     public String deleteRestaurant(Long restaurantId ,Long userId);//only for admin
