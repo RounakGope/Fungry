@@ -1,15 +1,15 @@
 package com.fung.fungry.Repository;
 
 import com.fung.fungry.Model.MenuItem;
-import com.fung.fungry.Model.Restaurant;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
-public interface RestaurantRepository extends JpaRepository<Restaurant,Long> {
+public interface MenuItemRepository extends JpaRepository<MenuItem, Long> {
 
+
+   public   List<MenuItem> findByRestaurant_RestaurantId(Long restaurantId, Sort sort);
 
 }
