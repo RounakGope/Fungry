@@ -1,14 +1,19 @@
 package com.fung.fungry.ServiceIMPL;
 
+import com.fung.fungry.Enums.UserRole;
 import com.fung.fungry.Model.MenuItem;
 import com.fung.fungry.Model.Restaurant;
+import com.fung.fungry.Model.RestaurantAddress;
 import com.fung.fungry.Model.User;
 import com.fung.fungry.ModelDTO.MenuItemDTO;
+import com.fung.fungry.ModelDTO.RestaurantAddressDTO;
+import com.fung.fungry.ModelDTO.RestaurantCreateDTO;
 import com.fung.fungry.ModelDTO.RestaurantDTO;
 import com.fung.fungry.Repository.MenuItemRepository;
 import com.fung.fungry.Repository.RestaurantRepository;
 import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.RestaurantService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +39,16 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         restaurantdto.setName(restaurant.getName());
         restaurantdto.setRating(restaurant.getRating());
         return restaurantdto;
+    }
+    private RestaurantAddress mapToRestAddress(RestaurantAddressDTO restaurantAddressDTO)
+    {
+        RestaurantAddress restaurantAddress=new RestaurantAddress();
+        restaurantAddress.setArea(restaurantAddressDTO.getArea());
+        restaurantAddress.setCity(restaurantAddressDTO.getCity());
+        restaurantAddress.setState(restaurantAddressDTO.getState());
+        restaurantAddress.setZipcode(restaurantAddressDTO.getZipcode());
+        restaurantAddress.setStreet(restaurantAddressDTO.getStreet());
+        return restaurantAddress;
     }
     private MenuItemDTO mapToMenuDTO(MenuItem menuItem)
     {
@@ -72,19 +87,25 @@ public class RestaurantServiceIMPL  implements RestaurantService {
                 .toList();
     }
 
+    @Transactional
     @Override
-    public RestaurantDTO addRestaurant(RestaurantDTO restaurant, Long userId) {
+    public RestaurantDTO addRestaurant(RestaurantCreateDTO restaurantCreateDTO, Long userId) {
         User user=userRepository.findById(userId).orElseThrow(()-> new RuntimeException("USER NOT FOUND"));
-        if (user.getRole().equalsIgnoreCase("admin"))
+        if (user.getRole()!= UserRole.ADMIN)
         {
-            
+            throw new RuntimeException("ONLY ADMIN CAN ADD RESTAURANT");
 
 
         }
-        else
-            return
+        Restaurant restaurant=new Restaurant();
+        restaurant.setName(restaurantCreateDTO.getName());
+        RestaurantAddress restaurantAddress = mapToRestAddress(restaurantCreateDTO.getRestaurantAddressDTO());
+        restaurant.setAddress(restaurantAddress);
 
+        Restaurant savedRestaurant =restaurantRepository.save(restaurant);
 
+        RestaurantDTO restaurantDTO =mapToRestDTO(savedRestaurant);
+        return restaurantDTO;
     }
 
     @Override
