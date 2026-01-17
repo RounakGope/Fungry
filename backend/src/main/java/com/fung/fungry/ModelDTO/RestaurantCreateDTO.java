@@ -5,12 +5,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.List;
+
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
 public class RestaurantCreateDTO {
-    private Long restaurantId;
-    private String resName;
-    pr
+    private String name;
+    private RestaurantAddressDTO restaurantAddressDTO;
+
+
 }
