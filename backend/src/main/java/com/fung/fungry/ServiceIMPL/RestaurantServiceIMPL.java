@@ -2,10 +2,12 @@ package com.fung.fungry.ServiceIMPL;
 
 import com.fung.fungry.Model.MenuItem;
 import com.fung.fungry.Model.Restaurant;
+import com.fung.fungry.Model.User;
 import com.fung.fungry.ModelDTO.MenuItemDTO;
 import com.fung.fungry.ModelDTO.RestaurantDTO;
 import com.fung.fungry.Repository.MenuItemRepository;
 import com.fung.fungry.Repository.RestaurantRepository;
+import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.RestaurantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RestaurantServiceIMPL  implements RestaurantService {
@@ -22,6 +25,8 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     private RestaurantRepository restaurantRepository;
     @Autowired
    private MenuItemRepository menuItemRepository;
+    @Autowired
+    private UserRepository userRepository;
     private RestaurantDTO mapToRestDTO(Restaurant restaurant)
     {
         RestaurantDTO restaurantdto=new RestaurantDTO();
@@ -69,7 +74,17 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
     @Override
     public RestaurantDTO addRestaurant(RestaurantDTO restaurant, Long userId) {
-        return null;
+        User user=userRepository.findById(userId).orElseThrow(()-> new RuntimeException("USER NOT FOUND"));
+        if (user.getRole().equalsIgnoreCase("admin"))
+        {
+            
+
+
+        }
+        else
+            return
+
+
     }
 
     @Override
