@@ -1,4 +1,5 @@
 package com.fung.fungry.Model;
+import com.fung.fungry.Enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -21,8 +22,9 @@ public class User {
     private String userName;
     @Column(name = "user_Password",nullable = false)//this is db level validation
     private String userPasswordHash;
+    @Enumerated(EnumType.STRING)
     @Column(name = "role",nullable = false)
-    private String role;
+    private UserRole role;
     @Column(name = "phone_Number",nullable = false)
     private Long phoneNumber;
     @OneToMany(
