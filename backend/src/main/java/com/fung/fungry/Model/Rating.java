@@ -14,12 +14,11 @@ import lombok.Setter;
 public class Rating {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private  Long ratingId;
     private Long ratingSum;
     private Long ratingCount;
     private Double ratingAverage;
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "restaurant_id" )
+    @JoinColumn(name = "restaurant_id",nullable = false,unique = true )
     private Restaurant restaurant;
 }

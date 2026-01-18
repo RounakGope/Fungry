@@ -1,15 +1,13 @@
 package com.fung.fungry.ServiceIMPL;
 
 import com.fung.fungry.Enums.UserRole;
-import com.fung.fungry.Model.MenuItem;
-import com.fung.fungry.Model.Restaurant;
-import com.fung.fungry.Model.RestaurantAddress;
-import com.fung.fungry.Model.User;
+import com.fung.fungry.Model.*;
 import com.fung.fungry.ModelDTO.MenuItemDTO;
 import com.fung.fungry.ModelDTO.RestaurantAddressDTO;
 import com.fung.fungry.ModelDTO.RestaurantCreateDTO;
 import com.fung.fungry.ModelDTO.RestaurantDTO;
 import com.fung.fungry.Repository.MenuItemRepository;
+import com.fung.fungry.Repository.RatingRepository;
 import com.fung.fungry.Repository.RestaurantRepository;
 import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.RestaurantService;
@@ -138,20 +136,36 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     }
 
 
+    @Autowired
+    RatingRepository ratingRepository;
+    @Transactional
     @Override
     public RestaurantDTO rateRestaurant(Long userId, Long restaurantId, Integer rating) {
+        if(rating>5||rating<1)
+        {
+            throw new RuntimeException("Rating must be between 1 and 5");
+        }
         Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
         if (!restaurant.isPresent())
         {
             throw new RuntimeException("NO SUCH RESTAURANT");
         }
-        else {
-            if(rating>0&&rating<=5) {
-                Double oldRating = restaurant.get().getRating();
-                Double newRating = oldRating + rating;
-            }
-            else
-                throw new RuntimeException("Rating should be less than 5 and greter than 0");
+        else
+        {
+            Optional<Rating> ratings =ratingRepository.findByRestaurant(restaurant.get()).orElseGet(()->
+            {
+                Rating r =new Rating();
+                r.setRestaurant(restaurant.get());
+                r.setRatingSum(0L);
+                r.setRatingCount(0L);
+                r.setRatingAverage(0.0);
+                return r;
+            });
+            ratings.get().setRatingSum(ratings.get().getRatingSum()+rating);
+            ratings.get().setRatingCount(ratings.get().getRatingCount()+1);
+           double avg=(double) ratings.get().getRatingSum()/ratings.get().getRatingCount();
+           ratingRepository.save(ratings.get());
+           return mapToRestDTO(restaurant.get());
         }
 
 
