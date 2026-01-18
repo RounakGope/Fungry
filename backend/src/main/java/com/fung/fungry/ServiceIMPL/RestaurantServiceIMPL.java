@@ -128,7 +128,11 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
     @Override
     public RestaurantDTO updateRestaurant(RestaurantDTO restaurantDTO, Long userId) {
-
+        User user =userRepository.findById(userId).orElseThrow(()->new RuntimeException("NO USER FOUND"));
+        if(user.getRole()!=UserRole.ADMIN)
+        {
+            throw  new RuntimeException("YOU ARE NOT AN ADMIN");
+        }
 
         return null;
     }
@@ -136,7 +140,21 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
     @Override
     public RestaurantDTO rateRestaurant(Long userId, Long restaurantId, Integer rating) {
-        return null;
+        Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
+        if (!restaurant.isPresent())
+        {
+            throw new RuntimeException("NO SUCH RESTAURANT");
+        }
+        else {
+            if(rating>0&&rating<=5) {
+                Double oldRating = restaurant.get().getRating();
+                Double newRating = oldRating + rating;
+            }
+            else
+                throw new RuntimeException("Rating should be less than 5 and greter than 0");
+        }
+
+
     }
 
     @Override
