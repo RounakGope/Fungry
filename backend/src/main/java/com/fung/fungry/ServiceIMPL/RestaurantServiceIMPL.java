@@ -108,15 +108,31 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         return restaurantDTO;
     }
 
+    @Transactional
     @Override
     public String deleteRestaurant(Long restaurantId, Long userId) {
-        return "";
+        User user =userRepository.findById(userId).orElseThrow(()->new RuntimeException("NO USER FOUND"));
+        if(user.getRole()!=UserRole.ADMIN)
+        {
+            throw  new RuntimeException("YOU ARE NOT AN ADMIN");
+        }
+        Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
+        if(restaurant.isPresent())
+        {
+
+            restaurantRepository.deleteById(userId);
+
+        }
+        return "Restaurant Cannot Be Deleted";
     }
 
     @Override
     public RestaurantDTO updateRestaurant(RestaurantDTO restaurantDTO, Long userId) {
+
+
         return null;
     }
+
 
     @Override
     public RestaurantDTO rateRestaurant(Long userId, Long restaurantId, Integer rating) {
