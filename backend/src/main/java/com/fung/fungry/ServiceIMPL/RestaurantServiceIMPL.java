@@ -2,10 +2,7 @@ package com.fung.fungry.ServiceIMPL;
 
 import com.fung.fungry.Enums.UserRole;
 import com.fung.fungry.Model.*;
-import com.fung.fungry.ModelDTO.MenuItemDTO;
-import com.fung.fungry.ModelDTO.RestaurantAddressDTO;
-import com.fung.fungry.ModelDTO.RestaurantCreateDTO;
-import com.fung.fungry.ModelDTO.RestaurantDTO;
+import com.fung.fungry.ModelDTO.*;
 import com.fung.fungry.Repository.MenuItemRepository;
 import com.fung.fungry.Repository.RatingRepository;
 import com.fung.fungry.Repository.RestaurantRepository;
@@ -125,14 +122,25 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     }
 
     @Override
-    public RestaurantDTO updateRestaurant(RestaurantDTO restaurantDTO, Long userId) {
+    @Transactional
+    public RestaurantDTO updateRestaurant(RestaurantUpdateDTO restaurantDTO, Long userId) {
         User user =userRepository.findById(userId).orElseThrow(()->new RuntimeException("NO USER FOUND"));
         if(user.getRole()!=UserRole.ADMIN)
         {
             throw  new RuntimeException("YOU ARE NOT AN ADMIN");
         }
+        Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantDTO.getId()).get();
+        if (!restaurant.isPresent())
+        {
+            throw new RuntimeException("No such restaurant available");
+        }
+        RestaurantAddressDTO addressDTO=restaurantDTO.getAddressDTO();
+        RestaurantAddress address =mapToRestAddress(addressDTO);
+        restaurant.get().setAddress(address);
+        restaurant.get().setName(restaurantDTO.getName());
+       Restaurant savedRest = restaurantRepository.save(restaurant.get());
 
-        return null;
+        return mapToRestDTO(savedRest);
     }
 
 
