@@ -32,7 +32,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         RestaurantDTO restaurantdto=new RestaurantDTO();
         restaurantdto.setRestaurantId(restaurant.getRestaurantId());
         restaurantdto.setName(restaurant.getName());
-        restaurantdto.setRating(restaurant.getRating());
+        restaurantdto.setRating(restaurant.getRating().getRatingAverage());
         return restaurantdto;
     }
     private RestaurantAddress mapToRestAddress(RestaurantAddressDTO restaurantAddressDTO)
@@ -143,7 +143,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         {
             throw  new RuntimeException("YOU ARE NOT AN ADMIN");
         }
-        Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantDTO.getId()).get();
+        Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantDTO.getId());
         if (!restaurant.isPresent())
         {
             throw new RuntimeException("No such restaurant available");
@@ -174,7 +174,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         }
         else
         {
-            Optional<Rating> ratings =ratingRepository.findByRestaurant(restaurant.get()).orElseGet(()->
+            Rating ratings =ratingRepository.findByRestaurant(restaurant.get()).orElseGet(()->
             {
                 Rating r =new Rating();
                 r.setRestaurant(restaurant.get());
@@ -183,10 +183,10 @@ public class RestaurantServiceIMPL  implements RestaurantService {
                 r.setRatingAverage(0.0);
                 return r;
             });
-            ratings.get().setRatingSum(ratings.get().getRatingSum()+rating);
-            ratings.get().setRatingCount(ratings.get().getRatingCount()+1);
-           double avg=(double) ratings.get().getRatingSum()/ratings.get().getRatingCount();
-           ratingRepository.save(ratings.get());
+            ratings.setRatingSum(ratings.getRatingSum()+rating);
+            ratings.setRatingCount(ratings.getRatingCount()+1);
+           double avg=(double) ratings.getRatingSum()/ratings.getRatingCount();
+           ratingRepository.save(ratings);
            return mapToRestDTO(restaurant.get());
         }
 
