@@ -18,6 +18,6 @@ public interface RestaurantService {
     public RestaurantDTO rateRestaurant(Long userId,Long restaurantId,Integer rating);
     public void addItemInMenu(MenuItemDTO itemDTO,Long restaurantId,Long userId);
     public void deleteItemInMenu(Long menuItemId,Long restaurantId,Long userId);
-    public MenuItemDTO updateItemInMenu(Long menuItemId,Long restaurantId,Long userId);
+    public MenuItemDTO updateItemInMenu(Long menuItemId,Long userId,MenuItemDTO menuItemDTO);
 
 }

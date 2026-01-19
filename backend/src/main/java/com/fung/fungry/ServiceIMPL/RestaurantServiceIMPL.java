@@ -250,8 +250,29 @@ public class RestaurantServiceIMPL  implements RestaurantService {
             throw  new RuntimeException("Menu item not present");
     }
 
+    @Transactional
     @Override
-    public MenuItemDTO updateItemInMenu(Long menuItemId, Long restaurantId, Long userId) {
-        return null;
-    }
-}
+    public MenuItemDTO updateItemInMenu(Long menuItemId, Long userId,MenuItemDTO menuItemDTO) {
+        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such user "));
+        if(!(user.getRole()==UserRole.ADMIN||user.getRole()==UserRole.RESTAURANT_OWNER))
+        {
+            throw new RuntimeException( "Only an Admin or Owner can Update Menu item");
+        }
+
+        MenuItem menuItem=menuItemRepository.findById(menuItemId).orElseThrow(()->new RuntimeException("menuItem not available"));
+
+
+                    menuItem.setType(menuItemDTO.getFoodType());
+                    menuItem.setPrice(menuItemDTO.getPrice());
+                    menuItem.setCategory(menuItemDTO.getFoodCategory());
+                    menuItem.setName(menuItemDTO.getFoodName());
+                    menuItem.setAvailableQuantity(menuItemDTO.getAvailableQuantity());
+                    menuItem.setIsAvailable(menuItemDTO.getIsAvailable());
+                    menuItemRepository.save(menuItem);
+                    return mapToMenuDTO(menuItem);
+
+        }
+
+        }
+
+
