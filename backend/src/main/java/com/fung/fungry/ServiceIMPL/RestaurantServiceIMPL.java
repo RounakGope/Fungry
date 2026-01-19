@@ -218,9 +218,36 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
     }
 
+    @Transactional
     @Override
     public void deleteItemInMenu(Long menuItemId, Long restaurantId, Long userId) {
+        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such user "));
+        if(!(user.getRole()==UserRole.ADMIN||user.getRole()==UserRole.RESTAURANT_OWNER))
+        {
+            throw new RuntimeException( "Only an Admin or Owner can Delete Menu item");
 
+        }
+        Optional<MenuItem > menuItem=menuItemRepository.findById(menuItemId);
+        if (menuItem.isPresent())
+        {
+            Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
+            if (restaurant.isPresent())
+            {
+                if(menuItem.get().getRestaurant().getRestaurantId().equals(restaurant.get().getRestaurantId()))
+                {
+                    List<MenuItem> menuItems=restaurant.get().getMenuItems();
+                    menuItems.remove(menuItem);
+                    restaurantRepository.save(restaurant.get());
+                }
+                else
+                    throw new RuntimeException("Menu item does not belong to restaurant");
+
+            }
+            else
+                throw new RuntimeException("No such restaurant");
+        }
+        else
+            throw  new RuntimeException("Menu item not present");
     }
 
     @Override
