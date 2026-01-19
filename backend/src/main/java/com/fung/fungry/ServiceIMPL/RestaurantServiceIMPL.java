@@ -58,6 +58,20 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
         return menuItemDTO;
     }
+    private MenuItem mapToMenuItem(MenuItemDTO menuItemDTO,Restaurant restaurant)
+    {
+        MenuItem menuItem=new MenuItem();
+        menuItem.setRestaurant(restaurant);
+        menuItem.setMenuItemId(menuItemDTO.getMenuItemId());
+        menuItem.setPrice(menuItemDTO.getPrice());
+        menuItem.setType(menuItemDTO.getFoodType());
+        menuItem.setName(menuItemDTO.getFoodName());
+        menuItem.setCategory(menuItemDTO.getFoodCategory());
+        menuItem.setIsAvailable(menuItemDTO.getIsAvailable());
+        menuItem.setAvailableQuantity(menuItemDTO.getAvailableQuantity());
+
+        return menuItem;
+    }
 
     @Override
     public List<RestaurantDTO> getAllRestaurantBy(int page, int size, String direction, String sortBy) {
@@ -180,7 +194,27 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     }
 
     @Override
+    @Transactional
     public void addItemInMenu(MenuItemDTO itemDTO, Long restaurantId, Long userId) {
+        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such user "));
+        if(!(user.getRole()==UserRole.ADMIN||user.getRole()==UserRole.RESTAURANT_OWNER))
+        {
+            throw new RuntimeException( "Only an Admin or Owner can add Menu item");
+
+        }
+
+        Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
+        //restaurant ownership to be added
+        if(restaurant.isPresent())
+        {
+            Restaurant restaurant1=restaurant.get();
+            List<MenuItem>menuItemList=restaurant1.getMenuItems();
+
+            menuItemList.add(mapToMenuItem(itemDTO,restaurant1));
+            restaurantRepository.save(restaurant1);
+        }
+        else throw new RuntimeException("No such Restaurant Present");
+
 
     }
 
