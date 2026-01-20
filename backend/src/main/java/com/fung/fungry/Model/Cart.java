@@ -15,7 +15,7 @@ import java.util.List;
 public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer cartId;
+    private Long cartId;
 
     @OneToMany(mappedBy = "cart", fetch = FetchType.LAZY,orphanRemoval = true,cascade = CascadeType.ALL)
     private List<CartItem> cartItems=new ArrayList<>();
