@@ -125,6 +125,11 @@ public class CartServiceIMPL implements CartService {
     @Override
     public CartDTO clearAll(Long userId) {
         User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No Such User"));
+        Cart cart=cartRepository.findById(user.getCart().getCartId()).orElseThrow(()->new RuntimeException("No such cart available"));
+        cartRepository.delete(cart);
+        Cart newCart= new Cart();
+        cartRepository.save(newCart);
+        return cartToDTO(newCart);
 
     }
 
