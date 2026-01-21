@@ -101,8 +101,18 @@ public class CartServiceIMPL implements CartService {
         cartRepository.save(cart);
     }
     @Override
-    public CartDTO updateItemQuantity(Long cartItemId, Long userId, Integer quantity) {
-        return null;
+    public CartDTO updateItemQuantityByOne(Long cartItemId, Long userId) {
+        User user=userRepository.findById(userId).orElseThrow(()-> new RuntimeException("User Not Found"));
+        Cart cart=cartRepository.findByUser_UserId(userId).orElseThrow(()->new RuntimeException("Cart Not Found"));
+        CartItem cartItem =cart.getCartItems().stream().filter(
+                cartItemLocal -> cartItemLocal.getCartItemId().equals(cartItemId))
+                .findFirst()
+                .orElseThrow(()->new RuntimeException("No such CartItem"));
+        if(cartItem.getQuantity()==menuItemRepository.findBy)
+        cartItem.setQuantity(cartItem.getQuantity()+1);
+        cartRepository.save(cart);
+        return cartToDTO(cart);
+
     }
 
     @Override
