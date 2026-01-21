@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "menu_item")
 @Getter
@@ -31,6 +34,9 @@ public class MenuItem {
     private FoodType type;
     @Column(name = "price",nullable = false)
     private Double price;
+
+    @OneToMany(mappedBy = "menuItem",fetch =FetchType.LAZY,cascade = CascadeType.ALL)
+    private List<CartItem> cartItemList=new ArrayList<>();
 
 
     @ManyToOne(fetch = FetchType.LAZY)

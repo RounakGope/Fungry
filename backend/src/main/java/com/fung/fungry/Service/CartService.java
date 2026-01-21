@@ -8,7 +8,7 @@ public interface CartService {
 
     public void addToCart(Long userId, Long menuItemId);
 
-    public CartDTO updateItemQuantity(Long cartItemId, Long userId, Integer quantity);
+    public CartDTO updateItemQuantityByOne(Long cartItemId, Long userId);
 
     public CartDTO clearAll(Long userId);
     public CartDTO removeItem(Long userId, Long cartItemId);
