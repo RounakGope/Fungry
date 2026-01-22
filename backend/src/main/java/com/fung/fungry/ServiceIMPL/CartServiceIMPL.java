@@ -105,18 +105,19 @@ public class CartServiceIMPL implements CartService {
     public CartDTO updateItemQuantityByOne(Long cartItemId, Long userId) {
         User user=userRepository.findById(userId).orElseThrow(()-> new RuntimeException("User Not Found"));
         Cart cart=cartRepository.findByUser_UserId(userId).orElseThrow(()->new RuntimeException("Cart Not Found"));
-        if (!cart.getUser().getUserId().equals(userId))
-            throw new RuntimeException("user Cart Mismatch");
+
         CartItem cartItem =cart.getCartItems().stream().filter(
                 cartItemLocal -> cartItemLocal.getCartItemId().equals(cartItemId))
                 .findFirst()
                 .orElseThrow(()->new RuntimeException("No such CartItem"));
 
 
-        if(cartItem.getQuantity().equals(cartItem.getMenuItem().getAvailableQuantity())||!cartItem.getMenuItem().getIsAvailable()||cartItem.getMenuItem().getAvailableQuantity()==0)
+        if(cartItem.getQuantity()+1>cartItem.getMenuItem().getAvailableQuantity()||!cartItem.getMenuItem().getIsAvailable()||
+                cartItem.getMenuItem().getAvailableQuantity()==0)
             throw new RuntimeException("You cannot add items");
 
         cartItem.setQuantity(cartItem.getQuantity()+1);
+
         cartRepository.save(cart);
         return cartToDTO(cart);
 
