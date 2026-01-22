@@ -138,14 +138,12 @@ public class CartServiceIMPL implements CartService {
         User user =userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such user found"));
         Cart cart=user.getCart();
         CartItem cartItem=cartItemRepository.findById(cartItemId).orElseThrow(()->new RuntimeException("No such cart Item"));
-        List<CartItem> cartItemList=cart.getCartItems();
-        for(CartItem item : cartItemList)
+        if(user.getCart().getCartId()!=cartItem.getCart().getCartId())
         {
-            if(item.getMenuItem().getName().equals(cartItem.getMenuItem().getName()))
-            {
-                cartItemList.remove(item);
-            }
+            throw new RuntimeException("User Cart Mismatch");
         }
+        cart.getCartItems().remove(cartItem);
+
         cartRepository.save(cart);
         return  cartToDTO(cart);
     }
