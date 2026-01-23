@@ -60,14 +60,25 @@ public class AddressServiceIMPL implements AddressService {
         addressRepository.delete(address);
         userRepository.save(user);
 
-
-
-
     }
 
     @Override
+    @Transactional
     public AddressDTO updateAddress(Long addressId, Long userId, AddressDTO addressDTO) {
-        return null;
+        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such user"));
+        Address address=addressRepository.findById(addressId).orElseThrow(()->new RuntimeException("No such Address"));
+        if (!address.getUser().getUserId().equals(userId))
+            throw new RuntimeException("You cannot update address");
+
+
+        address.setAddress(addressDTO.getAddress());
+        address.setState(addressDTO.getState());
+        address.setLandmark(addressDTO.getLandmark());
+        address.setHouseNumber(addressDTO.getHouseNumber());
+        address.setZipcode(addressDTO.getZipcode());
+        addressRepository.save(address);
+        return mapToDTO(address);
+
     }
 
     @Override
