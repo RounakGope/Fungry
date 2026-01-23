@@ -12,7 +12,6 @@ public class AddressDTO {
     private Integer zipcode;
     private String address;
     private String landmark;
-    private String city;
     private Integer houseNumber;
     private String state;
     
