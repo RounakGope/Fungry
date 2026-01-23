@@ -48,7 +48,20 @@ public class AddressServiceIMPL implements AddressService {
     }
 
     @Override
+    @Transactional
     public void deleteAddress(Long addressId, Long userId) {
+        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such user Found"));
+        Address address=addressRepository.findById(addressId).orElseThrow(()->new RuntimeException("No Such address Found"));
+        if (!address.getUser().getUserId().equals(userId))
+            throw new RuntimeException("You Cant Delete Address");
+
+        user.getAddressList().remove(address);
+
+        addressRepository.delete(address);
+        userRepository.save(user);
+
+
+
 
     }
 
