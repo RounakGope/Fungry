@@ -10,6 +10,7 @@ import com.fung.fungry.Service.AddressService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AddressServiceIMPL implements AddressService {
@@ -83,11 +84,20 @@ public class AddressServiceIMPL implements AddressService {
 
     @Override
     public AddressDTO getAddressByAddressId(Long addressId, Long userId) {
+
         return null;
     }
 
     @Override
+    @Transactional
     public List<AddressDTO> getAddressByUserId(Long userId) {
-        return List.of();
+        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No Such User Found "));
+        List<Address> addressList=user.getAddressList();
+        List<AddressDTO> addressDTOS=new ArrayList<>();
+        for (Address address:addressList)
+        {
+            addressDTOS.add(mapToDTO(address));
+        }
+        return addressDTOS;
     }
 }
