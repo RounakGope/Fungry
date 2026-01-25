@@ -45,7 +45,6 @@ public class AddressServiceIMPL implements AddressService {
 
         userRepository.save(user);
         return mapToDTO(addressToAdd);
-
     }
 
     @Override
@@ -84,8 +83,15 @@ public class AddressServiceIMPL implements AddressService {
 
     @Override
     public AddressDTO getAddressByAddressId(Long addressId, Long userId) {
+        Address address =addressRepository.findById(addressId).orElseThrow(()->new RuntimeException("No Such Address Found"));
+        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such User Found "));
+        if(address.getUser().getUserId().equals(user.getUserId()))
+        {
+            throw new RuntimeException("Mismatch in user and Address");
+        }
 
-        return null;
+        return mapToDTO(address);
+
     }
 
     @Override
