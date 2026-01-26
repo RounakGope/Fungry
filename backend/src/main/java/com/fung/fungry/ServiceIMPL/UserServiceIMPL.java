@@ -55,7 +55,11 @@ public class UserServiceIMPL implements UserService {
 
     @Override
     public UserDTO updateUserPNo(Long userId, String PHno) {
-        return null;
+        User user= userRepository.findById(userId).orElseThrow(()-> new RuntimeException("No such user Found"));
+       user.setPhoneNumber(PHno);
+       userRepository.save(user);
+       return mapToDTO(user);
+
     }
 
     @Override
@@ -65,6 +69,7 @@ public class UserServiceIMPL implements UserService {
 
     @Override
     public List<OrderDTO> viewOrderHistory(Long userId, Integer page, Integer size, String sortBy, String direction) {
+
         return List.of();
     }
 }
