@@ -48,7 +48,9 @@ public class UserServiceIMPL implements UserService {
 
     @Override
     public UserRole getUserRole(Long userId) {
-        return null;
+        User user=userRepository.findById(userId).orElseThrow(()-> new RuntimeException("No such user Found"));
+        UserRole role= user.getRole();
+        return role;
     }
 
     @Override
