@@ -6,6 +6,7 @@ import com.fung.fungry.ModelDTO.OrderDTO;
 import com.fung.fungry.ModelDTO.UserDTO;
 import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +27,9 @@ public class UserServiceIMPL implements UserService {
         return userDTO;
     }
     @Override
-    public UserDTO addUser(UserDTO userDTO) {
+    @Transactional
+    public UserDTO addUser(UserCreateDTO userDTO) {
+
 
     }
 
@@ -69,6 +72,7 @@ public class UserServiceIMPL implements UserService {
 
     @Override
     public List<OrderDTO> viewOrderHistory(Long userId, Integer page, Integer size, String sortBy, String direction) {
+
 
         return List.of();
     }
