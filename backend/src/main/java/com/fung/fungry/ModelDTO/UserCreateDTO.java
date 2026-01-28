@@ -13,9 +13,13 @@ import lombok.*;
 public class UserCreateDTO {
     @NotBlank(message = "UserName cannot be null")
     private String userName;
+    @NotBlank(message = "UserEmail cannot be null")
+    private String userEmail;
     @NotNull(message = "UserRole is required")
    private UserRole userRole;
     @NotBlank(message = "Password cannot be blank")
     @Size(min = 8,message = "Minimum size of 8 is required")
     private String password;
+    @NotBlank(message = "Phone number cannot be blank")
+    private String PHNO;
 }

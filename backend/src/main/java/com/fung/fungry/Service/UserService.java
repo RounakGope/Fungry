@@ -1,15 +1,12 @@
 package com.fung.fungry.Service;
 
 import com.fung.fungry.Enums.UserRole;
-import com.fung.fungry.ModelDTO.AddressDTO;
-import com.fung.fungry.ModelDTO.OrderDTO;
-import com.fung.fungry.ModelDTO.RestaurantDTO;
-import com.fung.fungry.ModelDTO.UserDTO;
+import com.fung.fungry.ModelDTO.*;
 
 import java.util.List;
 
 public interface UserService {
-    public UserDTO addUser(UserDTO userDTO);
+    public UserDTO addUser(UserCreateDTO userDTO);
     public UserDTO getUserById(Long userId);
     public UserDTO updateUser(Long userId,UserDTO userDTO);
     public void deleteUser(Long userId);//only admin can delete

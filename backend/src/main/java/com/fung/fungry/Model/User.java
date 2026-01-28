@@ -1,6 +1,7 @@
 package com.fung.fungry.Model;
 import com.fung.fungry.Enums.UserRole;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -20,6 +21,9 @@ public class User {
     private Long userId;
     @Column(name = "user_Name", nullable = false)
     private String userName;
+    @Email
+    @Column(name = "user_Mail",nullable = false,unique = true)
+    private String userMail;
     @Column(name = "user_Password",nullable = false)//this is db level validation
     private String userPasswordHash;
     @Enumerated(EnumType.STRING)
