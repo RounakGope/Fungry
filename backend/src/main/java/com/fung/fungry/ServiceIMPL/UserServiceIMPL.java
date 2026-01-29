@@ -77,9 +77,13 @@ public class UserServiceIMPL implements UserService {
     @Transactional
     public UserDTO updateUser(Long userId, UserDTO userDTO) {
         User user =userRepository.findById(userId).orElseThrow(()->new RuntimeException("No User Found"));
+        Optional<User> existUser=userRepository.findByEmail(userDTO.getUserEmail());
+        if (existUser.isPresent() && !existUser.get().getUserId().equals(user.getUserId()))
+        {
+            throw new RuntimeException("Email Already Present");
+        }
         user.setUserMail(userDTO.getUserEmail());
         user.setUserName(userDTO.getUserName());
-        user.setRole(userDTO.getUserRole());
         user.setPhoneNumber(userDTO.getPhoneNumber());
         user.setUpdatedAt(LocalDateTime.now());
         return mapToDTO(user);
