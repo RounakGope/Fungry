@@ -12,6 +12,7 @@ import lombok.ToString;
 @ToString
 public class UserDTO {
     private Long userId;
+    private String userEmail;
     private String userName;
     private UserRole userRole;
     private String phoneNumber;

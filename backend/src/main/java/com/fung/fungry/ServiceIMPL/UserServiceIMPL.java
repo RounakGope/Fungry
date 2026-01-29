@@ -71,7 +71,12 @@ public class UserServiceIMPL implements UserService {
 
     @Override
     public UserDTO updateUser(Long userId, UserDTO userDTO) {
-        return null;
+        User user =userRepository.findById(userId).orElseThrow(()->new RuntimeException("No User Found"));
+        user.setUserMail(userDTO.getUserEmail());
+        user.setUserName(userDTO.getUserName());
+        user.setRole(userDTO.getUserRole());
+        user.getPhoneNumber(userDTO.getPhoneNumber());
+        
     }
 
     @Override
