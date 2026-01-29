@@ -10,12 +10,15 @@ import com.fung.fungry.Repository.CartRepository;
 import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.UserService;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,7 +42,7 @@ public class UserServiceIMPL implements UserService {
     }
     @Override
     @Transactional
-    public UserDTO addUser(UserCreateDTO userDTO) {
+    public UserDTO addUser(@Valid UserCreateDTO userDTO) {
         Optional<User> user=userRepository.findByEmail(userDTO.getUserEmail());
         if (user.isPresent())
             throw new ResponseStatusException(
@@ -55,6 +58,7 @@ public class UserServiceIMPL implements UserService {
         newUser.setUserPasswordHash(passwordEncoder.encode(userDTO.getPassword()));//hash password to be set
         newUser.setPhoneNumber(userDTO.getPHNO());
         newUser.setRole(UserRole.CUSTOMER);
+        newUser.setCreatedAt(LocalDateTime.now());
 
 
         userRepository.save(newUser);
@@ -70,13 +74,15 @@ public class UserServiceIMPL implements UserService {
     }
 
     @Override
+    @Transactional
     public UserDTO updateUser(Long userId, UserDTO userDTO) {
         User user =userRepository.findById(userId).orElseThrow(()->new RuntimeException("No User Found"));
         user.setUserMail(userDTO.getUserEmail());
         user.setUserName(userDTO.getUserName());
         user.setRole(userDTO.getUserRole());
-        user.getPhoneNumber(userDTO.getPhoneNumber());
-        
+        user.setPhoneNumber(userDTO.getPhoneNumber());
+        user.setUpdatedAt(LocalDateTime.now());
+        return mapToDTO(user);
     }
 
     @Override
