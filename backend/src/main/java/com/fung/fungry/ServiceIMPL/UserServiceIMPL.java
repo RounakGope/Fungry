@@ -2,16 +2,22 @@ package com.fung.fungry.ServiceIMPL;
 
 import com.fung.fungry.Enums.UserRole;
 import com.fung.fungry.Model.Cart;
+import com.fung.fungry.Model.Order;
 import com.fung.fungry.Model.User;
 import com.fung.fungry.ModelDTO.OrderDTO;
 import com.fung.fungry.ModelDTO.UserCreateDTO;
 import com.fung.fungry.ModelDTO.UserDTO;
 import com.fung.fungry.Repository.CartRepository;
+import com.fung.fungry.Repository.OrderRepository;
 import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.UserService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,6 +36,8 @@ public class UserServiceIMPL implements UserService {
     PasswordEncoder passwordEncoder;
     @Autowired
     CartRepository cartRepository;
+    @Autowired
+    OrderRepository orderRepository;
 
     public UserDTO mapToDTO(User user)
     {
@@ -40,6 +48,15 @@ public class UserServiceIMPL implements UserService {
         userDTO.setPhoneNumber(user.getPhoneNumber());
         return userDTO;
     }
+    public OrderDTO mapToOrderDTO(Order order)
+    {
+        OrderDTO orderDTO=new OrderDTO();
+        orderDTO.setOrderId(order.getOrderId());
+        orderDTO.setOrderItemDTO(order.getOrderItems());
+        orderDTO.set
+        return orderDTO;
+    }
+
     @Override
     @Transactional
     public UserDTO addUser(@Valid UserCreateDTO userDTO) {
@@ -135,8 +152,15 @@ public class UserServiceIMPL implements UserService {
 
     @Override
     public List<OrderDTO> viewOrderHistory(Long userId, Integer page, Integer size, String sortBy, String direction) {
+        User user= userRepository.findById(userId).orElseThrow(()-> new RuntimeException("No such user Found"));
+        Sort sort=direction.equalsIgnoreCase("descending")?Sort.by(sortBy).descending():Sort.by(sortBy).ascending();
+        Pageable pageable=PageRequest.of(page,size,sort);
+        Page<Order> orderPage=orderRepository.findByUser(user,pageable);
 
 
-        return List.of();
+
+        return orderPage.getContent()
+                .stream().map(this::mapToDTO)
+                .toList();
     }
 }
