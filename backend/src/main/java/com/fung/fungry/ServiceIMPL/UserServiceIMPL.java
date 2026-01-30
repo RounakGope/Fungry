@@ -90,7 +90,11 @@ public class UserServiceIMPL implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long userId) {
+        User user =userRepository.findById(userId).orElseThrow(()->new RuntimeException("No User Found"));
+        userRepository.delete(user);
+
 
     }
 
