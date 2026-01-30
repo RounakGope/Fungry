@@ -5,6 +5,7 @@ import com.fung.fungry.Model.Cart;
 import com.fung.fungry.Model.Order;
 import com.fung.fungry.Model.User;
 import com.fung.fungry.ModelDTO.OrderDTO;
+import com.fung.fungry.ModelDTO.OrderHistoryDTO;
 import com.fung.fungry.ModelDTO.UserCreateDTO;
 import com.fung.fungry.ModelDTO.UserDTO;
 import com.fung.fungry.Repository.CartRepository;
@@ -48,12 +49,14 @@ public class UserServiceIMPL implements UserService {
         userDTO.setPhoneNumber(user.getPhoneNumber());
         return userDTO;
     }
-    public OrderDTO mapToOrderDTO(Order order)
+    public OrderHistoryDTO mapToOrderDTO(Order order)
     {
-        OrderDTO orderDTO=new OrderDTO();
+        OrderHistoryDTO orderDTO=new OrderHistoryDTO();
         orderDTO.setOrderId(order.getOrderId());
-        orderDTO.setOrderItemDTO(order.getOrderItems());
-        orderDTO.set
+        orderDTO.setCreatedTime(order.getCreatedAt());
+        orderDTO.setStatus(order.getStatus());
+        orderDTO.setTotalAmt(order.getAmount());
+        orderDTO.setRestaurantName(order.getRestaurant().getName());
         return orderDTO;
     }
 
@@ -151,16 +154,14 @@ public class UserServiceIMPL implements UserService {
     }
 
     @Override
-    public List<OrderDTO> viewOrderHistory(Long userId, Integer page, Integer size, String sortBy, String direction) {
+    @Transactional
+    public List<OrderHistoryDTO> viewOrderHistory(Long userId, Integer page, Integer size, String sortBy, String direction) {
         User user= userRepository.findById(userId).orElseThrow(()-> new RuntimeException("No such user Found"));
-        Sort sort=direction.equalsIgnoreCase("descending")?Sort.by(sortBy).descending():Sort.by(sortBy).ascending();
+        Sort sort="descending-".equalsIgnoreCase(direction)?Sort.by(sortBy).descending():Sort.by(sortBy).ascending();
         Pageable pageable=PageRequest.of(page,size,sort);
         Page<Order> orderPage=orderRepository.findByUser(user,pageable);
-
-
-
         return orderPage.getContent()
-                .stream().map(this::mapToDTO)
+                .stream().map(this::mapToOrderDTO)
                 .toList();
     }
 }
