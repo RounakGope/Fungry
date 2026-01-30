@@ -115,8 +115,22 @@ public class UserServiceIMPL implements UserService {
     }
 
     @Override
+    @Transactional
     public UserDTO updatePassword(Long userId, String oldPassword, String newPassword) {
-        return null;
+        User user= userRepository.findById(userId).orElseThrow(()-> new RuntimeException("No such user Found"));
+        if (!passwordEncoder.matches(oldPassword,user.getUserPasswordHash()))
+        {
+            throw new RuntimeException("Old Password Is Incorrect");
+        }
+        if (passwordEncoder.matches(newPassword,user.getUserPasswordHash()))
+        {
+            throw new RuntimeException("Old Password and new Password are same");
+        }
+
+        user.setUserPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        return mapToDTO(user);
     }
 
     @Override
