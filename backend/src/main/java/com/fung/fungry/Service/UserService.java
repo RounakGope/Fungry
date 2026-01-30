@@ -14,7 +14,7 @@ public interface UserService {
   //  public UserDTO updateUserAddress(Long userId, AddressDTO addressDTO);
     public UserDTO updateUserPNo(Long userId,String PHno);
     public UserDTO updatePassword(Long userId,String oldPassword,String newPassword);
-    public List<OrderDTO> viewOrderHistory(Long userId,
+    public List<OrderHistoryDTO> viewOrderHistory(Long userId,
             Integer page,Integer size,String sortBy,String direction);
 
 
