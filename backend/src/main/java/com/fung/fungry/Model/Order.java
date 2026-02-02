@@ -1,6 +1,7 @@
 package com.fung.fungry.Model;
 
 import com.fung.fungry.Enums.OrderStatus;
+import com.fung.fungry.Enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,6 +45,9 @@ public class Order {
     private OrderStatus status;
     @Column(name = "total_amt")
     private Double amount;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentStatus paymentStatus;
 
 
     @OneToOne(fetch = FetchType.LAZY,mappedBy = "order")

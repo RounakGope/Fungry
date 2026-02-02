@@ -23,6 +23,7 @@ public class Payment {
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
 
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false,name = "order_id")
     private Order order;
