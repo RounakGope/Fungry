@@ -3,7 +3,9 @@ package com.fung.fungry.ServiceIMPL;
 import com.fung.fungry.Enums.OrderStatus;
 import com.fung.fungry.Enums.PaymentStatus;
 import com.fung.fungry.Model.*;
+import com.fung.fungry.ModelDTO.AddressDTO;
 import com.fung.fungry.ModelDTO.OrderDTO;
+import com.fung.fungry.ModelDTO.OrderItemDTO;
 import com.fung.fungry.Repository.*;
 import com.fung.fungry.Service.OrderService;
 import jakarta.transaction.Transactional;
@@ -63,7 +65,24 @@ public class OrderServiceIMPL implements OrderService {
     }
 
     private OrderDTO mapToOrderDTO(Order order) {
+        OrderDTO orderDTO=new OrderDTO();
+        orderDTO.setOrderId(order.getOrderId());
+        orderDTO.setStatus(order.getStatus());
+        orderDTO.setAddressDTO(mapToAddressDTO(order.getAddress()));
+        orderDTO.setCreatedTime(order.getCreatedAt());
+        orderDTO.setOrderItemDTO(mapToOrderItemDTO(order.getOrderItems()));
+        orderDTO.setRestaurantName(order.getRestaurant().getName());
+        orderDTO.setTotalAmt(order.getAmount());
+        return orderDTO;
     }
+
+    private AddressDTO mapToAddressDTO(Address address) {
+    }
+
+    private List<OrderItemDTO> mapToOrderItemDTO(List<OrderItem> orderItems) {
+    }
+
+    private 
 
     @Override
     public String removeOrder(Long orderId, Long userId) {

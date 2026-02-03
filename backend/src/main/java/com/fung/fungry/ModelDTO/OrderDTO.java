@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 //first rule of dto is that it does not expose entity,jpa
 @Getter
@@ -16,7 +17,7 @@ public class OrderDTO {
     private Long orderId;
 
     private AddressDTO  addressDTO;
-    private OrderItemDTO orderItemDTO;
+    private List<OrderItemDTO> orderItemDTO;
     private Integer expecetedTimeInMinutes;
     private String restaurantName;
     private OrderStatus status;
