@@ -88,6 +88,18 @@ public class OrderServiceIMPL implements OrderService {
     }
 
     private List<OrderItemDTO> mapToOrderItemDTO(List<OrderItem> orderItems) {
+        List<OrderItemDTO> orderItemDTOS=new ArrayList<>();
+        OrderItemDTO orderItemDTO= new OrderItemDTO();
+        for (OrderItem orderItem: orderItems)
+        {
+            orderItemDTO.setName(orderItem.getOrderItemName());
+            orderItemDTO.setPrice(orderItem.getPrice());
+            orderItemDTO.setQuantity(orderItem.getQuantity());
+            orderItemDTO.setOrderItemId(orderItem.getOrderItemId());
+            orderItemDTOS.add(orderItemDTO);
+        }
+        return orderItemDTOS;
+
     }
 
     private 
