@@ -99,14 +99,16 @@ public class OrderServiceIMPL implements OrderService {
             orderItemDTOS.add(orderItemDTO);
         }
         return orderItemDTOS;
-
     }
 
-    private 
 
     @Override
-    public String removeOrder(Long orderId, Long userId) {
-        return "";
+    @Transactional
+    public void removeOrder(Long orderId, Long userId) {// just removing the order entry from this user order history
+        User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such User Found"));
+        Order order=orderRepository.findById(orderId).orElseThrow(()-> new RuntimeException("No such order found "));
+        orderRepository.delete(order);
+
     }
 
     @Override

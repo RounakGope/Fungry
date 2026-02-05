@@ -14,7 +14,7 @@ public interface OrderService{
 
     public OrderDTO createOrder(Long cartId, Long userId, Long addressId);
 
-    public String removeOrder(Long orderId,Long userId);
+    public void removeOrder(Long orderId,Long userId);
 
     public OrderDTO viewOrderByIdUser(Long userId,Long orderID);//user wants to see order
 
