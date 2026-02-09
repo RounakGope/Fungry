@@ -28,6 +28,9 @@ public class OrderServiceIMPL implements OrderService {
     CartRepository cartRepository;
     @Autowired
     AddressRepository addressRepository;
+
+    @Autowired
+    RestaurantRepository restaurantRepository;
     public List<OrderItem> cartToOrderItem(List<CartItem>cartItems,Order order)
     {
         List<OrderItem> orderItems=new ArrayList<>();
@@ -123,7 +126,12 @@ public class OrderServiceIMPL implements OrderService {
 
     @Override
     public OrderDTO viewOrderByIdRest(Long restId, Long orderId) {
-        return null;
+        Restaurant restaurant=restaurantRepository.findById(restId).orElseThrow(()->new RuntimeException("No such restaturant present"));
+        Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such Order present"));
+        if (!order.getRestaurant().equals(restaurant))
+            throw new RuntimeException("Order restaurant mismatch");
+
+        return mapToOrderDTO(order);
     }
 
     @Override
