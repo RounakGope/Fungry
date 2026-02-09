@@ -55,7 +55,7 @@ public class OrderServiceIMPL implements OrderService {
         order.setRestaurant(cart.getRestaurant());
         order.setAmount(cart.getTotalAmt());
         order.setPaymentStatus(PaymentStatus.PENDING);
-        order.setUser(userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such user"));
+        order.setUser(userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such user")));
         order.setExpectedTimeInMinutes(10);
         order.setStatus(OrderStatus.PREPARING);
         orderRepository.save(order);
@@ -113,7 +113,12 @@ public class OrderServiceIMPL implements OrderService {
 
     @Override
     public OrderDTO viewOrderByIdUser(Long userId, Long orderID) {
-        return null;
+        User user= userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such User Found"));
+        Order order=orderRepository.findById(orderID).orElseThrow(()->new RuntimeException("No such Order Found"));
+        if (!order.getUser().equals(user))
+            throw new RuntimeException("Order User Mismatch");
+
+        return mapToOrderDTO(order);
     }
 
     @Override
