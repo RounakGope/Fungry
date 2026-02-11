@@ -146,7 +146,10 @@ public class OrderServiceIMPL implements OrderService {
 
     @Override
     public List<OrderDTO> viewAllOrdersForRest(Long restaurantId) {
-        return List.of();
+        Restaurant restaurant=restaurantRepository.findById(restaurantId).orElseThrow(()->new RuntimeException("No such restaturant present"));
+        List<Order> orderList  =restaurant.getOrders();
+        return orderList.stream().map(order -> mapToOrderDTO(order)).toList();
+
     }
 
     @Override
