@@ -179,7 +179,13 @@ public class OrderServiceIMPL implements OrderService {
 
     @Override
     public Double getOrderAmount(Long orderId, Long userId) {
-        return 0.0;
+        User user= userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such User Found"));
+        Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such order Present"));
+        if (!order.getUser().equals(user))
+        {
+            throw  new RuntimeException("Order user mismatch");
+        }
+        return order.getAmount();
     }
 
     @Override
