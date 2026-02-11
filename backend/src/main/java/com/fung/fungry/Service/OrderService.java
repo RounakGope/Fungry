@@ -32,7 +32,7 @@ public interface OrderService{
 
     public Double getOrderAmount(Long orderId,Long userId);
 
-    public String cancelOrder(Long orderId,Long userId);
+    public void cancelOrder(Long orderId,Long userId);
 
     //ADMIN
 

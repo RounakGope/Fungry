@@ -181,7 +181,7 @@ public class OrderServiceIMPL implements OrderService {
     public Double getOrderAmount(Long orderId, Long userId) {
         User user= userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such User Found"));
         Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such order Present"));
-        if (!order.getUser().equals(user))
+        if (!order.getUser().getUserId().equals(user.getUserId()))
         {
             throw  new RuntimeException("Order user mismatch");
         }
@@ -189,7 +189,20 @@ public class OrderServiceIMPL implements OrderService {
     }
 
     @Override
-    public String cancelOrder(Long orderId, Long userId) {
-        return "";
+    @Transactional
+    public void cancelOrder(Long orderId, Long userId) {
+        User user= userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such User Found"));
+        Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such order Present"));
+        if (!order.getUser().getUserId().equals(user.getUserId()))
+        {
+            throw  new RuntimeException("Order user mismatch");
+        }
+        if (order.getStatus()==OrderStatus.DELIVERED)
+        {
+            throw  new RuntimeException("You cannot cancel order");
+        }
+        order.setStatus(OrderStatus.CANCELED);
+
+
     }
 }
