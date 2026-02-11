@@ -154,7 +154,15 @@ public class OrderServiceIMPL implements OrderService {
 
     @Override
     public OrderDTO updateOrderStatus(Long orderId, Long restId, OrderStatus nextStatus) {
-        return null;
+        Restaurant restaurant=restaurantRepository.findById(restId).orElseThrow(()->new RuntimeException("No such restaturant present"));
+        Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such order Present"));
+        if (!order.getRestaurant().equals(restaurant))
+        {
+            throw new RuntimeException("You Dont have Access");
+        }
+        order.setStatus(nextStatus);
+        return mapToOrderDTO(order);
+
     }
 
     @Override
