@@ -28,7 +28,7 @@ public interface OrderService{
 
     //public Optional<List<Order>> addOrderItem();
 
-    public String getOrderStatus(Long orderId,Long userId);
+    public OrderStatus getOrderStatus(Long orderId,Long userId);
 
     public Double getOrderAmount(Long orderId,Long userId);
 
