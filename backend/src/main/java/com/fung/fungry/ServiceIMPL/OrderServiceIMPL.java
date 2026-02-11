@@ -135,8 +135,13 @@ public class OrderServiceIMPL implements OrderService {
     }
 
     @Override
+    @Transactional
     public List<OrderDTO> viewAllOrdersForUser(Long userId) {
-        return List.of();
+        User user= userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such User Found"));
+        List<Order> orders=user.getOrderHistory();
+        return orders.stream().map(order -> mapToOrderDTO(order)).toList();
+
+
     }
 
     @Override
