@@ -7,6 +7,7 @@ import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -16,16 +17,22 @@ import java.math.BigDecimal;
 public class StripeService {
     @Value("${stripe.secretKey}")
     private String secretKey;
+    @PostConstruct
+    public void init() {
+        Stripe.apiKey = secretKey;
+    }
+
 
     public StripeResponseDTO checkoutProduct(OrderDTO orderDTO)
     {
-        Stripe.apiKey=secretKey;
         SessionCreateParams.LineItem.PriceData.ProductData productData =SessionCreateParams.LineItem.PriceData.ProductData.builder()
                 .setName(orderDTO.getRestaurantName()).build();
+
         Long amount =Math.round(orderDTO.getTotalAmt()*100);
        SessionCreateParams.LineItem.PriceData priceData =SessionCreateParams.LineItem.PriceData.builder()
-                .setCurrency("INR")
+                .setCurrency("inr")
                .setUnitAmount(amount)
+               .setProductData(productData)
                 .build();
         SessionCreateParams.LineItem lineItem=SessionCreateParams.LineItem.builder()
                 .setQuantity(1L)
@@ -45,7 +52,7 @@ public class StripeService {
                     throw new RuntimeException(e);
                 }
                 return StripeResponseDTO.builder()
-                        .status(PaymentStatus.SUCCESSFUL)
+                        .status(PaymentStatus.PENDING)
                         .message("Payment session created")
                         .sessionId(session.getId())
                         .sessionURL(session.getUrl())
