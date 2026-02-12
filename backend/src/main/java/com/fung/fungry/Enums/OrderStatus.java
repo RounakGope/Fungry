@@ -2,6 +2,7 @@ package com.fung.fungry.Enums;
 
 public enum OrderStatus {
     PLACED,
+    CREATED,
     CONFIRMED,
     DELIVERED,
     PREPARING,

@@ -1,15 +1,13 @@
 package com.fung.fungry.ServiceIMPL;
 
+import com.fung.fungry.Enums.OrderStatus;
 import com.fung.fungry.Enums.PaymentMode;
 import com.fung.fungry.Enums.PaymentStatus;
 import com.fung.fungry.Model.Address;
 import com.fung.fungry.Model.Order;
 import com.fung.fungry.Model.OrderItem;
 import com.fung.fungry.Model.User;
-import com.fung.fungry.ModelDTO.AddressDTO;
-import com.fung.fungry.ModelDTO.OrderDTO;
-import com.fung.fungry.ModelDTO.OrderItemDTO;
-import com.fung.fungry.ModelDTO.PaymentDTO;
+import com.fung.fungry.ModelDTO.*;
 import com.fung.fungry.Repository.OrderRepository;
 import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.PaymentService;
@@ -61,13 +59,19 @@ public class PaymentServiceIMPL  implements PaymentService {
         return orderItemDTOS;
     }
     @Override
-    public PaymentDTO startPayment(Long orderId, Long userId, PaymentMode paymentMode) {
+    public StripeResponseDTO startPayment(Long orderId, Long userId, PaymentMode paymentMode) {
         User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No Such User Found"));
         Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such order Found"));
         if (!order.getUser().getUserId().equals(userId))
             throw new RuntimeException("Order User Mismatch");
-        PaymentMode paymentMode1=paymentMode;
-        stripeService.checkoutProduct()
+        if (order.getStatus()!= OrderStatus.CREATED)
+        {
+
+        }
+        OrderDTO orderDTO=mapToOrderDTO(order);
+        com.fung.fungry.ModelDTO.StripeResponseDTO stripeResponseDTO =stripeService.checkoutProduct(orderDTO);
+
+        return stripeResponseDTO;
     }
 
     @Override

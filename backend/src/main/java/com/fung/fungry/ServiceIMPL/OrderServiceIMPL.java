@@ -48,19 +48,25 @@ public class OrderServiceIMPL implements OrderService {
     }
     @Override
     @Transactional
-    public OrderDTO createOrder(Long cartId, Long userId, Long addressId) {//when the payment is done or cod is selected the created order will created.
+    public OrderDTO createOrder(Long cartId, Long userId, Long addressId) {
+        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such user"));
         Order order=new Order();
         Cart cart=cartRepository.findById(cartId).orElseThrow(()->new RuntimeException("No such cart present"));
+        if (!cart.getUser().getUserId().equals(user.getUserId()))
+        {
+            throw new RuntimeException("Cart User Mismatch");
+
+        }
         List<CartItem > cartItems=cart.getCartItems();
         order.setOrderItems(cartToOrderItem(cartItems,order));
         order.setAddress(addressRepository.findById(addressId).orElseThrow(()->new RuntimeException("No such address")));
         order.setCreatedAt(LocalDateTime.now());
         order.setRestaurant(cart.getRestaurant());
         order.setAmount(cart.getTotalAmt());
+        order.setStatus(OrderStatus.CREATED);
         order.setPaymentStatus(PaymentStatus.PENDING);
-        order.setUser(userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such user")));
+        order.setUser(user);
         order.setExpectedTimeInMinutes(10);
-        order.setStatus(OrderStatus.PREPARING);
         orderRepository.save(order);
         cart.getCartItems().clear();
         cartRepository.save(cart);
