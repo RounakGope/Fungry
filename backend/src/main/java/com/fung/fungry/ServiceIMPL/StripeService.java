@@ -15,8 +15,10 @@ import java.math.BigDecimal;
 
 @Service
 public class StripeService {
+
     @Value("${stripe.secretKey}")
     private String secretKey;
+
     @PostConstruct
     public void init() {
         Stripe.apiKey = secretKey;
@@ -44,7 +46,7 @@ public class StripeService {
                 .setCancelUrl("http://localhost:8080/cancel")
                 .addLineItem(lineItem)
                 .build();
-        Session session=null;
+           Session session=null;
                 try
                 {
                     session=Session.create(params);

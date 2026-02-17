@@ -3,7 +3,6 @@ package com.fung.fungry.Model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.boot.webmvc.autoconfigure.WebMvcProperties;
 
 import java.util.ArrayList;
 import java.util.List;

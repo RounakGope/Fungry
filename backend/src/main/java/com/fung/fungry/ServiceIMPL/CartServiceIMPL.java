@@ -10,7 +10,6 @@ import com.fung.fungry.Repository.*;
 import com.fung.fungry.Service.CartService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.autoconfigure.WebMvcProperties;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
