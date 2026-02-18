@@ -50,7 +50,7 @@ public class Order {
     private PaymentStatus paymentStatus;
 
 
-    @OneToOne(fetch = FetchType.LAZY,mappedBy = "order")
+    @OneToMany(fetch = FetchType.LAZY,mappedBy = "order")
     private Payment payment;
 
     @CreationTimestamp

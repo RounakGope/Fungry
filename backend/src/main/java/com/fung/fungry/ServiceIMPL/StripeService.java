@@ -1,5 +1,4 @@
 package com.fung.fungry.ServiceIMPL;
-
 import com.fung.fungry.Enums.PaymentStatus;
 import com.fung.fungry.ModelDTO.OrderDTO;
 import com.fung.fungry.ModelDTO.StripeResponseDTO;
@@ -10,8 +9,6 @@ import com.stripe.param.checkout.SessionCreateParams;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
 
 @Service
 public class StripeService {
@@ -59,7 +56,5 @@ public class StripeService {
                         .sessionId(session.getId())
                         .sessionURL(session.getUrl())
                         .build();
-
     }
-
 }

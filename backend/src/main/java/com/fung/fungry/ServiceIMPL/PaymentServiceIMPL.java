@@ -3,14 +3,13 @@ package com.fung.fungry.ServiceIMPL;
 import com.fung.fungry.Enums.OrderStatus;
 import com.fung.fungry.Enums.PaymentMode;
 import com.fung.fungry.Enums.PaymentStatus;
-import com.fung.fungry.Model.Address;
-import com.fung.fungry.Model.Order;
-import com.fung.fungry.Model.OrderItem;
-import com.fung.fungry.Model.User;
+import com.fung.fungry.Model.*;
 import com.fung.fungry.ModelDTO.*;
 import com.fung.fungry.Repository.OrderRepository;
+import com.fung.fungry.Repository.PaymentRepository;
 import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.PaymentService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -24,6 +23,8 @@ public class PaymentServiceIMPL  implements PaymentService {
     @Autowired
     OrderRepository orderRepository;
 
+    @Autowired
+    PaymentRepository paymentRepository;
     private OrderDTO mapToOrderDTO(Order order) {
         OrderDTO orderDTO=new OrderDTO();
         orderDTO.setOrderId(order.getOrderId());
@@ -58,18 +59,28 @@ public class PaymentServiceIMPL  implements PaymentService {
         }
         return orderItemDTOS;
     }
+    @Transactional
     @Override
-    public StripeResponseDTO startPayment(Long orderId, Long userId, PaymentMode paymentMode) {
+    public StripeResponseDTO startPayment(Long orderId, Long userId,PaymentMode paymentMode) {
         User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No Such User Found"));
         Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such order Found"));
         if (!order.getUser().getUserId().equals(userId))
             throw new RuntimeException("Order User Mismatch");
-        if (order.getStatus()!= OrderStatus.CREATED)
+        if (order.getStatus()== OrderStatus.CREATED)
         {
+            throw  new RuntimeException("Order already created");
 
         }
         OrderDTO orderDTO=mapToOrderDTO(order);
         com.fung.fungry.ModelDTO.StripeResponseDTO stripeResponseDTO =stripeService.checkoutProduct(orderDTO);
+        order.setStatus(OrderStatus.PAYMENT_PENDING);
+
+        Payment payment=new Payment();
+        payment.setPaymentStatus(PaymentStatus.PENDING);
+        payment.setOrder(order);
+        payment.setPaymentMode(paymentMode);
+        paymentRepository.save(payment);
+        orderRepository.save(order);
 
         return stripeResponseDTO;
     }
