@@ -51,7 +51,7 @@ public class Order {
 
 
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "order")
-    private Payment payment;
+    private List<Payment> payments;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

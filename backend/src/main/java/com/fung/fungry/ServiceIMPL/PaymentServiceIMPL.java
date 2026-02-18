@@ -66,15 +66,12 @@ public class PaymentServiceIMPL  implements PaymentService {
         Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such order Found"));
         if (!order.getUser().getUserId().equals(userId))
             throw new RuntimeException("Order User Mismatch");
-        if (order.getStatus()== OrderStatus.CREATED)
+        if (order.getStatus()!= OrderStatus.CREATED)
         {
-            throw  new RuntimeException("Order already created");
-
+            throw  new RuntimeException("Order cannot be initiated for payment");
         }
         OrderDTO orderDTO=mapToOrderDTO(order);
-        com.fung.fungry.ModelDTO.StripeResponseDTO stripeResponseDTO =stripeService.checkoutProduct(orderDTO);
         order.setStatus(OrderStatus.PAYMENT_PENDING);
-
         Payment payment=new Payment();
         payment.setPaymentStatus(PaymentStatus.PENDING);
         payment.setOrder(order);
@@ -82,9 +79,9 @@ public class PaymentServiceIMPL  implements PaymentService {
         paymentRepository.save(payment);
         orderRepository.save(order);
 
+        com.fung.fungry.ModelDTO.StripeResponseDTO stripeResponseDTO =stripeService.checkoutProduct(orderDTO);
         return stripeResponseDTO;
     }
-
     @Override
     public PaymentStatus updatePaymentStatus(Long paymentId, PaymentStatus paymentStatus) {
         return null;
