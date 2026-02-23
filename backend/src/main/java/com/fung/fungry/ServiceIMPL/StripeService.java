@@ -12,21 +12,21 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class StripeService {
-
     @Value("${stripe.secretKey}")
     private String secretKey;
-
+    @Value("${stripe.success-url}")
+    private String successUrl;
+    @Value("${stripe.fail-url}")
+    private String failUrl;
     @PostConstruct
     public void init() {
         Stripe.apiKey = secretKey;
+
     }
-
-
     public StripeResponseDTO checkoutProduct(OrderDTO orderDTO)
     {
         SessionCreateParams.LineItem.PriceData.ProductData productData =SessionCreateParams.LineItem.PriceData.ProductData.builder()
                 .setName(orderDTO.getRestaurantName()).build();
-
         Long amount =Math.round(orderDTO.getTotalAmt()*100);
        SessionCreateParams.LineItem.PriceData priceData =SessionCreateParams.LineItem.PriceData.builder()
                 .setCurrency("inr")
@@ -39,9 +39,10 @@ public class StripeService {
                 .build();
        SessionCreateParams params= SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
-                .setSuccessUrl("http://localhost:8080/success")
-                .setCancelUrl("http://localhost:8080/cancel")
+                .setSuccessUrl(successUrl)
+                .setCancelUrl(failUrl)
                 .addLineItem(lineItem)
+               .putMetadata("orderId",orderDTO.getOrderId().toString())
                 .build();
            Session session=null;
                 try

@@ -14,6 +14,6 @@ public class CartDTO {
 
     private Long cartId;
     private List<CartItemDTO> cartItemDTOS;
-    private Double totalAmt;
+    private Long totalAmt;
     private String restaurantName;
 }

@@ -44,7 +44,7 @@ public class Order {
             @Column(nullable = false)
     private OrderStatus status;
     @Column(name = "total_amt")
-    private Double amount;
+    private Long amount;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PaymentStatus paymentStatus;

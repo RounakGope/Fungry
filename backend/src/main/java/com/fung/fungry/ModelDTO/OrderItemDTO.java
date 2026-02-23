@@ -12,5 +12,5 @@ public class OrderItemDTO {
     private Long orderItemId;
     private String name;
     private Integer quantity;
-    private Double price;
+    private Long price;
 }

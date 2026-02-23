@@ -17,6 +17,6 @@ public class MenuItemDTO {
     private FoodType foodType;
     private String foodName;
     private Integer availableQuantity;
-    private Double price;
+    private Long price;
     private Boolean isAvailable;
 }

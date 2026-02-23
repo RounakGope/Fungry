@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+//from stripe
 public class StripeResponseDTO {
     private PaymentStatus paymentStatus;
     private PaymentStatus status;

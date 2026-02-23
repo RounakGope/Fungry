@@ -24,7 +24,7 @@ public class Cart {
     private Restaurant restaurant;
 
     @Column(name = "total_amt",nullable = false)
-    private Double totalAmt;
+    private Long totalAmt;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",nullable = false,unique = true)

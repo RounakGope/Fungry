@@ -33,7 +33,7 @@ public class MenuItem {
     @Column(nullable = false)
     private FoodType type;
     @Column(name = "price",nullable = false)
-    private Double price;
+    private Long price;
 
     @OneToMany(mappedBy = "menuItem",fetch =FetchType.LAZY,cascade = CascadeType.ALL)
     private List<CartItem> cartItemList=new ArrayList<>();

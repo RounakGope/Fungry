@@ -15,6 +15,6 @@ public class OrderHistoryDTO {
     private Long orderId;
     private String restaurantName;
     private OrderStatus status;
-    private Double totalAmt;
+    private Long totalAmt;
     private LocalDateTime createdTime;
 }

@@ -23,7 +23,7 @@ public class OrderItem {
     private Integer quantity;
 
     @Column(name = "price",nullable = false)
-    private Double price;
+    private Long price;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id",nullable = false)

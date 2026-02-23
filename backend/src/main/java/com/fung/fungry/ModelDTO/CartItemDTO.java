@@ -12,7 +12,7 @@ import lombok.ToString;
 @Getter
 public class CartItemDTO {
     private Long cartItemId;
-    private Double price;
+    private Long price;
     private Integer quantity;
     private String itemName;
 
