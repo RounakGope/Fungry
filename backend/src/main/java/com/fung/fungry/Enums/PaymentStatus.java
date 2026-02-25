@@ -1,5 +1,5 @@
 package com.fung.fungry.Enums;
 
 public enum PaymentStatus {
-    SUCCESSFUL,CANCELED,PENDING,ERROR
+    SUCCESS,CANCELED,PENDING,FAILED
 }
