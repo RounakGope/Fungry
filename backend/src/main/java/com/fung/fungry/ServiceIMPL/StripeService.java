@@ -21,13 +21,12 @@ public class StripeService {
     @PostConstruct
     public void init() {
         Stripe.apiKey = secretKey;
-
     }
     public StripeResponseDTO checkoutProduct(OrderDTO orderDTO)
     {
         SessionCreateParams.LineItem.PriceData.ProductData productData =SessionCreateParams.LineItem.PriceData.ProductData.builder()
                 .setName(orderDTO.getRestaurantName()).build();
-        Long amount =Math.round(orderDTO.getTotalAmt()*100);
+        Long amount =orderDTO.getTotalAmt()*100L;
        SessionCreateParams.LineItem.PriceData priceData =SessionCreateParams.LineItem.PriceData.builder()
                 .setCurrency("inr")
                .setUnitAmount(amount)
@@ -49,7 +48,7 @@ public class StripeService {
                 {
                     session=Session.create(params);
                 } catch (StripeException e) {
-                    throw new RuntimeException(e);
+                    throw new RuntimeException(e.getMessage());
                 }
                 return StripeResponseDTO.builder()
                         .status(PaymentStatus.PENDING)

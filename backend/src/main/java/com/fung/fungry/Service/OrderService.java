@@ -30,7 +30,7 @@ public interface OrderService{
 
     public OrderStatus getOrderStatus(Long orderId,Long userId);
 
-    public Double getOrderAmount(Long orderId,Long userId);
+    public Long getOrderAmount(Long orderId,Long userId);
 
     public void cancelOrder(Long orderId,Long userId);
 

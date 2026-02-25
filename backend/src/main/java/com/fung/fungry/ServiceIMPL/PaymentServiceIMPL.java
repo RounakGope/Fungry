@@ -78,8 +78,9 @@ public class PaymentServiceIMPL  implements PaymentService {
         payment.setPaymentMode(paymentMode);
         paymentRepository.save(payment);
         orderRepository.save(order);
-
         com.fung.fungry.ModelDTO.StripeResponseDTO stripeResponseDTO =stripeService.checkoutProduct(orderDTO);
+        payment.setStripeSessionId(stripeResponseDTO.getSessionId());
+
         return stripeResponseDTO;
     }
     @Override
