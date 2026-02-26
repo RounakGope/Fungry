@@ -93,7 +93,7 @@ public class PaymentServiceIMPL  implements PaymentService {
     @Override
     public PaymentDTO fetchPayment(Long userId,Long paymentId) {
         Payment payment=paymentRepository.findByPaymentIdAndUser_UserId(paymentId,userId).orElseThrow(()->new RuntimeException("Payment Not Found"));
-        
+
         return mapToPaymentDTO(payment);
 
     }
@@ -108,6 +108,7 @@ public class PaymentServiceIMPL  implements PaymentService {
 
     @Override
     public List<PaymentDTO> viewPayments(Long userId) {
-        return List.of();
+        List<Payment> paymentList=paymentRepository.findByUser_UserId(userId);
+        return paymentList.stream().map(this::mapToPaymentDTO).toList();
     }
 }
