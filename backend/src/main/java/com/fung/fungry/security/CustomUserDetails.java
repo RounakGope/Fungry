@@ -1,13 +1,14 @@
 package com.fung.fungry.security;
 
 
+import lombok.Getter;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
-
+@Getter
 public class CustomUserDetails implements UserDetails {
     private Long userId;
     private String email;
@@ -17,10 +18,7 @@ public class CustomUserDetails implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
     }
-    public Long getUserId()
-    {
-        return userId;
-    }
+
 
     @Override
     public @Nullable String getPassword() {

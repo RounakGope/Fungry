@@ -10,4 +10,6 @@ public interface PaymentRepository extends JpaRepository<Payment,Long> {
     public Optional<Payment> findByStripeSessionId(String stripeSessionId);
     public Order findByOrderId();
 
+    public Optional<Payment> findByPaymentIdAndUser_UserId(Long paymentId,Long userId);
+
 }

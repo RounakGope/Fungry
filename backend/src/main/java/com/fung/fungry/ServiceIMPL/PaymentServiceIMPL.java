@@ -89,9 +89,21 @@ public class PaymentServiceIMPL  implements PaymentService {
         return null;
     }
 
+
     @Override
-    public PaymentDTO fetchPayment(Long paymentId) {
-        return null;
+    public PaymentDTO fetchPayment(Long userId,Long paymentId) {
+        Payment payment=paymentRepository.findByPaymentIdAndUser_UserId(paymentId,userId).orElseThrow(()->new RuntimeException("Payment Not Found"));
+        
+        return mapToPaymentDTO(payment);
+
+    }
+
+    private PaymentDTO mapToPaymentDTO(Payment payment) {
+        PaymentDTO paymentDTO=new PaymentDTO();
+        paymentDTO.setPaymentId(payment.getPaymentId());
+        paymentDTO.setPaymentMode(payment.getPaymentMode());
+        paymentDTO.setPaymentStatus(payment.getPaymentStatus());
+        return paymentDTO;
     }
 
     @Override

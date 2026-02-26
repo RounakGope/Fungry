@@ -47,6 +47,13 @@ public class User {
             ,fetch = FetchType.LAZY
     )
     private List<Order> orderHistory=new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            fetch =FetchType.LAZY
+    )
+    private List<Payment> payments=new ArrayList<>();
     @CreationTimestamp
     LocalDateTime createdAt;
     @UpdateTimestamp
