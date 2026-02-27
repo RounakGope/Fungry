@@ -9,6 +9,8 @@ import com.fung.fungry.ModelDTO.CartItemDTO;
 import com.fung.fungry.Repository.*;
 import com.fung.fungry.Service.CartService;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,8 @@ import java.util.Optional;
 
 @Service
 public class CartServiceIMPL implements CartService {
+   private static final Logger log= LoggerFactory.getLogger(CartServiceIMPL.class);
+
     @Autowired
     UserRepository userRepository;
     @Autowired
@@ -58,7 +62,9 @@ public class CartServiceIMPL implements CartService {
 
     @Override
     public CartDTO viewCart(Long userId) {
-        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("User Not Found"));
+        User user=userRepository.findById(userId).orElseThrow(()->{
+            log.error("User not found for {}",userId); return new RuntimeException("User Not Found");
+        });
         Cart cart=cartRepository.findById(user.getCart().getCartId()).orElseThrow(()->new RuntimeException("No Cart Found"));
         CartDTO cartDTO=cartToDTO(cart);
         return cartDTO;
@@ -67,11 +73,15 @@ public class CartServiceIMPL implements CartService {
     @Override
     @Transactional
     public void addToCart(Long userId, Long menuItemId) {
+        log.info("started add to cart for user id ={} , menuitemid={}",userId,menuItemId);
 
-        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("User Not Found"));
+        User user=userRepository.findById(userId).orElseThrow(()->{
+            log.error("User not found for {}",userId); return new RuntimeException("User Not Found");
+        });
         Cart cart = cartRepository.findByUser_UserId(userId).orElse(null);
         if(cart==null)
         {
+            log.info("cart is null");
             cart=new Cart();
             cart.setUser(user);
             user.setCart(cart);
@@ -79,6 +89,7 @@ public class CartServiceIMPL implements CartService {
         List<CartItem> cartItems=cart.getCartItems();
         if(cartItems==null)
         {
+            log.info("cart items is null");
             cart.setCartItems(new ArrayList<>());
         }
         MenuItem menuItem=menuItemRepository.findById(menuItemId).orElseThrow(()->new RuntimeException("No such Menu item"));
@@ -89,8 +100,10 @@ public class CartServiceIMPL implements CartService {
         {
            CartItem  cartItem=existingCartItems.get();
              cartItem.setQuantity(cartItem.getQuantity()+1);
+             log.info("increased cart item quantity by 1");
         }
         else {
+            log.info("creating a new cartitem");
             CartItem cartItem=new CartItem();
             cartItem.setCart(cart);
             cartItem.setQuantity(1);
@@ -102,7 +115,8 @@ public class CartServiceIMPL implements CartService {
     @Override
     @Transactional
     public CartDTO updateItemQuantityByOne(Long cartItemId, Long userId) {
-        User user=userRepository.findById(userId).orElseThrow(()-> new RuntimeException("User Not Found"));
+
+
         Cart cart=cartRepository.findByUser_UserId(userId).orElseThrow(()->new RuntimeException("Cart Not Found"));
 
         CartItem cartItem =cart.getCartItems().stream().filter(
@@ -113,25 +127,32 @@ public class CartServiceIMPL implements CartService {
 
         if(cartItem.getQuantity()+1>cartItem.getMenuItem().getAvailableQuantity()||!cartItem.getMenuItem().getIsAvailable()||
                 cartItem.getMenuItem().getAvailableQuantity()==0)
+        {
+            log.info("either the quantity is exceeding storage or out of stock for cartitem={} ",cartItemId);
             throw new RuntimeException("You cannot add items");
 
+        }
         cartItem.setQuantity(cartItem.getQuantity()+1);
-
+        log.info("updated the quantity by one for cart item={}",cartItemId);
         cartRepository.save(cart);
+        log.info("saved the cart ");
         return cartToDTO(cart);
-
     }
 
+    @Transactional
     @Override
     public CartDTO clearAll(Long userId) {
         User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No Such User"));
         Cart cart=cartRepository.findById(user.getCart().getCartId()).orElseThrow(()->new RuntimeException("No such cart available"));
         cart.getCartItems().clear();
+
         cartRepository.save(cart);
+
         return cartToDTO(cart);
 
     }
 
+    @Transactional
     @Override
     public CartDTO removeItem(Long userId, Long cartItemId) {
         User user =userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such user found"));
@@ -142,7 +163,7 @@ public class CartServiceIMPL implements CartService {
             throw new RuntimeException("User Cart Mismatch");
         }
         cart.getCartItems().remove(cartItem);
-
+        log.info("removed the cartitems={}",cartItemId);
         cartRepository.save(cart);
         return  cartToDTO(cart);
     }
