@@ -9,6 +9,8 @@ import com.fung.fungry.ModelDTO.OrderItemDTO;
 import com.fung.fungry.Repository.*;
 import com.fung.fungry.Service.OrderService;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,7 @@ import java.util.List;
 
 @Service
 public class OrderServiceIMPL implements OrderService {
+    Logger log= LoggerFactory.getLogger(OrderServiceIMPL.class);
     @Autowired
     UserRepository userRepository;
     @Autowired
@@ -33,6 +36,7 @@ public class OrderServiceIMPL implements OrderService {
     RestaurantRepository restaurantRepository;
     public List<OrderItem> cartToOrderItem(List<CartItem>cartItems,Order order)
     {
+
         List<OrderItem> orderItems=new ArrayList<>();
         for (CartItem cartItem:cartItems)
         {
@@ -49,17 +53,31 @@ public class OrderServiceIMPL implements OrderService {
     @Override
     @Transactional
     public OrderDTO createOrder(Long cartId, Long userId, Long addressId) {
+        log.info("started create order for userid={}",userId);
         User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such user"));
         Order order=new Order();
+        Address address=addressRepository.findById(addressId).orElseThrow(()->new RuntimeException("no such address"));
+
         Cart cart=cartRepository.findById(cartId).orElseThrow(()->new RuntimeException("No such cart present"));
         if (!cart.getUser().getUserId().equals(user.getUserId()))
         {
+            log.warn("Userid {} cant create order of cartId{}",userId,cartId);
             throw new RuntimeException("Cart User Mismatch");
 
         }
+        if (!address.getUser().getUserId().equals(user.getUserId()))
+        {
+            log.warn("Userid {} cant create order of cartId{} as address id {} mismatch",userId,cartId,addressId);
+            throw new RuntimeException("Cart address Mismatch");
+
+        }
         List<CartItem > cartItems=cart.getCartItems();
+        if (cartItems.isEmpty())
+        {
+            throw new RuntimeException("cart is empty");
+        }
         order.setOrderItems(cartToOrderItem(cartItems,order));
-        order.setAddress(addressRepository.findById(addressId).orElseThrow(()->new RuntimeException("No such address")));
+        order.setAddress(address);
         order.setCreatedAt(LocalDateTime.now());
         order.setRestaurant(cart.getRestaurant());
         order.setAmount(cart.getTotalAmt());
@@ -68,6 +86,7 @@ public class OrderServiceIMPL implements OrderService {
         order.setUser(user);
         order.setExpectedTimeInMinutes(10);
         orderRepository.save(order);
+        log.info("created order entity for user ={} ,with order id={}",userId,order.getOrderId());
         cart.getCartItems().clear();
         cartRepository.save(cart);
         return mapToOrderDTO(order);
@@ -98,9 +117,10 @@ public class OrderServiceIMPL implements OrderService {
 
     private List<OrderItemDTO> mapToOrderItemDTO(List<OrderItem> orderItems) {
         List<OrderItemDTO> orderItemDTOS=new ArrayList<>();
-        OrderItemDTO orderItemDTO= new OrderItemDTO();
         for (OrderItem orderItem: orderItems)
         {
+
+            OrderItemDTO orderItemDTO= new OrderItemDTO();
             orderItemDTO.setName(orderItem.getOrderItemName());
             orderItemDTO.setPrice(orderItem.getPrice());
             orderItemDTO.setQuantity(orderItem.getQuantity());
@@ -114,17 +134,24 @@ public class OrderServiceIMPL implements OrderService {
     @Override
     @Transactional
     public void removeOrder(Long orderId, Long userId) {// just removing the order entry from this user order history
+        log.info("removing order {} , from user id={}",orderId,userId);
         User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such User Found"));
         Order order=orderRepository.findById(orderId).orElseThrow(()-> new RuntimeException("No such order found "));
-        orderRepository.delete(order);
+        if(!order.getUser().getUserId().equals(user.getUserId()))
+        {
+            log.warn("cannot remove order {} , from user id={}",orderId,userId);
+
+            throw new  RuntimeException("user order mismatch");
+        }
+        order.setDeleted(true);
+        log.info("deleted order ");
 
     }
 
     @Override
     public OrderDTO viewOrderByIdUser(Long userId, Long orderID) {
-        User user= userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such User Found"));
         Order order=orderRepository.findById(orderID).orElseThrow(()->new RuntimeException("No such Order Found"));
-        if (!order.getUser().equals(user))
+        if (!order.getUser().getUserId().equals(userId))
             throw new RuntimeException("Order User Mismatch");
 
         return mapToOrderDTO(order);
@@ -159,23 +186,25 @@ public class OrderServiceIMPL implements OrderService {
     }
 
     @Override
+    @Transactional
     public OrderDTO updateOrderStatus(Long orderId, Long restId, OrderStatus nextStatus) {
         Restaurant restaurant=restaurantRepository.findById(restId).orElseThrow(()->new RuntimeException("No such restaturant present"));
         Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such order Present"));
         if (!order.getRestaurant().equals(restaurant))
         {
+            log.warn("cannot update order status for order ={} , with restId={}",orderId,restId);
             throw new RuntimeException("You Dont have Access");
         }
         order.setStatus(nextStatus);
+        log.info("updated the order status");
         return mapToOrderDTO(order);
 
     }
 
     @Override
     public OrderStatus getOrderStatus(Long orderId, Long userId) {
-        User user= userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such User Found"));
         Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such order Present"));
-        if (!order.getUser().equals(user))
+        if (!order.getUser().getUserId().equals(userId))
         {
             throw  new RuntimeException("Order user mismatch");
         }
@@ -185,9 +214,8 @@ public class OrderServiceIMPL implements OrderService {
 
     @Override
     public Long getOrderAmount(Long orderId, Long userId) {
-        User user= userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such User Found"));
         Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such order Present"));
-        if (!order.getUser().getUserId().equals(user.getUserId()))
+        if (!order.getUser().getUserId().equals(userId))
         {
             throw  new RuntimeException("Order user mismatch");
         }
@@ -197,17 +225,24 @@ public class OrderServiceIMPL implements OrderService {
     @Override
     @Transactional
     public void cancelOrder(Long orderId, Long userId) {
-        User user= userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such User Found"));
+        log.info("started cancel order for user ={} with order id{}",userId,orderId);
         Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such order Present"));
-        if (!order.getUser().getUserId().equals(user.getUserId()))
+        if (!order.getUser().getUserId().equals(userId))
         {
             throw  new RuntimeException("Order user mismatch");
         }
-        if (order.getStatus()==OrderStatus.DELIVERED)
+
+        if(order.getStatus()==OrderStatus.CREATED)
         {
-            throw  new RuntimeException("You cannot cancel order");
+            order.setStatus(OrderStatus.CANCELED);
+            order.setPaymentStatus(PaymentStatus.CANCELED);
         }
-        order.setStatus(OrderStatus.CANCELED);
+        else
+        {
+            throw  new RuntimeException("You cannot cancel order already paid");
+        }
+
+        log.info("updated the order status for order {}",orderId);
 
 
     }
