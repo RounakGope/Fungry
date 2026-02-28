@@ -10,12 +10,15 @@ import com.fung.fungry.Repository.PaymentRepository;
 import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.PaymentService;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PaymentServiceIMPL  implements PaymentService {
+    Logger log= LoggerFactory.getLogger(PaymentServiceIMPL.class);
     @Autowired
     UserRepository userRepository;
     @Autowired
@@ -62,12 +65,13 @@ public class PaymentServiceIMPL  implements PaymentService {
     @Transactional
     @Override
     public StripeResponseDTO startPayment(Long orderId, Long userId,PaymentMode paymentMode) {
-        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No Such User Found"));
+        log.info("started startPayment for userId={}, with orderId={}",userId,orderId);
         Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such order Found"));
         if (!order.getUser().getUserId().equals(userId))
             throw new RuntimeException("Order User Mismatch");
         if (order.getStatus()!= OrderStatus.CREATED)
         {
+            log.error("Order cannot be initiated for userId={}",userId);
             throw  new RuntimeException("Order cannot be initiated for payment");
         }
         OrderDTO orderDTO=mapToOrderDTO(order);
@@ -78,15 +82,12 @@ public class PaymentServiceIMPL  implements PaymentService {
         payment.setPaymentMode(paymentMode);
         com.fung.fungry.ModelDTO.StripeResponseDTO stripeResponseDTO =stripeService.checkoutProduct(orderDTO);
         payment.setStripeSessionId(stripeResponseDTO.getSessionId());
+        log.info("Stripe session created: sessionId={}, orderId={}",
+                stripeResponseDTO.getSessionId(), orderId);
         paymentRepository.save(payment);
         orderRepository.save(order);
-
-
+        log.info("saved order for userid={}",userId);
         return stripeResponseDTO;
-    }
-    @Override
-    public PaymentStatus updatePaymentStatus(Long paymentId, PaymentStatus paymentStatus) {
-        return null;
     }
 
 

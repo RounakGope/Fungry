@@ -76,7 +76,6 @@ public class WebHookController {
         if (payment.getPaymentStatus() == PaymentStatus.SUCCESS) {
             return;
         }
-
         payment.setPaymentStatus(PaymentStatus.SUCCESS);
 
         Order order = payment.getOrder();
@@ -94,16 +93,13 @@ public class WebHookController {
                 .orElseThrow();
 
         String sessionId = session.getId();
-
         Payment payment = paymentRepository
                 .findByStripeSessionId(sessionId)
                 .orElseThrow(() -> new RuntimeException("Payment not found"));
-
         // 🛡 Prevent duplicate failure handling
         if (payment.getPaymentStatus() == PaymentStatus.FAILED) {
             return;
         }
-
         payment.setPaymentStatus(PaymentStatus.FAILED);
 
         Order order = payment.getOrder();
