@@ -9,6 +9,8 @@ import com.fung.fungry.Repository.RestaurantRepository;
 import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.RestaurantService;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +23,7 @@ import java.util.Optional;
 
 @Service
 public class RestaurantServiceIMPL  implements RestaurantService {
+    Logger log= LoggerFactory.getLogger(RestaurantServiceIMPL.class);
     @Autowired
     private RestaurantRepository restaurantRepository;
     @Autowired
@@ -48,7 +51,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     private MenuItemDTO mapToMenuDTO(MenuItem menuItem)
     {
         MenuItemDTO menuItemDTO=new MenuItemDTO();
-        menuItemDTO.setMenuItemId(menuItemDTO.getMenuItemId());
+        menuItemDTO.setMenuItemId(menuItem.getMenuItemId());
         menuItemDTO.setPrice(menuItem.getPrice());
         menuItemDTO.setFoodType(menuItem.getType());
         menuItemDTO.setFoodName(menuItem.getName());
@@ -88,9 +91,10 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
     @Override
     public List<MenuItemDTO> getMenuItem(Long restaurantId, String sortBy, String direction) {
-
+        log.info("started get menu items for restId={}",restaurantId);
         Sort sort=direction.equalsIgnoreCase("desc")?Sort.by(sortBy).descending():Sort.by(sortBy).ascending();
         List< MenuItem> menuItems = menuItemRepository.findByRestaurant_RestaurantId(restaurantId,sort);
+
         return menuItems.stream()
                 .map(this::mapToMenuDTO)
                 .toList();
@@ -99,12 +103,17 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     @Transactional
     @Override
     public RestaurantDTO addRestaurant(RestaurantCreateDTO restaurantCreateDTO, Long userId) {
-        User user=userRepository.findById(userId).orElseThrow(()-> new RuntimeException("USER NOT FOUND"));
+        log.info("started adding restaurant for userId={}",userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.error("User not found with id={}", userId);
+                    return new RuntimeException("USER NOT FOUND");
+                });
         if (user.getRole()!= UserRole.ADMIN)
         {
+
+            log.warn("cannot add restaurant as the user is not admin user={}",userId);
             throw new RuntimeException("ONLY ADMIN CAN ADD RESTAURANT");
-
-
         }
         Restaurant restaurant=new Restaurant();
         restaurant.setName(restaurantCreateDTO.getName());
@@ -112,6 +121,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         restaurant.setAddress(restaurantAddress);
 
         Restaurant savedRestaurant =restaurantRepository.save(restaurant);
+        log.info("restaurant is saved for user ={}",userId);
 
         RestaurantDTO restaurantDTO =mapToRestDTO(savedRestaurant);
         return restaurantDTO;
@@ -119,33 +129,49 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
     @Transactional
     @Override
-    public String deleteRestaurant(Long restaurantId, Long userId) {
-        User user =userRepository.findById(userId).orElseThrow(()->new RuntimeException("NO USER FOUND"));
+    public void deleteRestaurant(Long restaurantId, Long userId) {
+        log.info("started deleting restaurant for userId={}",userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.error("User not found with id={}", userId);
+                    return new RuntimeException("USER NOT FOUND");
+                });
         if(user.getRole()!=UserRole.ADMIN)
         {
+
+            log.warn("cannot delete restaurant as the user is not admin user={}",userId);
             throw  new RuntimeException("YOU ARE NOT AN ADMIN");
         }
         Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
         if(restaurant.isPresent())
         {
-
-            restaurantRepository.deleteById(userId);
+            log.info("deleted restaurant of restId={},for user ={}",restaurantId,userId);
+            restaurantRepository.deleteById(restaurantId);
+        }
+        else
+        {
+            log.warn("no such restaurant present with restarant id={}",restaurantId);
 
         }
-        return "Restaurant Cannot Be Deleted";
     }
 
     @Override
     @Transactional
     public RestaurantDTO updateRestaurant(RestaurantUpdateDTO restaurantDTO, Long userId) {
-        User user =userRepository.findById(userId).orElseThrow(()->new RuntimeException("NO USER FOUND"));
+        log.info("started updating restaurant for user={}",userId);User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.error("User not found with id={}", userId);
+                    return new RuntimeException("USER NOT FOUND");
+                });
         if(user.getRole()!=UserRole.ADMIN)
         {
+            log.warn("cannot update restaurant as the user is not admin user={}",userId);
             throw  new RuntimeException("YOU ARE NOT AN ADMIN");
         }
         Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantDTO.getId());
         if (!restaurant.isPresent())
         {
+            log.warn("no such restaurant available restId={}",restaurantDTO.getId());
             throw new RuntimeException("No such restaurant available");
         }
         RestaurantAddressDTO addressDTO=restaurantDTO.getAddressDTO();
@@ -153,6 +179,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         restaurant.get().setAddress(address);
         restaurant.get().setName(restaurantDTO.getName());
        Restaurant savedRest = restaurantRepository.save(restaurant.get());
+       log.info("saved restaurant with userId={}",userId);
 
         return mapToRestDTO(savedRest);
     }
@@ -163,17 +190,21 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     @Transactional
     @Override
     public RestaurantDTO rateRestaurant(Long userId, Long restaurantId, Integer rating) {
+        log.info("started rateRestaurant for user={} ,of restaurant ={}",userId,restaurantId);
         if(rating>5||rating<1)
         {
+            log.warn("invalid rating ={}",rating);
             throw new RuntimeException("Rating must be between 1 and 5");
         }
         Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
         if (!restaurant.isPresent())
         {
+            log.warn("no such restaurant with restId={}",restaurantId);
             throw new RuntimeException("NO SUCH RESTAURANT");
         }
         else
         {
+            log.info("started giving ratings");
             Rating ratings =ratingRepository.findByRestaurant(restaurant.get()).orElseGet(()->
             {
                 Rating r =new Rating();
@@ -186,7 +217,10 @@ public class RestaurantServiceIMPL  implements RestaurantService {
             ratings.setRatingSum(ratings.getRatingSum()+rating);
             ratings.setRatingCount(ratings.getRatingCount()+1);
            double avg=(double) ratings.getRatingSum()/ratings.getRatingCount();
+           ratings.setRatingAverage(avg);
+
            ratingRepository.save(ratings);
+            log.info("saved the rating with average of {},of restId={}",avg,restaurantId);
            return mapToRestDTO(restaurant.get());
         }
 
@@ -196,70 +230,101 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     @Override
     @Transactional
     public void addItemInMenu(MenuItemDTO itemDTO, Long restaurantId, Long userId) {
-        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such user "));
+        log.info("started add item in menu for rest id={}",restaurantId);User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.error("User not found with id={}", userId);
+                    return new RuntimeException("USER NOT FOUND");
+                });
         if(!(user.getRole()==UserRole.ADMIN||user.getRole()==UserRole.RESTAURANT_OWNER))
         {
+            log.warn("User cannot add item with userid={} for rest={}",userId,restaurantId);
             throw new RuntimeException( "Only an Admin or Owner can add Menu item");
-
         }
 
         Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
         //restaurant ownership to be added
         if(restaurant.isPresent())
         {
+
             Restaurant restaurant1=restaurant.get();
             List<MenuItem>menuItemList=restaurant1.getMenuItems();
 
             menuItemList.add(mapToMenuItem(itemDTO,restaurant1));
-            restaurantRepository.save(restaurant1);
-        }
-        else throw new RuntimeException("No such Restaurant Present");
 
+            restaurantRepository.save(restaurant1);
+            log.info("successfully added item ={} in restarant ={}",itemDTO.getMenuItemId(),restaurantId);
+        }
+        else {
+            log.warn("no such restaurant present with restarant id={}",restaurantId);
+            throw new RuntimeException("No such Restaurant Present");
+        }
 
     }
 
     @Transactional
     @Override
     public void deleteItemInMenu(Long menuItemId, Long restaurantId, Long userId) {
-        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such user "));
+        log
+                .info("started deleting item ={} by user={}",menuItemId,userId);User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.warn("User not found with id={}", userId);
+                    return new RuntimeException("USER NOT FOUND");
+                });
         if(!(user.getRole()==UserRole.ADMIN||user.getRole()==UserRole.RESTAURANT_OWNER))
         {
+            log.warn("cannot delete menu item with user ={}",userId);
             throw new RuntimeException( "Only an Admin or Owner can Delete Menu item");
 
         }
         Optional<MenuItem > menuItem=menuItemRepository.findById(menuItemId);
         if (menuItem.isPresent())
         {
+
             Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
             if (restaurant.isPresent())
             {
                 if(menuItem.get().getRestaurant().getRestaurantId().equals(restaurant.get().getRestaurantId()))
                 {
                     List<MenuItem> menuItems=restaurant.get().getMenuItems();
-                    menuItems.remove(menuItem);
+                    menuItems.remove(menuItem.get());
                     restaurantRepository.save(restaurant.get());
+                    log.info("deleted menu item with id={}, for restid={}",menuItem.get().getMenuItemId(),restaurantId);
                 }
-                else
+                else {
+                    log.warn("menu with id={} do not belong to rest with id={}",menuItem.get().getMenuItemId(),userId);
                     throw new RuntimeException("Menu item does not belong to restaurant");
+                }
 
             }
-            else
+            else {
+                log.warn("no such restaurant with restid={}",restaurantId);
                 throw new RuntimeException("No such restaurant");
+            }
         }
-        else
-            throw  new RuntimeException("Menu item not present");
+        else {
+            log.warn("no such menu item with id={}",menuItemId);
+            throw new RuntimeException("Menu item not present");
+        }
     }
 
     @Transactional
     @Override
     public MenuItemDTO updateItemInMenu(Long menuItemId, Long userId,MenuItemDTO menuItemDTO) {
-        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such user "));
+        log.info("started updating item in menu with id={} by user={}",menuItemId,userId);User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.error("User not found with id={}", userId);
+                    return new RuntimeException("USER NOT FOUND");
+                });
         if(!(user.getRole()==UserRole.ADMIN||user.getRole()==UserRole.RESTAURANT_OWNER))
         {
+            log.error("user has not access to update menu with userId={}",userId);
             throw new RuntimeException( "Only an Admin or Owner can Update Menu item");
         }
-
-        MenuItem menuItem=menuItemRepository.findById(menuItemId).orElseThrow(()->new RuntimeException("menuItem not available"));
+        MenuItem menuItem = menuItemRepository.findById(menuItemId)
+                .orElseThrow(() -> {
+                    log.warn("Menu item not found with id={}", menuItemId);
+                    return new RuntimeException("menuItem not available");
+                });
 
 
                     menuItem.setType(menuItemDTO.getFoodType());
@@ -269,6 +334,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
                     menuItem.setAvailableQuantity(menuItemDTO.getAvailableQuantity());
                     menuItem.setIsAvailable(menuItemDTO.getIsAvailable());
                     menuItemRepository.save(menuItem);
+                    log.info("updated menu with itemid={},by userid={}",menuItem.getMenuItemId(),userId);
                     return mapToMenuDTO(menuItem);
 
         }
