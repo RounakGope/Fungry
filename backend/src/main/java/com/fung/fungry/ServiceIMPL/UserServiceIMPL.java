@@ -178,6 +178,7 @@ public class UserServiceIMPL implements UserService {
         }
         if (passwordEncoder.matches(newPassword,user.getUserPasswordHash()))
         {
+            log.warn("User {} attempted to reuse old password", userId);
             throw new RuntimeException("Old Password and new Password are same");
         }
 
@@ -195,7 +196,7 @@ public class UserServiceIMPL implements UserService {
         log.warn("no such user found with userid={}",userId);
         return new RuntimeException("No User Found");
     });
-        Sort sort="descending-".equalsIgnoreCase(direction)?Sort.by(sortBy).descending():Sort.by(sortBy).ascending();
+        Sort sort="descending".equalsIgnoreCase(direction)?Sort.by(sortBy).descending():Sort.by(sortBy).ascending();
         log.info("Fetching order history for user {} page={} size={}", userId, page, size);
         Pageable pageable=PageRequest.of(page,size,sort);
         Page<Order> orderPage=orderRepository.findByUser(user,pageable);
