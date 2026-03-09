@@ -14,6 +14,8 @@ import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.UserService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +33,7 @@ import java.util.Optional;
 
 @Service
 public class UserServiceIMPL implements UserService {
+   private static final Logger log = LoggerFactory.getLogger(UserServiceIMPL.class);
     @Autowired
     UserRepository userRepository;
     @Autowired
@@ -63,13 +66,16 @@ public class UserServiceIMPL implements UserService {
     @Override
     @Transactional
     public UserDTO addUser(@Valid UserCreateDTO userDTO) {
+
         Optional<User> user=userRepository.findByEmail(userDTO.getUserEmail());
-        if (user.isPresent())
+        if (user.isPresent()) {
+            log.warn("User already present with username={}", userDTO.getUserName());
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Email Already Present"
             );
-        User newUser=new User();
+        }
+            User newUser=new User();
         newUser.setUserMail(userDTO.getUserEmail());
         Cart cart=new Cart();
         cart.setUser(newUser);
@@ -79,57 +85,80 @@ public class UserServiceIMPL implements UserService {
         newUser.setPhoneNumber(userDTO.getPHNO());
         newUser.setRole(UserRole.CUSTOMER);
         newUser.setCreatedAt(LocalDateTime.now());
-
-
+        newUser.setIsActive(true);
         userRepository.save(newUser);
+        log.info("created user with userId={}",newUser.getUserId());
         return mapToDTO(newUser);
-
-
     }
 
     @Override
     public UserDTO getUserById(Long userId) {
-        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No Such user found"));
+        log.info("Fetching user with id={}", userId);
+        User user =userRepository.findById(userId).orElseThrow(()->{
+            log.warn("no such user found with userid={}",userId);
+            return new RuntimeException("No User Found");
+        });
         return mapToDTO(user);
     }
 
     @Override
     @Transactional
     public UserDTO updateUser(Long userId, UserDTO userDTO) {
-        User user =userRepository.findById(userId).orElseThrow(()->new RuntimeException("No User Found"));
+        log.info("started update user with user id={}",userId);
+        User user =userRepository.findById(userId).orElseThrow(()->{
+            log.warn("no such user found with userid={}",userId);
+            return new RuntimeException("No User Found");
+        });
         Optional<User> existUser=userRepository.findByEmail(userDTO.getUserEmail());
         if (existUser.isPresent() && !existUser.get().getUserId().equals(user.getUserId()))
         {
+            log.warn("User already present with username={}", userDTO.getUserName());
             throw new RuntimeException("Email Already Present");
         }
         user.setUserMail(userDTO.getUserEmail());
         user.setUserName(userDTO.getUserName());
         user.setPhoneNumber(userDTO.getPhoneNumber());
         user.setUpdatedAt(LocalDateTime.now());
+        log.info("updated the user with userId={}",userId);
         return mapToDTO(user);
     }
 
     @Override
     @Transactional
     public void deleteUser(Long userId) {
-        User user =userRepository.findById(userId).orElseThrow(()->new RuntimeException("No User Found"));
-        userRepository.delete(user);
-
-
+        log.info("Deactivating user with id={}", userId);
+        User user =userRepository.findById(userId).orElseThrow(()->{
+            log.warn("no such user found with userid={}",userId);
+            return new RuntimeException("No User Found");
+        });
+        user.setIsActive(false);
+        userRepository.save(user);
+        log
+                .info("user deactivated successfully with user id={}",userId);
     }
+
 
     @Override
     public UserRole getUserRole(Long userId) {
-        User user=userRepository.findById(userId).orElseThrow(()-> new RuntimeException("No such user Found"));
+        log.info("Fetching role for user {}", userId);
+        User user =userRepository.findById(userId).orElseThrow(()->{
+            log.warn("no such user found with userid={}",userId);
+            return new RuntimeException("No User Found");
+        });
         UserRole role= user.getRole();
         return role;
     }
 
     @Override
     public UserDTO updateUserPNo(Long userId, String PHno) {
-        User user= userRepository.findById(userId).orElseThrow(()-> new RuntimeException("No such user Found"));
+        log.info("Updating phone number for user {}", userId);
+        User user =userRepository.findById(userId).orElseThrow(()->{
+            log.warn("no such user found with userid={}",userId);
+            return new RuntimeException("No User Found");
+        });
        user.setPhoneNumber(PHno);
        userRepository.save(user);
+       log.info("updated user Phone no with userId={}",userId);
        return mapToDTO(user);
 
     }
@@ -137,9 +166,14 @@ public class UserServiceIMPL implements UserService {
     @Override
     @Transactional
     public UserDTO updatePassword(Long userId, String oldPassword, String newPassword) {
-        User user= userRepository.findById(userId).orElseThrow(()-> new RuntimeException("No such user Found"));
+        log.info("User {} requested password change", userId);
+        User user =userRepository.findById(userId).orElseThrow(()->{
+            log.warn("no such user found with userid={}",userId);
+            return new RuntimeException("No User Found");
+        });
         if (!passwordEncoder.matches(oldPassword,user.getUserPasswordHash()))
         {
+            log.warn("User {} entered incorrect old password", userId);
             throw new RuntimeException("Old Password Is Incorrect");
         }
         if (passwordEncoder.matches(newPassword,user.getUserPasswordHash()))
@@ -149,6 +183,7 @@ public class UserServiceIMPL implements UserService {
 
         user.setUserPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+        log.info("Password updated successfully for user {}", userId);
 
         return mapToDTO(user);
     }
@@ -156,8 +191,12 @@ public class UserServiceIMPL implements UserService {
     @Override
     @Transactional
     public List<OrderHistoryDTO> viewOrderHistory(Long userId, Integer page, Integer size, String sortBy, String direction) {
-        User user= userRepository.findById(userId).orElseThrow(()-> new RuntimeException("No such user Found"));
+        User user =userRepository.findById(userId).orElseThrow(()->{
+        log.warn("no such user found with userid={}",userId);
+        return new RuntimeException("No User Found");
+    });
         Sort sort="descending-".equalsIgnoreCase(direction)?Sort.by(sortBy).descending():Sort.by(sortBy).ascending();
+        log.info("Fetching order history for user {} page={} size={}", userId, page, size);
         Pageable pageable=PageRequest.of(page,size,sort);
         Page<Order> orderPage=orderRepository.findByUser(user,pageable);
         return orderPage.getContent()

@@ -41,6 +41,8 @@ public class User {
     @OneToOne(mappedBy = "user",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     private Cart cart;
 
+    private Boolean isActive;
+
     @OneToMany(
             mappedBy = "user",
             cascade = CascadeType.ALL
