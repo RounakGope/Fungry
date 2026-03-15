@@ -4,7 +4,6 @@ import com.fung.fungry.Enums.UserRole;
 import com.fung.fungry.ModelDTO.*;
 import com.fung.fungry.ServiceIMPL.UserServiceIMPL;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,28 +12,29 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api-v1.0/users")
 public class UserController {
-    UserServiceIMPL userServiceIMPL;
+    private final UserServiceIMPL userServiceIMPL;
 
-    @PostMapping("/addUser")
+    @PostMapping("/")
     public ResponseEntity<UserDTO> addUser(@RequestBody UserCreateDTO userCreateDTO)
     {
         com.fung.fungry.ModelDTO.UserDTO user =userServiceIMPL.addUser(userCreateDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
-    @GetMapping("/fetchUser/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<UserDTO> fetchUser(@PathVariable Long id)
     {
         UserDTO userDTO=userServiceIMPL.getUserById(id);
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
-    @PutMapping("/updateUser/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(@PathVariable Long id,@RequestBody UserDTO userDTO)
     {
         UserDTO userDTO1=userServiceIMPL.updateUser(id, userDTO);
         return ResponseEntity.ok(userDTO1);
     }
-    @DeleteMapping("/deletUser/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id)
     {
         userServiceIMPL.deleteUser(id);
@@ -47,9 +47,9 @@ public class UserController {
         return ResponseEntity.ok(userRole);
     }
     @PutMapping("/updatePhone/{id}")
-    public ResponseEntity<UserDTO> updatePhone(@PathVariable Long id,@RequestBody String Number)
+    public ResponseEntity<UserDTO> updatePhone(@PathVariable Long id,@RequestBody PhoneDTO Number)
     {
-        UserDTO userDTO=userServiceIMPL.updateUserPNo(id,Number);
+        UserDTO userDTO=userServiceIMPL.updateUserPNo(id,Number.getNumber());
         return ResponseEntity.ok(userDTO);
     }
     @PutMapping("/updatePassword/{id}")
@@ -61,13 +61,15 @@ public class UserController {
     }
     @GetMapping("/orderHistory/{id}")
     public ResponseEntity<List<OrderHistoryDTO>> orderHistory(@PathVariable Long id
-    , @RequestParam Integer page,@RequestParam Integer size, @RequestParam String sortBy,
-                                                              @RequestParam String direction)
+    , @RequestParam (defaultValue = "0")Integer page,@RequestParam
+                                                                          (defaultValue = "15")Integer size, @RequestParam (defaultValue = "createdAt")String sortBy,
+                                                              @RequestParam (defaultValue = "descending")String direction)
     {
         List<OrderHistoryDTO> dtoList=userServiceIMPL.viewOrderHistory
                 (id,page,size,sortBy,direction);
         return ResponseEntity.ok(dtoList);
     }
+
 
 
 
