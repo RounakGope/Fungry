@@ -1,5 +1,6 @@
 package com.fung.fungry.Controller;
 
+import com.fung.fungry.Enums.UserRole;
 import com.fung.fungry.ModelDTO.UserCreateDTO;
 import com.fung.fungry.ModelDTO.UserDTO;
 import com.fung.fungry.ServiceIMPL.UserServiceIMPL;
@@ -37,6 +38,12 @@ public class UserController {
     {
         userServiceIMPL.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+    @GetMapping("/userRole/{id}")
+    public ResponseEntity<UserRole> userRole(@PathVariable Long id)
+    {
+        UserRole userRole=userServiceIMPL.getUserRole(id);
+        return ResponseEntity.ok(userRole);
     }
 
 
