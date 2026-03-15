@@ -1,15 +1,15 @@
 package com.fung.fungry.Controller;
 
 import com.fung.fungry.Enums.UserRole;
-import com.fung.fungry.ModelDTO.PasswordUpdateDTO;
-import com.fung.fungry.ModelDTO.UserCreateDTO;
-import com.fung.fungry.ModelDTO.UserDTO;
+import com.fung.fungry.ModelDTO.*;
 import com.fung.fungry.ServiceIMPL.UserServiceIMPL;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -58,6 +58,15 @@ public class UserController {
         UserDTO userDTO=userServiceIMPL.updatePassword(id,
                 passwordUpdateDTO.getOldPassword(), passwordUpdateDTO.getNewPassword());
         return ResponseEntity.ok(userDTO);
+    }
+    @GetMapping("/orderHistory/{id}")
+    public ResponseEntity<List<OrderHistoryDTO>> orderHistory(@PathVariable Long id
+    , @RequestParam Integer page,@RequestParam Integer size, @RequestParam String sortBy,
+                                                              @RequestParam String direction)
+    {
+        List<OrderHistoryDTO> dtoList=userServiceIMPL.viewOrderHistory
+                (id,page,size,sortBy,direction);
+        return ResponseEntity.ok(dtoList);
     }
 
 
