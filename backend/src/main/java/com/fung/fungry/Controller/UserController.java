@@ -1,6 +1,7 @@
 package com.fung.fungry.Controller;
 
 import com.fung.fungry.Enums.UserRole;
+import com.fung.fungry.ModelDTO.PasswordUpdateDTO;
 import com.fung.fungry.ModelDTO.UserCreateDTO;
 import com.fung.fungry.ModelDTO.UserDTO;
 import com.fung.fungry.ServiceIMPL.UserServiceIMPL;
@@ -49,6 +50,13 @@ public class UserController {
     public ResponseEntity<UserDTO> updatePhone(@PathVariable Long id,@RequestBody String Number)
     {
         UserDTO userDTO=userServiceIMPL.updateUserPNo(id,Number);
+        return ResponseEntity.ok(userDTO);
+    }
+    @PutMapping("/updatePassword/{id}")
+    public ResponseEntity<UserDTO> updatePass(@PathVariable Long id, @RequestBody PasswordUpdateDTO passwordUpdateDTO)
+    {
+        UserDTO userDTO=userServiceIMPL.updatePassword(id,
+                passwordUpdateDTO.getOldPassword(), passwordUpdateDTO.getNewPassword());
         return ResponseEntity.ok(userDTO);
     }
 
