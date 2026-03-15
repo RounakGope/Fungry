@@ -45,6 +45,13 @@ public class UserController {
         UserRole userRole=userServiceIMPL.getUserRole(id);
         return ResponseEntity.ok(userRole);
     }
+    @PutMapping("/updatePhone/{id}")
+    public ResponseEntity<UserDTO> updatePhone(@PathVariable Long id,@RequestBody String Number)
+    {
+        UserDTO userDTO=userServiceIMPL.updateUserPNo(id,Number);
+        return ResponseEntity.ok(userDTO);
+    }
+
 
 
 
