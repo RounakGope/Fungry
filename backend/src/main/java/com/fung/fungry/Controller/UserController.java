@@ -15,12 +15,17 @@ public class UserController {
     UserServiceIMPL userServiceIMPL;
 
     @PostMapping("/addUser")
-    public ResponseEntity<?> addUser(@RequestBody UserCreateDTO userCreateDTO)
+    public ResponseEntity<UserDTO> addUser(@RequestBody UserCreateDTO userCreateDTO)
     {
         com.fung.fungry.ModelDTO.UserDTO user =userServiceIMPL.addUser(userCreateDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
     @GetMapping("/fetchUser/{id}")
-    public ResponseEntity<?> fetchUser(@PathVariable )
+    public ResponseEntity<UserDTO> fetchUser(@PathVariable Long id)
+    {
+        UserDTO userDTO=userServiceIMPL.getUserById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(userDTO);
+    }
+
     
 }
