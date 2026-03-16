@@ -1,6 +1,8 @@
 package com.fung.fungry.Controller;
 
 import com.fung.fungry.ModelDTO.MenuItemDTO;
+import com.fung.fungry.ModelDTO.RestaurantCreateDTO;
+import com.fung.fungry.ModelDTO.RestaurantDTO;
 import com.fung.fungry.ServiceIMPL.RestaurantServiceIMPL;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,5 +24,12 @@ public class RestaurantController {
                 .getMenuItem(id, sortBy, direction);
         return ResponseEntity.ok(menuItemDTOS);
     }
+    @PostMapping("/{userId}")
+    public ResponseEntity<RestaurantDTO> addRest(@PathVariable Long userId ,@RequestBody RestaurantCreateDTO restaurantCreateDTO)
+    {
+        RestaurantDTO restaurantDTO=restaurantServiceIMPL.addRestaurant(restaurantCreateDTO,userId);
+        return ResponseEntity.ok(restaurantDTO);
+    }
+
 
 }
