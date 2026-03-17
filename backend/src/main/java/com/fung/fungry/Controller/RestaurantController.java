@@ -38,12 +38,16 @@ public class RestaurantController {
         return ResponseEntity.noContent().build();
     }
     @PutMapping("/{userId}")
-    public ResponseEntity<RestaurantDTO> update(@PathVariable Long userId,@RequestBody RestaurantUpdateDTO restaurantDTO)
-    {
-        RestaurantDTO restaurantDTO1=restaurantServiceIMPL.updateRestaurant(
-                restaurantDTO,userId);
+    public ResponseEntity<RestaurantDTO> update(@PathVariable Long userId,@RequestBody RestaurantUpdateDTO restaurantDTO) {
+        RestaurantDTO restaurantDTO1 = restaurantServiceIMPL.updateRestaurant(
+                restaurantDTO, userId);
         return ResponseEntity.ok(restaurantDTO1);
-
+    }
+    @PostMapping("/rate/{userId}/{restId}/{rate}")
+    public ResponseEntity<RestaurantDTO> rate(@PathVariable Long userId,@PathVariable Long restId,@PathVariable Integer rate)
+    {
+        RestaurantDTO restaurantDTO=restaurantServiceIMPL.rateRestaurant(userId, restId, rate);
+        return ResponseEntity.ok(restaurantDTO);
     }
 
 
