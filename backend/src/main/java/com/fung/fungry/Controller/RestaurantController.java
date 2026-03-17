@@ -49,6 +49,13 @@ public class RestaurantController {
         RestaurantDTO restaurantDTO=restaurantServiceIMPL.rateRestaurant(userId, restId, rate);
         return ResponseEntity.ok(restaurantDTO);
     }
+    @PostMapping("/addItem/{restId}/{userId}")
+    public ResponseEntity<Void> addItem(@PathVariable Long restId,@PathVariable Long userId,@RequestBody MenuItemDTO menuItemDTO)
+    {
+        restaurantServiceIMPL.addItemInMenu(menuItemDTO,restId,userId);
+        return ResponseEntity.noContent().build();
+    }
+
 
 
 
