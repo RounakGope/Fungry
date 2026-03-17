@@ -3,6 +3,7 @@ package com.fung.fungry.Controller;
 import com.fung.fungry.ModelDTO.MenuItemDTO;
 import com.fung.fungry.ModelDTO.RestaurantCreateDTO;
 import com.fung.fungry.ModelDTO.RestaurantDTO;
+import com.fung.fungry.ModelDTO.RestaurantUpdateDTO;
 import com.fung.fungry.ServiceIMPL.RestaurantServiceIMPL;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,14 @@ public class RestaurantController {
     {
         restaurantServiceIMPL.deleteRestaurant(restId,userId);
         return ResponseEntity.noContent().build();
+    }
+    @PutMapping("/{userId}")
+    public ResponseEntity<RestaurantDTO> update(@PathVariable Long userId,@RequestBody RestaurantUpdateDTO restaurantDTO)
+    {
+        RestaurantDTO restaurantDTO1=restaurantServiceIMPL.updateRestaurant(
+                restaurantDTO,userId);
+        return ResponseEntity.ok(restaurantDTO1);
+
     }
 
 
