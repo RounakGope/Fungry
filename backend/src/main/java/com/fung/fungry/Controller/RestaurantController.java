@@ -62,6 +62,12 @@ public class RestaurantController {
         restaurantServiceIMPL.deleteItemInMenu(itemId,restId,userId);
         return ResponseEntity.noContent().build();
     }
+    @PutMapping("/updateItem/{userId}/{itemId}")
+    public ResponseEntity<MenuItemDTO> updateItem(@PathVariable Long userId,@PathVariable Long itemId,@RequestBody MenuItemDTO menuItemDTO)
+    {
+        MenuItemDTO menuItemDTO1=restaurantServiceIMPL.updateItemInMenu(itemId,userId,menuItemDTO);
+        return ResponseEntity.ok(menuItemDTO1);
+    }
 
 
 
