@@ -7,6 +7,7 @@ import com.fung.fungry.ModelDTO.RestaurantUpdateDTO;
 import com.fung.fungry.ServiceIMPL.RestaurantServiceIMPL;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -55,6 +56,13 @@ public class RestaurantController {
         restaurantServiceIMPL.addItemInMenu(menuItemDTO,restId,userId);
         return ResponseEntity.noContent().build();
     }
+    @DeleteMapping("/deleteItem/{restId}/{userId}/{itemId}")
+    public ResponseEntity<Void> deleteItem(@PathVariable Long restId, @PathVariable Long userId, @PathVariable Long itemId)
+    {
+        restaurantServiceIMPL.deleteItemInMenu(itemId,restId,userId);
+        return ResponseEntity.noContent().build();
+    }
+
 
 
 
