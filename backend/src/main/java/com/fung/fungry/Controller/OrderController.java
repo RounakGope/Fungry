@@ -4,10 +4,7 @@ import com.fung.fungry.ModelDTO.OrderDTO;
 import com.fung.fungry.ServiceIMPL.OrderServiceIMPL;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api-v1.0/order")
@@ -24,6 +21,15 @@ public class OrderController {
        OrderDTO orderDTO=orderServiceIMPL.createOrder(cartId,userId,addressId);
        return ResponseEntity.ok(orderDTO);
    }
+   @DeleteMapping("/{orderId}/{userId}")
+    public ResponseEntity<Void > delete(@PathVariable Long orderId,
+                                        @PathVariable Long userId)
+   {
+       orderServiceIMPL.removeOrder(orderId,userId);
+       return  ResponseEntity.noContent().build();
+   }
+
+
 
 
 
