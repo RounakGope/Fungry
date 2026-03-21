@@ -53,6 +53,12 @@ public class OrderController {
         return ResponseEntity.ok(orderDTO);
     }
 
+    @GetMapping("/viewAllOrderByRest/{restId}")
+    public ResponseEntity<List<OrderDTO>> viewOrder4(@PathVariable Long restId)
+    {
+        List<OrderDTO> orderDTO=orderServiceIMPL.viewAllOrdersForRest(restId);
+        return ResponseEntity.ok(orderDTO);
+    }
 
 
 
