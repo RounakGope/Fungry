@@ -1,5 +1,6 @@
 package com.fung.fungry.Controller;
 
+import com.fung.fungry.Enums.OrderStatus;
 import com.fung.fungry.ModelDTO.OrderDTO;
 import com.fung.fungry.ServiceIMPL.OrderServiceIMPL;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +59,13 @@ public class OrderController {
     {
         List<OrderDTO> orderDTO=orderServiceIMPL.viewAllOrdersForRest(restId);
         return ResponseEntity.ok(orderDTO);
+    }
+    @GetMapping("/updateOrderStatus/{orderId}/{restId}/")
+    public ResponseEntity<OrderDTO> updateStatus(@PathVariable Long order , @PathVariable
+                                                 Long restId, @RequestParam OrderStatus orderStatus)
+    {
+        OrderDTO orderDTO=orderServiceIMPL.updateOrderStatus(order,restId,orderStatus);
+     return ResponseEntity.ok(orderDTO);
     }
 
 
