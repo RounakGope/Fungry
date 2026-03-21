@@ -5,7 +5,6 @@ import com.fung.fungry.ModelDTO.OrderDTO;
 import com.fung.fungry.ServiceIMPL.OrderServiceIMPL;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -61,11 +60,11 @@ public class OrderController {
         List<OrderDTO> orderDTO=orderServiceIMPL.viewAllOrdersForRest(restId);
         return ResponseEntity.ok(orderDTO);
     }
-    @GetMapping("/updateOrderStatus/{orderId}/{restId}/")
-    public ResponseEntity<OrderDTO> updateStatus(@PathVariable Long order , @PathVariable
+    @GetMapping("/updateOrderStatus/{orderId}/{restId}")
+    public ResponseEntity<OrderDTO> updateStatus(@PathVariable Long orderId , @PathVariable
                                                  Long restId, @RequestParam OrderStatus orderStatus)
     {
-        OrderDTO orderDTO=orderServiceIMPL.updateOrderStatus(order,restId,orderStatus);
+        OrderDTO orderDTO=orderServiceIMPL.updateOrderStatus(orderId,restId,orderStatus);
      return ResponseEntity.ok(orderDTO);
     }
     @GetMapping("/orderStatus/{orderId}/{userId}")
@@ -82,12 +81,13 @@ public class OrderController {
         return ResponseEntity.ok(amount);
     }
 
-    @PostMapping("/cancelOrder/{orderId}/{userId}")
+    @PutMapping("/cancelOrder/{orderId}/{userId}")
     public ResponseEntity<Void > cancel(@PathVariable Long orderId,@PathVariable Long userId)
     {
         orderServiceIMPL.cancelOrder(orderId,userId);
         return ResponseEntity.noContent().build();
     }
+
 
 
 
