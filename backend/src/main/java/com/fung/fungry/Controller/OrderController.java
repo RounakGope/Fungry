@@ -36,6 +36,14 @@ public class OrderController {
        OrderDTO orderDTO=orderServiceIMPL.viewOrderByIdUser(orderId,userId);
        return ResponseEntity.ok(orderDTO);
    }
+    @GetMapping("/viewOrderByRes/{restId}/{orderId}")
+    public ResponseEntity<OrderDTO> viewOrder2(@PathVariable Long restId
+            ,@PathVariable Long orderId)
+    {
+        OrderDTO orderDTO=orderServiceIMPL.viewOrderByIdUser(restId,orderId);
+        return ResponseEntity.ok(orderDTO);
+    }
+
 
 
 
