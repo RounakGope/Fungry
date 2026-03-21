@@ -29,6 +29,13 @@ public class OrderController {
        return  ResponseEntity.noContent().build();
    }
 
+   @GetMapping("/viewOrderByUser/{orderId}/{userId}")
+    public ResponseEntity<OrderDTO> viewOrder1(@PathVariable Long orderId
+   ,@PathVariable Long userId)
+   {
+       OrderDTO orderDTO=orderServiceIMPL.viewOrderByIdUser(orderId,userId);
+       return ResponseEntity.ok(orderDTO);
+   }
 
 
 
