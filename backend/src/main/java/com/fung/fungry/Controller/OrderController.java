@@ -5,6 +5,7 @@ import com.fung.fungry.ModelDTO.OrderDTO;
 import com.fung.fungry.ServiceIMPL.OrderServiceIMPL;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -80,6 +81,14 @@ public class OrderController {
         Long amount =orderServiceIMPL.getOrderAmount(orderId,userId);
         return ResponseEntity.ok(amount);
     }
+
+    @PostMapping("/cancelOrder/{orderId}/{userId}")
+    public ResponseEntity<Void > cancel(@PathVariable Long orderId,@PathVariable Long userId)
+    {
+        orderServiceIMPL.cancelOrder(orderId,userId);
+        return ResponseEntity.noContent().build();
+    }
+
 
 
 
