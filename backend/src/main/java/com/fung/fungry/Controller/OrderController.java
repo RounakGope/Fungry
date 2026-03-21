@@ -74,6 +74,13 @@ public class OrderController {
         OrderStatus orderStatus=orderServiceIMPL.getOrderStatus(orderId,userId);
         return ResponseEntity.ok(orderStatus);
     }
+    @GetMapping("/orderAmt/{orderId}/{userId}")
+    public ResponseEntity<Long> amount(@PathVariable Long orderId,@PathVariable Long userId)
+    {
+        Long amount =orderServiceIMPL.getOrderAmount(orderId,userId);
+        return ResponseEntity.ok(amount);
+    }
+
 
 
 
