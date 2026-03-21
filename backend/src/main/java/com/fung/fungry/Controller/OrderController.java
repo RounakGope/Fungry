@@ -67,6 +67,13 @@ public class OrderController {
         OrderDTO orderDTO=orderServiceIMPL.updateOrderStatus(order,restId,orderStatus);
      return ResponseEntity.ok(orderDTO);
     }
+    @GetMapping("/orderStatus/{orderId}/{userId}")
+    public ResponseEntity<OrderStatus> orderStat(@PathVariable Long orderId,
+                                                 @PathVariable Long userId)
+    {
+        OrderStatus orderStatus=orderServiceIMPL.getOrderStatus(orderId,userId);
+        return ResponseEntity.ok(orderStatus);
+    }
 
 
 
