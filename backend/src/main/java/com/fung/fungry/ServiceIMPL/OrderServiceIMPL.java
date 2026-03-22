@@ -9,6 +9,7 @@ import com.fung.fungry.ModelDTO.OrderItemDTO;
 import com.fung.fungry.Repository.*;
 import com.fung.fungry.Service.OrderService;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,20 +20,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class OrderServiceIMPL implements OrderService {
-    Logger log= LoggerFactory.getLogger(OrderServiceIMPL.class);
-    @Autowired
+    private final Logger log= LoggerFactory.getLogger(OrderServiceIMPL.class);
+    private final
     UserRepository userRepository;
-    @Autowired
+    private final
     OrderRepository orderRepository;
-    @Autowired
+    private final
     OrderItemRepository orderItemRepository;
-    @Autowired
+    private final
     CartRepository cartRepository;
-    @Autowired
+    private final
     AddressRepository addressRepository;
 
-    @Autowired
+    private final
     RestaurantRepository restaurantRepository;
     public List<OrderItem> cartToOrderItem(List<CartItem>cartItems,Order order)
     {

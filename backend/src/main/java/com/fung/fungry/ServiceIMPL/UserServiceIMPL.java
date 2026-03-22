@@ -14,6 +14,7 @@ import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.UserService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,22 +34,20 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceIMPL implements UserService {
    private static final Logger log = LoggerFactory.getLogger(UserServiceIMPL.class);
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    PasswordEncoder passwordEncoder;
-    @Autowired
-    CartRepository cartRepository;
-    @Autowired
-    OrderRepository orderRepository;
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final  OrderRepository orderRepository;
 
     public UserDTO mapToDTO(User user)
     {
         UserDTO userDTO= new UserDTO();
         userDTO.setUserName(user.getUserName());
         userDTO.setUserId(user.getUserId());
+        userDTO.setUserEmail(user.getUserMail());
         userDTO.setUserRole(user.getRole());
         userDTO.setPhoneNumber(user.getPhoneNumber());
         return userDTO;
@@ -68,7 +67,7 @@ public class UserServiceIMPL implements UserService {
     @Transactional
     public UserDTO addUser(@Valid UserCreateDTO userDTO) {
 
-        Optional<User> user=userRepository.findByEmail(userDTO.getUserEmail());
+        Optional<User> user=userRepository.findByUserMail(userDTO.getUserEmail());
         if (user.isPresent()) {
             log.warn("User already present with username={}", userDTO.getUserName());
             throw new ResponseStatusException(
@@ -110,7 +109,7 @@ public class UserServiceIMPL implements UserService {
             log.warn("no such user found with userid={}",userId);
             return new RuntimeException("No User Found");
         });
-        Optional<User> existUser=userRepository.findByEmail(userDTO.getUserEmail());
+        Optional<User> existUser=userRepository.findByUserMail(userDTO.getUserEmail());
         if (existUser.isPresent() && !existUser.get().getUserId().equals(user.getUserId()))
         {
             log.warn("User already present with username={}", userDTO.getUserName());

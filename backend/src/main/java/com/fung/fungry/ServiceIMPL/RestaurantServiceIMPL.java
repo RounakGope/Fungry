@@ -9,9 +9,9 @@ import com.fung.fungry.Repository.RestaurantRepository;
 import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.RestaurantService;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,14 +22,14 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class RestaurantServiceIMPL  implements RestaurantService {
-    Logger log= LoggerFactory.getLogger(RestaurantServiceIMPL.class);
-    @Autowired
-    private RestaurantRepository restaurantRepository;
-    @Autowired
-   private MenuItemRepository menuItemRepository;
-    @Autowired
-    private UserRepository userRepository;
+    private final Logger log= LoggerFactory.getLogger(RestaurantServiceIMPL.class);
+
+    private final RestaurantRepository restaurantRepository;
+
+    private final MenuItemRepository menuItemRepository;
+    private final UserRepository userRepository;
     private RestaurantDTO mapToRestDTO(Restaurant restaurant)
     {
         RestaurantDTO restaurantdto=new RestaurantDTO();
@@ -185,8 +185,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     }
 
 
-    @Autowired
-    RatingRepository ratingRepository;
+    private final RatingRepository ratingRepository;
     @Transactional
     @Override
     public RestaurantDTO rateRestaurant(Long userId, Long restaurantId, Integer rating) {

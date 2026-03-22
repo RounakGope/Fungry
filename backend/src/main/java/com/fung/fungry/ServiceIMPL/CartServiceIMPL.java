@@ -9,9 +9,9 @@ import com.fung.fungry.ModelDTO.CartItemDTO;
 import com.fung.fungry.Repository.*;
 import com.fung.fungry.Service.CartService;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,18 +19,19 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class CartServiceIMPL implements CartService {
    private static final Logger log= LoggerFactory.getLogger(CartServiceIMPL.class);
 
-    @Autowired
+    private final
     UserRepository userRepository;
-    @Autowired
+    private final
     CartRepository cartRepository;
-    @Autowired
+    private final
     RestaurantRepository restaurantRepository;
-    @Autowired
+    private final
     MenuItemRepository menuItemRepository;
-    @Autowired
+    private final
     CartItemRepository cartItemRepository;
     public List<CartItemDTO> cartItemDTO(List<CartItem> cartItems)
     {

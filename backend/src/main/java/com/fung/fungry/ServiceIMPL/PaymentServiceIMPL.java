@@ -7,27 +7,25 @@ import com.fung.fungry.Model.*;
 import com.fung.fungry.ModelDTO.*;
 import com.fung.fungry.Repository.OrderRepository;
 import com.fung.fungry.Repository.PaymentRepository;
-import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.PaymentService;
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@Service
+@AllArgsConstructor
 public class PaymentServiceIMPL  implements PaymentService {
-    Logger log= LoggerFactory.getLogger(PaymentServiceIMPL.class);
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    StripeService stripeService;
-    @Autowired
-    OrderRepository orderRepository;
+   private final Logger log= LoggerFactory.getLogger(PaymentServiceIMPL.class);
 
-    @Autowired
-    PaymentRepository paymentRepository;
+    private final StripeService stripeService;
+
+   private final OrderRepository orderRepository;
+
+   private final PaymentRepository paymentRepository;
     private OrderDTO mapToOrderDTO(Order order) {
         OrderDTO orderDTO=new OrderDTO();
         orderDTO.setOrderId(order.getOrderId());
