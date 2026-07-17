@@ -20,7 +20,7 @@ public class Cart {
     private List<CartItem> cartItems=new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "restaurant_id",nullable = false)
+    @JoinColumn(name = "restaurant_id",nullable = true)
     private Restaurant restaurant;
 
     @Column(name = "total_amt",nullable = false)

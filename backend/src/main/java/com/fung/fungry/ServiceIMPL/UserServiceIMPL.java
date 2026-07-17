@@ -3,6 +3,7 @@ package com.fung.fungry.ServiceIMPL;
 import com.fung.fungry.Enums.UserRole;
 import com.fung.fungry.Model.Cart;
 import com.fung.fungry.Model.Order;
+import com.fung.fungry.Model.Restaurant;
 import com.fung.fungry.Model.User;
 import com.fung.fungry.ModelDTO.OrderDTO;
 import com.fung.fungry.ModelDTO.OrderHistoryDTO;
@@ -78,7 +79,9 @@ public class UserServiceIMPL implements UserService {
             User newUser=new User();
         newUser.setUserMail(userDTO.getUserEmail());
         Cart cart=new Cart();
+        cart.setTotalAmt(0L);
         cart.setUser(newUser);
+
         newUser.setCart(cart);
         newUser.setUserName(userDTO.getUserName());
         newUser.setUserPasswordHash(passwordEncoder.encode(userDTO.getPassword()));//hash password to be set
@@ -86,6 +89,7 @@ public class UserServiceIMPL implements UserService {
         newUser.setRole(UserRole.CUSTOMER);
         newUser.setCreatedAt(LocalDateTime.now());
         newUser.setIsActive(true);
+
         userRepository.save(newUser);
         log.info("created user with userId={}",newUser.getUserId());
         return mapToDTO(newUser);
