@@ -23,11 +23,11 @@ public class CartController {
 
     // Add Item to Cart
     @PostMapping("/add/{userId}/{menuItemId}")
-    public ResponseEntity<Void> addToCart(@PathVariable Long userId,
+    public ResponseEntity<String> addToCart(@PathVariable Long userId,
                                           @PathVariable Long menuItemId) {
 
         cartServiceIMPL.addToCart(userId, menuItemId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Menu item added successfully.");
     }
 
     //Increase Quantity by 1

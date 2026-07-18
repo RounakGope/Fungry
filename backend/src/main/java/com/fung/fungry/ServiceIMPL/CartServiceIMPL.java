@@ -111,6 +111,15 @@ public class CartServiceIMPL implements CartService {
             cartItem.setMenuItem(menuItem);
             cartItems.add(cartItem);
         }
+        cart.setRestaurant(menuItem.getRestaurant());
+        long total = cart.getCartItems()
+                .stream()
+                .mapToLong(item ->
+                        item.getMenuItem().getPrice() * item.getQuantity())
+                .sum();
+
+        cart.setTotalAmt(total);
+        cart.setRestaurant(menuItem.getRestaurant());
         cartRepository.save(cart);
     }
     @Override

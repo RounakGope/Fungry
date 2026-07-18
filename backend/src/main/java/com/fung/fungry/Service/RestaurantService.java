@@ -13,8 +13,9 @@ public interface RestaurantService {
     public List<RestaurantDTO> getAllRestaurantBy(int page,int size,String direction,String sortBy);//pagination is nede
     List<MenuItemDTO> getMenuItem(Long restaurantId, String sortBy, String direction);
     public RestaurantDTO addRestaurant(RestaurantCreateDTO restaurant, Long userId);//only for admin
+    public RestaurantDTO viewRestaurant(Long restaurantId);
     public void deleteRestaurant(Long restaurantId ,Long userId);//only for admin
-    public RestaurantDTO updateRestaurant(RestaurantUpdateDTO restaurantDTO, Long userId);
+    public RestaurantDTO updateRestaurant(RestaurantUpdateDTO restaurantDTO, Long userId,Long restId);
     public RestaurantDTO rateRestaurant(Long userId,Long restaurantId,Integer rating);
     public void addItemInMenu(MenuItemDTO itemDTO,Long restaurantId,Long userId);
     public void deleteItemInMenu(Long menuItemId,Long restaurantId,Long userId);

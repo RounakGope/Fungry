@@ -51,7 +51,6 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     private MenuItemDTO mapToMenuDTO(MenuItem menuItem)
     {
         MenuItemDTO menuItemDTO=new MenuItemDTO();
-        menuItemDTO.setMenuItemId(menuItem.getMenuItemId());
         menuItemDTO.setPrice(menuItem.getPrice());
         menuItemDTO.setFoodType(menuItem.getType());
         menuItemDTO.setFoodName(menuItem.getName());
@@ -65,7 +64,6 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     {
         MenuItem menuItem=new MenuItem();
         menuItem.setRestaurant(restaurant);
-        menuItem.setMenuItemId(menuItemDTO.getMenuItemId());
         menuItem.setPrice(menuItemDTO.getPrice());
         menuItem.setType(menuItemDTO.getFoodType());
         menuItem.setName(menuItemDTO.getFoodName());
@@ -119,12 +117,31 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         restaurant.setName(restaurantCreateDTO.getName());
         RestaurantAddress restaurantAddress = mapToRestAddress(restaurantCreateDTO.getRestaurantAddressDTO());
         restaurant.setAddress(restaurantAddress);
+        Rating rating = new Rating();
+        rating.setRatingSum(0L);
+        rating.setRatingCount(0L);
+        rating.setRatingAverage(0.0);
+        rating.setRestaurant(restaurant);
+        restaurant.setRating(rating);
 
         Restaurant savedRestaurant =restaurantRepository.save(restaurant);
         log.info("restaurant is saved for user ={}",userId);
 
         RestaurantDTO restaurantDTO =mapToRestDTO(savedRestaurant);
         return restaurantDTO;
+    }
+
+    @Override
+    public RestaurantDTO viewRestaurant(Long restaurantId) {
+        Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
+        if (!restaurant.isPresent())
+        {
+            log.warn("no such restaurant available restId={}",restaurantId);
+            throw new RuntimeException("No such restaurant available");
+        }
+        RestaurantDTO restaurantDTO=mapToRestDTO(restaurant.get());
+        return restaurantDTO;
+
     }
 
     @Transactional
@@ -157,7 +174,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
     @Override
     @Transactional
-    public RestaurantDTO updateRestaurant(RestaurantUpdateDTO restaurantDTO, Long userId) {
+    public RestaurantDTO updateRestaurant(RestaurantUpdateDTO restaurantDTO, Long userId,Long restId) {
         log.info("started updating restaurant for user={}",userId);User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found with id={}", userId);
@@ -168,14 +185,14 @@ public class RestaurantServiceIMPL  implements RestaurantService {
             log.warn("cannot update restaurant as the user is not admin user={}",userId);
             throw  new RuntimeException("YOU ARE NOT AN ADMIN");
         }
-        Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantDTO.getId());
+        Optional<Restaurant> restaurant=restaurantRepository.findById(restId);
         if (!restaurant.isPresent())
         {
-            log.warn("no such restaurant available restId={}",restaurantDTO.getId());
+            log.warn("no such restaurant available restId={}",restId);
             throw new RuntimeException("No such restaurant available");
         }
-        RestaurantAddressDTO addressDTO=restaurantDTO.getAddressDTO();
-        RestaurantAddress address =mapToRestAddress(addressDTO);
+
+        RestaurantAddress address =mapToRestAddress(restaurantDTO.getAddressDTO());
         restaurant.get().setAddress(address);
         restaurant.get().setName(restaurantDTO.getName());
        Restaurant savedRest = restaurantRepository.save(restaurant.get());
@@ -251,7 +268,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
             menuItemList.add(mapToMenuItem(itemDTO,restaurant1));
 
             restaurantRepository.save(restaurant1);
-            log.info("successfully added item ={} in restarant ={}",itemDTO.getMenuItemId(),restaurantId);
+            log.info("successfully added item ={} in restarant ={}",restaurantId);
         }
         else {
             log.warn("no such restaurant present with restarant id={}",restaurantId);

@@ -12,7 +12,6 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 public class MenuItemDTO {
-    private Long menuItemId;
     private FoodCategory foodCategory;
     private FoodType foodType;
     private String foodName;

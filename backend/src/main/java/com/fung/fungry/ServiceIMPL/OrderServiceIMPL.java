@@ -83,12 +83,14 @@ public class OrderServiceIMPL implements OrderService {
         order.setCreatedAt(LocalDateTime.now());
         order.setRestaurant(cart.getRestaurant());
         order.setAmount(cart.getTotalAmt());
-        order.setStatus(OrderStatus.CREATED);
-        order.setPaymentStatus(PaymentStatus.PENDING);
+        order.setStatus(OrderStatus.DELIVERED);
+        order.setPaymentStatus(PaymentStatus.SUCCESS);
         order.setUser(user);
         order.setExpectedTimeInMinutes(10);
         orderRepository.save(order);
         log.info("created order entity for user ={} ,with order id={}",userId,order.getOrderId());
+        cart.setRestaurant(null);
+        cart.setTotalAmt(0L);
         cart.getCartItems().clear();
         cartRepository.save(cart);
         return mapToOrderDTO(order);

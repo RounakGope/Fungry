@@ -32,16 +32,22 @@ public class RestaurantController {
         RestaurantDTO restaurantDTO=restaurantServiceIMPL.addRestaurant(restaurantCreateDTO,userId);
         return ResponseEntity.ok(restaurantDTO);
     }
+    @GetMapping("/viewRestaurant/{restId}")
+    public ResponseEntity<RestaurantDTO> viewRestaurant(@PathVariable Long restId)
+    {
+        RestaurantDTO restaurantDTO = restaurantServiceIMPL.viewRestaurant(restId);
+        return ResponseEntity.ok(restaurantDTO);
+    }
     @DeleteMapping("/{restId}/{userId}")
     public ResponseEntity<Void> delete(@PathVariable Long restId,@PathVariable Long userId)
     {
         restaurantServiceIMPL.deleteRestaurant(restId,userId);
         return ResponseEntity.noContent().build();
     }
-    @PutMapping("/{userId}")
-    public ResponseEntity<RestaurantDTO> update(@PathVariable Long userId,@RequestBody RestaurantUpdateDTO restaurantDTO) {
+    @PutMapping("/{restId}/{userId}")
+    public ResponseEntity<RestaurantDTO> update(@PathVariable Long restId,@PathVariable Long userId,@RequestBody RestaurantUpdateDTO restaurantDTO) {
         RestaurantDTO restaurantDTO1 = restaurantServiceIMPL.updateRestaurant(
-                restaurantDTO, userId);
+                restaurantDTO, userId,restId);
         return ResponseEntity.ok(restaurantDTO1);
     }
     @PostMapping("/rate/{userId}/{restId}/{rate}")
