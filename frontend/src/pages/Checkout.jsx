@@ -13,7 +13,8 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import EmptyState from '../components/EmptyState'
 
 // Matches AddressDTO: addressId, zipcode, address, landmark, houseNumber, state
-const emptyAddress = { address: '', houseNumber: '', landmark: '', state: '', zipcode: '' }
+// Change zipcode to zipCode and landmark to landMark
+const emptyAddress = { address: '', houseNumber: '', landMark: '', state: '', zipCode: '' }
 
 export default function Checkout() {
   const { user } = useAuth()
@@ -108,8 +109,8 @@ export default function Checkout() {
                 />
                 <Input
                   label="Landmark"
-                  value={form.landmark}
-                  onChange={(e) => setForm({ ...form, landmark: e.target.value })}
+                  value={form.landMark}
+                  onChange={(e) => setForm({ ...form, landMark: e.target.value })}
                 />
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -122,8 +123,8 @@ export default function Checkout() {
                 <Input
                   label="Zip code"
                   type="number"
-                  value={form.zipcode}
-                  onChange={(e) => setForm({ ...form, zipcode: e.target.value })}
+                  value={form.zipCode}
+                  onChange={(e) => setForm({ ...form, zipCode: e.target.value })}
                   required
                 />
               </div>

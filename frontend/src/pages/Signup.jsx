@@ -14,6 +14,7 @@ export default function Signup() {
   const [form, setForm] = useState({
     username: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
   })
@@ -31,8 +32,9 @@ export default function Signup() {
     setLoading(true)
     try {
       await usersApi.createUser({
-        username: form.username,
-        email: form.email,
+        userName: form.username,
+        userEmail: form.email,
+        phoneNumber: form.phone,
         password: form.password,
       })
       await authApi.login({ userEmail: form.email, password: form.password })
@@ -54,6 +56,7 @@ export default function Signup() {
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <Input label="Username" name="username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required />
           <Input label="Email" name="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+          <Input label="Phone number" name="phone" type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
           <Input label="Password" name="password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
           <Input label="Confirm password" name="confirmPassword" type="password" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} required />
           <Button type="submit" className="w-full" disabled={loading}>
