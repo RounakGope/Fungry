@@ -51,6 +51,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     private MenuItemDTO mapToMenuDTO(MenuItem menuItem)
     {
         MenuItemDTO menuItemDTO=new MenuItemDTO();
+        menuItemDTO.setMenuItemId(menuItem.getMenuItemId());
         menuItemDTO.setPrice(menuItem.getPrice());
         menuItemDTO.setFoodType(menuItem.getType());
         menuItemDTO.setFoodName(menuItem.getName());
@@ -63,6 +64,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     private MenuItem mapToMenuItem(MenuItemDTO menuItemDTO,Restaurant restaurant)
     {
         MenuItem menuItem=new MenuItem();
+        menuItem.setMenuItemId(menuItemDTO.getMenuItemId());
         menuItem.setRestaurant(restaurant);
         menuItem.setPrice(menuItemDTO.getPrice());
         menuItem.setType(menuItemDTO.getFoodType());
@@ -242,10 +244,24 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
 
     }
+    private MenuItem mapToMenuItemCreate(MenuItemCreateDTO menuItemDTO, Restaurant restaurant)
+    {
+        MenuItem menuItem = new MenuItem();
+        // menuItemId intentionally NOT set — DB generates it on save
+        menuItem.setRestaurant(restaurant);
+        menuItem.setPrice(menuItemDTO.getPrice());
+        menuItem.setType(menuItemDTO.getFoodType());
+        menuItem.setName(menuItemDTO.getFoodName());
+        menuItem.setCategory(menuItemDTO.getFoodCategory());
+        menuItem.setIsAvailable(menuItemDTO.getIsAvailable());
+        menuItem.setAvailableQuantity(menuItemDTO.getAvailableQuantity());
+
+        return menuItem;
+    }
 
     @Override
     @Transactional
-    public void addItemInMenu(MenuItemDTO itemDTO, Long restaurantId, Long userId) {
+    public void addItemInMenu(MenuItemCreateDTO itemDTO, Long restaurantId, Long userId) {
         log.info("started add item in menu for rest id={}",restaurantId);User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found with id={}", userId);
@@ -256,17 +272,13 @@ public class RestaurantServiceIMPL  implements RestaurantService {
             log.warn("User cannot add item with userid={} for rest={}",userId,restaurantId);
             throw new RuntimeException( "Only an Admin or Owner can add Menu item");
         }
-
         Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
         //restaurant ownership to be added
         if(restaurant.isPresent())
         {
-
             Restaurant restaurant1=restaurant.get();
             List<MenuItem>menuItemList=restaurant1.getMenuItems();
-
-            menuItemList.add(mapToMenuItem(itemDTO,restaurant1));
-
+            menuItemList.add(mapToMenuItemCreate(itemDTO,restaurant1));
             restaurantRepository.save(restaurant1);
             log.info("successfully added item ={} in restarant ={}",restaurantId);
         }
@@ -274,7 +286,6 @@ public class RestaurantServiceIMPL  implements RestaurantService {
             log.warn("no such restaurant present with restarant id={}",restaurantId);
             throw new RuntimeException("No such Restaurant Present");
         }
-
     }
 
     @Transactional

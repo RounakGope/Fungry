@@ -1,9 +1,6 @@
 package com.fung.fungry.Controller;
 
-import com.fung.fungry.ModelDTO.MenuItemDTO;
-import com.fung.fungry.ModelDTO.RestaurantCreateDTO;
-import com.fung.fungry.ModelDTO.RestaurantDTO;
-import com.fung.fungry.ModelDTO.RestaurantUpdateDTO;
+import com.fung.fungry.ModelDTO.*;
 import com.fung.fungry.ServiceIMPL.RestaurantServiceIMPL;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +8,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api-v1.0/restaurant")
@@ -25,6 +23,20 @@ public class RestaurantController {
         List<MenuItemDTO> menuItemDTOS=restaurantServiceIMPL
                 .getMenuItem(id, sortBy, direction);
         return ResponseEntity.ok(menuItemDTOS);
+    }
+    @GetMapping("/all")
+    public ResponseEntity<List<RestaurantDTO>> getAllRestaurant(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "asc") String dir,
+            @RequestParam(defaultValue = "restaurantId") String sort
+    )
+    {
+        List<RestaurantDTO> all =
+                restaurantServiceIMPL.getAllRestaurantBy(page,size,dir,sort);
+
+            return ResponseEntity.ok(all);
+
     }
     @PostMapping("/{userId}")
     public ResponseEntity<RestaurantDTO> addRest(@PathVariable Long userId ,@RequestBody RestaurantCreateDTO restaurantCreateDTO)
@@ -57,7 +69,7 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurantDTO);
     }
     @PostMapping("/addItem/{restId}/{userId}")
-    public ResponseEntity<Void> addItem(@PathVariable Long restId,@PathVariable Long userId,@RequestBody MenuItemDTO menuItemDTO)
+    public ResponseEntity<Void> addItem(@PathVariable Long restId,@PathVariable Long userId,@RequestBody MenuItemCreateDTO menuItemDTO)
     {
         restaurantServiceIMPL.addItemInMenu(menuItemDTO,restId,userId);
         return ResponseEntity.noContent().build();

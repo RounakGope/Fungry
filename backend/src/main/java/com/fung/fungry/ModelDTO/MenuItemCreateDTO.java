@@ -2,19 +2,15 @@ package com.fung.fungry.ModelDTO;
 
 import com.fung.fungry.Enums.FoodCategory;
 import com.fung.fungry.Enums.FoodType;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
-public class MenuItemDTO {
+public class MenuItemCreateDTO {
     private FoodCategory foodCategory;
     private FoodType foodType;
-    private Long menuItemId;
     private String foodName;
     private Integer availableQuantity;
     private Long price;
