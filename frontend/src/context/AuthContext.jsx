@@ -78,8 +78,8 @@ export function AuthProvider({ children }) {
   }
 
   const refreshRestaurant = async () => {
-    if (!user?.userId) return null
-    const rest = await restaurantApi.getRestaurantByOwner(user.userId)
+    if (!user?.id) return null
+    const rest = await restaurantApi.getRestaurantByOwner(user.id)
     setRestaurant(rest)
     if (rest?.id) {
       setUser((prev) => ({ ...prev, restaurantId: rest.id }))

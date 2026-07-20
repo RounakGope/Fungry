@@ -9,7 +9,9 @@ import Card from '../components/Card'
 import Input from '../components/Input'
 import Modal from '../components/Modal'
 import LoadingSpinner from '../components/LoadingSpinner'
-const emptyAddress = { houseNumber: '', address: '', landmark: '', state: '', zipcode: '' }
+
+const emptyAddress = { houseNumber: '', address: '', landMark: '', state: '', zipCode: '', country: '' }
+
 export default function Profile() {
   const { user, refreshMe } = useAuth()
   const toast = useToast()
@@ -73,7 +75,7 @@ export default function Profile() {
       const payload = {
         ...addressForm,
         houseNumber: addressForm.houseNumber === '' ? null : Number(addressForm.houseNumber),
-        zipcode: addressForm.zipcode === '' ? null : Number(addressForm.zipcode),
+        zipCode: addressForm.zipCode === '' ? null : Number(addressForm.zipCode),
       }
       if (editingId) {
         await addressApi.updateAddress(editingId, user.id, { ...payload, addressId: editingId })
@@ -106,15 +108,15 @@ export default function Profile() {
     }
   }
 
-
   const startEdit = (addr) => {
     setEditingId(addr.addressId)
     setAddressForm({
-      houseNumber: addr.houseNumber,
-      address: addr.address,
-      landmark: addr.landmark,
-      state: addr.state,
-      zipcode: addr.zipcode,
+      houseNumber: addr.houseNumber ?? '',
+      address: addr.address ?? '',
+      landMark: addr.landMark ?? '',
+      state: addr.state ?? '',
+      zipCode: addr.zipCode ?? '',
+      country: addr.country ?? '',
     })
   }
 
@@ -127,8 +129,8 @@ export default function Profile() {
       <Card>
         <h2 className="text-sm font-semibold text-gray-900">Account</h2>
         <dl className="mt-3 space-y-2 text-sm">
-          <div className="flex justify-between"><dt className="text-gray-500">Username</dt><dd>{user.userName}</dd></div>
-          <div className="flex justify-between"><dt className="text-gray-500">Email</dt><dd>{user.userEmail}</dd></div>
+          <div className="flex justify-between"><dt className="text-gray-500">Username</dt><dd>{user.username}</dd></div>
+          <div className="flex justify-between"><dt className="text-gray-500">Email</dt><dd>{user.email}</dd></div>
         </dl>
       </Card>
 
@@ -178,7 +180,7 @@ export default function Profile() {
             <Card key={addr.addressId} className="flex items-start justify-between">
               <div className="text-sm">
                 <p className="font-medium text-gray-900">{addr.houseNumber}, {addr.address}</p>
-                <p className="text-gray-500">{addr.landmark && `${addr.landmark}, `}{addr.state} {addr.zipcode}</p>
+                <p className="text-gray-500">{addr.landMark && `${addr.landMark}, `}{addr.state} {addr.zipCode}</p>
               </div>
               <div className="flex gap-2">
                 <Button size="sm" variant="secondary" onClick={() => startEdit(addr)}>Edit</Button>
