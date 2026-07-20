@@ -46,7 +46,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api-v1.0/auth/**").permitAll()
-                        .requestMatchers( "/api-v1.0/users/").permitAll() // registration
+                        .requestMatchers( "/api-v1.0/users").permitAll() // registration
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(restAuthEntryPoint));

@@ -16,7 +16,7 @@ import java.util.List;
 public class UserController {
     private final UserServiceIMPL userServiceIMPL;
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<UserDTO> addUser(@RequestBody UserCreateDTO userCreateDTO)
     {
         com.fung.fungry.ModelDTO.UserDTO user =userServiceIMPL.addUser(userCreateDTO);

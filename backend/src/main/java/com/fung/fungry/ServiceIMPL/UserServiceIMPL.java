@@ -85,7 +85,7 @@ public class UserServiceIMPL implements UserService {
         newUser.setCart(cart);
         newUser.setUserName(userDTO.getUserName());
         newUser.setUserPasswordHash(passwordEncoder.encode(userDTO.getPassword()));//hash password to be set
-        newUser.setPhoneNumber(userDTO.getPHNO());
+        newUser.setPhoneNumber(userDTO.getPhoneNumber());
         newUser.setRole(UserRole.CUSTOMER);
         newUser.setCreatedAt(LocalDateTime.now());
         newUser.setIsActive(true);
