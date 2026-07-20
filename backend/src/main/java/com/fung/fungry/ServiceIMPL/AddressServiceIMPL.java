@@ -28,8 +28,8 @@ public class AddressServiceIMPL implements AddressService {
         addressDTO.setAddressId(address.getAddressId());
         addressDTO.setState(address.getAddress());
         addressDTO.setAddress(address.getAddress());
-        addressDTO.setLandmark(address.getLandmark());
-        addressDTO.setZipcode(address.getZipcode());
+        addressDTO.setLandMark(address.getLandmark());
+        addressDTO.setZipCode(address.getZipcode());
         addressDTO.setHouseNumber(address.getHouseNumber());
         return addressDTO;
     }
@@ -107,9 +107,9 @@ public class AddressServiceIMPL implements AddressService {
 
         address.setAddress(addressDTO.getAddress());
         address.setState(addressDTO.getState());
-        address.setLandmark(addressDTO.getLandmark());
+        address.setLandmark(addressDTO.getLandMark());
         address.setHouseNumber(addressDTO.getHouseNumber());
-        address.setZipcode(addressDTO.getZipcode());
+        address.setZipcode(addressDTO.getZipCode());
         addressRepository.save(address);
         log.info("Address {} updated successfully for user {}",
                 addressId, userId);

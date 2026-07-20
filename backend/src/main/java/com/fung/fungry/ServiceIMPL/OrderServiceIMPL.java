@@ -111,9 +111,9 @@ public class OrderServiceIMPL implements OrderService {
     private AddressDTO mapToAddressDTO(Address address) {
         AddressDTO addressDTO=new AddressDTO();
         addressDTO.setAddress(address.getAddress());
-        addressDTO.setZipcode(address.getZipcode());
+        addressDTO.setZipCode(address.getZipcode());
         addressDTO.setState(address.getState());
-        addressDTO.setLandmark(address.getLandmark());
+        addressDTO.setLandMark(address.getLandmark());
         addressDTO.setHouseNumber(address.getHouseNumber());
         return addressDTO;
 

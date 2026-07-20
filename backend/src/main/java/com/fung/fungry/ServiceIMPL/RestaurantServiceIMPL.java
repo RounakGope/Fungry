@@ -30,10 +30,19 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
     private final MenuItemRepository menuItemRepository;
     private final UserRepository userRepository;
+    private void assertCanManage(Restaurant restaurant, User user) {
+        boolean isOwner = restaurant.getOwner() != null
+                && restaurant.getOwner().getUserId().equals(user.getUserId());
+        if (user.getRole() != UserRole.ADMIN && !isOwner) {
+            throw new RuntimeException("Not authorized to manage this restaurant");
+        }
+    }
     private RestaurantDTO mapToRestDTO(Restaurant restaurant)
     {
         RestaurantDTO restaurantdto=new RestaurantDTO();
         restaurantdto.setRestaurantId(restaurant.getRestaurantId());
+        restaurantdto.setCuisine(restaurant.getCuisine());
+        restaurantdto.setDescription(restaurant.getDescription());
         restaurantdto.setName(restaurant.getName());
         restaurantdto.setRating(restaurant.getRating().getRatingAverage());
         return restaurantdto;
@@ -102,14 +111,14 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
     @Transactional
     @Override
-    public RestaurantDTO addRestaurant(RestaurantCreateDTO restaurantCreateDTO, Long userId) {
+    public RestaurantDTO addRestaurant(RestaurantCreateDTO restaurantCreateDTO, Long adminId,Long userId) {
         log.info("started adding restaurant for userId={}",userId);
-        User user = userRepository.findById(userId)
+        User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> {
                     log.error("User not found with id={}", userId);
-                    return new RuntimeException("USER NOT FOUND");
+                    return new RuntimeException("ADMIN NOT FOUND");
                 });
-        if (user.getRole()!= UserRole.ADMIN)
+        if (admin.getRole()!= UserRole.ADMIN)
         {
 
             log.warn("cannot add restaurant as the user is not admin user={}",userId);
@@ -117,6 +126,9 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         }
         Restaurant restaurant=new Restaurant();
         restaurant.setName(restaurantCreateDTO.getName());
+        restaurant.setOwner(userRepository.findById(userId).orElseThrow());
+        restaurant.setCuisine(restaurantCreateDTO.getCuisine());
+        restaurant.setDescription(restaurantCreateDTO.getDescription());
         RestaurantAddress restaurantAddress = mapToRestAddress(restaurantCreateDTO.getRestaurantAddressDTO());
         restaurant.setAddress(restaurantAddress);
         Rating rating = new Rating();
@@ -182,20 +194,20 @@ public class RestaurantServiceIMPL  implements RestaurantService {
                     log.error("User not found with id={}", userId);
                     return new RuntimeException("USER NOT FOUND");
                 });
-        if(user.getRole()!=UserRole.ADMIN)
-        {
-            log.warn("cannot update restaurant as the user is not admin user={}",userId);
-            throw  new RuntimeException("YOU ARE NOT AN ADMIN");
-        }
+
         Optional<Restaurant> restaurant=restaurantRepository.findById(restId);
         if (!restaurant.isPresent())
         {
             log.warn("no such restaurant available restId={}",restId);
             throw new RuntimeException("No such restaurant available");
         }
+        assertCanManage(restaurant.get(),user);
 
         RestaurantAddress address =mapToRestAddress(restaurantDTO.getAddressDTO());
         restaurant.get().setAddress(address);
+        restaurant.get().setDescription(restaurantDTO.getDescription());
+        restaurant.get().setCuisine(restaurantDTO.getCuisine());
+        restaurant.get().setName(restaurantDTO.getName());
         restaurant.get().setName(restaurantDTO.getName());
        Restaurant savedRest = restaurantRepository.save(restaurant.get());
        log.info("saved restaurant with userId={}",userId);

@@ -11,4 +11,7 @@ public class RestaurantDTO {
     private Long restaurantId;
     private String name;
     private Double rating;
+
+    private String cuisine;
+    private String description;
 }

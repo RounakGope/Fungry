@@ -22,6 +22,16 @@ public class Restaurant {
     @Column(name = "restaurant_name",nullable = false)
     private String name;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
+    @Column(name = "cuisine")
+    private String cuisine;
+
+
+    @Column(name = "description", length = 1000)
+    private String description;
+
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "restaurant",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Cart> cartList;
 

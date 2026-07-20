@@ -13,6 +13,9 @@ import java.util.List;
 @NoArgsConstructor
 public class RestaurantCreateDTO {
     private String name;
+
+    private String cuisine;
+    private String description;
     private RestaurantAddressDTO restaurantAddressDTO;
 
 

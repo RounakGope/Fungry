@@ -9,9 +9,9 @@ import lombok.ToString;
 @ToString
 public class AddressDTO {
     private Long addressId;
-    private Integer zipcode;
+    private Integer zipCode;
     private String address;
-    private String landmark;
+    private String landMark;
     private Integer houseNumber;
     private String state;
     

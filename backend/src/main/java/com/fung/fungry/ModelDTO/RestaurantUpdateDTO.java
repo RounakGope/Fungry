@@ -10,6 +10,8 @@ import lombok.Setter;
 public class RestaurantUpdateDTO {
     private String name;
     private Long id;
+    private String description;
+    private String cuisine;
     private RestaurantAddressDTO addressDTO;
 
 }

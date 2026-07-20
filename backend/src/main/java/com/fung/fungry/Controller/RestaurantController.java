@@ -38,10 +38,10 @@ public class RestaurantController {
             return ResponseEntity.ok(all);
 
     }
-    @PostMapping("/{userId}")
-    public ResponseEntity<RestaurantDTO> addRest(@PathVariable Long userId ,@RequestBody RestaurantCreateDTO restaurantCreateDTO)
+    @PostMapping("/{adminId}/{userId}")
+    public ResponseEntity<RestaurantDTO> addRest(@PathVariable Long adminId ,@PathVariable Long userId ,@RequestBody RestaurantCreateDTO restaurantCreateDTO)
     {
-        RestaurantDTO restaurantDTO=restaurantServiceIMPL.addRestaurant(restaurantCreateDTO,userId);
+        RestaurantDTO restaurantDTO=restaurantServiceIMPL.addRestaurant(restaurantCreateDTO,adminId,userId);
         return ResponseEntity.ok(restaurantDTO);
     }
     @GetMapping("/viewRestaurant/{restId}")
