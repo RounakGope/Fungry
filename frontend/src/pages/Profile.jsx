@@ -37,7 +37,7 @@ export default function Profile() {
     e.preventDefault()
     setSaving(true)
     try {
-      await usersApi.updatePhone(user.id, { phone })
+      await usersApi.updatePhone(user.id, { number: phone })
       await refreshMe()
       toast.success('Phone updated')
     } catch (err) {
@@ -56,7 +56,7 @@ export default function Profile() {
     setSaving(true)
     try {
       await usersApi.updatePassword(user.id, {
-        currentPassword: passwords.currentPassword,
+        oldPassword: passwords.currentPassword,
         newPassword: passwords.newPassword,
       })
       setPasswords({ currentPassword: '', newPassword: '', confirm: '' })
