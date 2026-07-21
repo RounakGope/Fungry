@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import * as authApi from '../api/auth'
 import * as usersApi from '../api/users'
@@ -14,6 +14,7 @@ export function AuthProvider({ children }) {
   const [restaurant, setRestaurant] = useState(null)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+  const initializedRef = useRef(false)
 
   const clearAuth = useCallback(() => {
     setUser(null)
@@ -21,6 +22,7 @@ export function AuthProvider({ children }) {
     setRestaurant(null)
   }, [])
 
+  // Does NOT call setUser — avoids triggering re-renders that cause infinite loops
   const fetchRoleAndRestaurant = useCallback(async (userData) => {
     const userRole = normalizeRole(await usersApi.getUserRole(userData.id))
     setRole(userRole)
@@ -29,11 +31,7 @@ export function AuthProvider({ children }) {
       try {
         const rest = await restaurantApi.getRestaurantByOwner(userData.id)
         setRestaurant(rest)
-        if (rest?.id && !userData.restaurantId) {
-          setUser((prev) => ({ ...prev, restaurantId: rest.id }))
-        }
       } catch {
-        // Owner has no restaurant assigned yet — not an auth failure.
         setRestaurant(null)
       }
     } else {
@@ -55,16 +53,19 @@ export function AuthProvider({ children }) {
     }
   }, [clearAuth, fetchRoleAndRestaurant])
 
+  // Run once on mount only
+  useEffect(() => {
+    if (initializedRef.current) return
+    initializedRef.current = true
+    refreshMe().finally(() => setLoading(false))
+  }, [])
+
   useEffect(() => {
     setUnauthorizedHandler(() => {
       clearAuth()
       navigate('/login', { replace: true })
     })
   }, [clearAuth, navigate])
-
-  useEffect(() => {
-    refreshMe().finally(() => setLoading(false))
-  }, [refreshMe])
 
   const login = async (credentials) => {
     const userData = await authApi.login(credentials)
@@ -83,13 +84,10 @@ export function AuthProvider({ children }) {
   }
 
   const refreshRestaurant = async () => {
-    if (!user?.id) return null
+    if (!user?.id) return null                                    // user.id — set by mapUser in auth.js
     try {
       const rest = await restaurantApi.getRestaurantByOwner(user.id)
       setRestaurant(rest)
-      if (rest?.id) {
-        setUser((prev) => ({ ...prev, restaurantId: rest.id }))
-      }
       return rest
     } catch {
       setRestaurant(null)
@@ -112,7 +110,7 @@ export function AuthProvider({ children }) {
       refreshRestaurant,
       setRestaurant,
     }),
-    [user, role, restaurant, loading, refreshMe]
+    [user, role, restaurant, loading]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as restaurantApi from '../api/restaurant'
+import * as orderApi from '../api/order'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { formatCurrency, getErrorMessage } from '../utils/constants'
@@ -9,8 +10,17 @@ import Input from '../components/Input'
 import Modal from '../components/Modal'
 import LoadingSpinner from '../components/LoadingSpinner'
 import RestaurantOnboarding from './RestaurantOnboarding'
+const FOOD_CATEGORIES = ['BREAD', 'MAIN_COURSE', 'INDIAN', 'CONTINENTAL', 'CHINESE', 'DESERT']
+const FOOD_TYPES = ['VEG', 'NON_VEG']
 
-const emptyItem = { name: '', description: '', price: '', available: true }
+const emptyItem = {
+  foodName: '',
+  price: '',
+  availableQuantity: '',
+  foodCategory: '',
+  foodType: '',
+  isAvailable: true,
+}
 
 const TABS = [
   { key: 'orders', label: 'Current orders' },
@@ -18,28 +28,36 @@ const TABS = [
   { key: 'details', label: 'Restaurant details' },
 ]
 
-const ORDER_FLOW = ['PENDING', 'ACCEPTED', 'PREPARING', 'READY', 'COMPLETED']
+const ORDER_FLOW = ['PLACED', 'CONFIRMED', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED']
 
 const STATUS_STYLES = {
-  PENDING: 'bg-amber-100 text-amber-800',
-  ACCEPTED: 'bg-blue-100 text-blue-800',
+  PLACED: 'bg-amber-100 text-amber-800',
+  CREATED: 'bg-amber-100 text-amber-800',
+  PAYMENT_PENDING: 'bg-amber-100 text-amber-800',
+  CONFIRMED: 'bg-blue-100 text-blue-800',
   PREPARING: 'bg-blue-100 text-blue-800',
-  READY: 'bg-green-100 text-green-800',
-  COMPLETED: 'bg-gray-100 text-gray-600',
-  CANCELLED: 'bg-red-100 text-red-700',
+  OUT_FOR_DELIVERY: 'bg-blue-100 text-blue-800',
+  DELIVERED: 'bg-green-100 text-green-800',
+  CANCELED: 'bg-red-100 text-red-700',
 }
 
 export default function RestaurantDashboard() {
   const { user, restaurant, refreshRestaurant, setRestaurant } = useAuth()
   const toast = useToast()
+  const fetchedRef = useRef(false)
 
   const [loading, setLoading] = useState(!restaurant)
   const [tab, setTab] = useState('orders')
 
   useEffect(() => {
-    if (!restaurant) refreshRestaurant().finally(() => setLoading(false))
-    else setLoading(false)
-  }, [restaurant?.id])
+    if (fetchedRef.current) return
+    fetchedRef.current = true
+    if (!restaurant) {
+      refreshRestaurant().finally(() => setLoading(false))
+    } else {
+      setLoading(false)
+    }
+  }, [])
 
   if (loading) return <LoadingSpinner />
   if (!restaurant) return <RestaurantOnboarding />
@@ -67,23 +85,34 @@ export default function RestaurantDashboard() {
         ))}
       </div>
 
-      {tab === 'orders' && <OrdersTab restaurant={restaurant} userId={user.userId} toast={toast} />}
-      {tab === 'menu' && <MenuTab restaurant={restaurant} userId={user.userId} toast={toast} />}
+      {tab === 'orders' && (
+        <OrdersTab restaurant={restaurant} toast={toast} />
+      )}
+      {tab === 'menu' && (
+        <MenuTab restaurant={restaurant} userId={user.id} toast={toast} />
+      )}
       {tab === 'details' && (
-        <DetailsTab restaurant={restaurant} setRestaurant={setRestaurant} userId={user.userId} toast={toast} />
+        <DetailsTab
+          restaurant={restaurant}
+          setRestaurant={setRestaurant}
+          userId={user.id}
+          toast={toast}
+        />
       )}
     </div>
   )
 }
 
-function OrdersTab({ restaurant, userId, toast }) {
+// ─── Orders Tab ───────────────────────────────────────────────────────────────
+
+function OrdersTab({ restaurant, toast }) {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [updatingId, setUpdatingId] = useState(null)
 
   const loadOrders = async () => {
     try {
-      const data = await restaurantApi.getRestaurantOrders(restaurant.id)
+      const data = await orderApi.getOrdersByRestaurant(restaurant.restaurantId)
       setOrders(data)
     } catch (err) {
       toast.error(getErrorMessage(err))
@@ -94,9 +123,9 @@ function OrdersTab({ restaurant, userId, toast }) {
 
   useEffect(() => {
     loadOrders()
-    const interval = setInterval(loadOrders, 15000) // poll for new orders
+    const interval = setInterval(loadOrders, 15000)
     return () => clearInterval(interval)
-  }, [restaurant.id])
+  }, [restaurant.restaurantId])
 
   const nextStatus = (status) => {
     const idx = ORDER_FLOW.indexOf(status)
@@ -106,9 +135,9 @@ function OrdersTab({ restaurant, userId, toast }) {
   const handleAdvance = async (order) => {
     const next = nextStatus(order.status)
     if (!next) return
-    setUpdatingId(order.id)
+    setUpdatingId(order.orderId)
     try {
-      await restaurantApi.updateOrderStatus(order.id, userId, next)
+      await orderApi.updateOrderStatus(order.orderId, restaurant.restaurantId, next)
       toast.success(`Order marked ${next.toLowerCase()}`)
       await loadOrders()
     } catch (err) {
@@ -119,9 +148,9 @@ function OrdersTab({ restaurant, userId, toast }) {
   }
 
   const handleCancel = async (order) => {
-    setUpdatingId(order.id)
+    setUpdatingId(order.orderId)
     try {
-      await restaurantApi.updateOrderStatus(order.id, userId, 'CANCELLED')
+      await orderApi.updateOrderStatus(order.orderId, restaurant.restaurantId, 'CANCELLED')
       toast.success('Order cancelled')
       await loadOrders()
     } catch (err) {
@@ -139,41 +168,68 @@ function OrdersTab({ restaurant, userId, toast }) {
   return (
     <div className="space-y-6">
       <section>
-        <h2 className="mb-3 text-sm font-semibold text-gray-900">Active orders ({active.length})</h2>
+        <h2 className="mb-3 text-sm font-semibold text-gray-900">
+          Active orders ({active.length})
+        </h2>
         {active.length === 0 ? (
-          <Card><p className="text-sm text-gray-500">No active orders right now.</p></Card>
+          <Card>
+            <p className="text-sm text-gray-500">No active orders right now.</p>
+          </Card>
         ) : (
           <div className="space-y-3">
             {active.map((order) => (
-              <Card key={order.id}>
+              <Card key={order.orderId}>
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-medium text-gray-900">Order #{order.id}</p>
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[order.status] || 'bg-gray-100 text-gray-600'}`}>
+                      <p className="font-medium text-gray-900">Order #{order.orderId}</p>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          STATUS_STYLES[order.status] || 'bg-gray-100 text-gray-600'
+                        }`}
+                      >
                         {order.status}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-500">{order.customerName}</p>
-                    <p className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleTimeString()}</p>
+                    {order.expecetedTimeInMinutes && (
+                      <p className="text-xs text-gray-400">
+                        ETA: {order.expecetedTimeInMinutes} mins
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-400">
+                      {new Date(order.createdTime).toLocaleTimeString()}
+                    </p>
                   </div>
-                  <p className="font-semibold text-gray-900">{formatCurrency(order.totalAmount)}</p>
+                  <p className="font-semibold text-gray-900">
+                    {formatCurrency(order.totalAmt)}
+                  </p>
                 </div>
 
                 <ul className="mt-3 space-y-1 border-t border-gray-100 pt-3 text-sm text-gray-600">
-                  {order.items?.map((it, i) => (
-                    <li key={i}>{it.quantity}× {it.name}</li>
+                  {order.orderItemDTO?.map((it) => (
+                    <li key={it.orderItemId}>
+                      {it.quantity}× {it.name} — {formatCurrency(it.price)}
+                    </li>
                   ))}
                 </ul>
 
                 <div className="mt-3 flex gap-2">
                   {nextStatus(order.status) && (
-                    <Button size="sm" disabled={updatingId === order.id} onClick={() => handleAdvance(order)}>
+                    <Button
+                      size="sm"
+                      disabled={updatingId === order.orderId}
+                      onClick={() => handleAdvance(order)}
+                    >
                       Mark {nextStatus(order.status).toLowerCase()}
                     </Button>
                   )}
                   {order.status === 'PENDING' && (
-                    <Button size="sm" variant="danger" disabled={updatingId === order.id} onClick={() => handleCancel(order)}>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      disabled={updatingId === order.orderId}
+                      onClick={() => handleCancel(order)}
+                    >
                       Reject
                     </Button>
                   )}
@@ -189,12 +245,18 @@ function OrdersTab({ restaurant, userId, toast }) {
           <h2 className="mb-3 text-sm font-semibold text-gray-900">Past orders</h2>
           <div className="space-y-2">
             {past.map((order) => (
-              <Card key={order.id} className="flex items-center justify-between">
+              <Card key={order.orderId} className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-900">Order #{order.id}</p>
-                  <p className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleDateString()}</p>
+                  <p className="font-medium text-gray-900">Order #{order.orderId}</p>
+                  <p className="text-xs text-gray-400">
+                    {new Date(order.createdTime).toLocaleDateString()}
+                  </p>
                 </div>
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[order.status]}`}>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    STATUS_STYLES[order.status]
+                  }`}
+                >
                   {order.status}
                 </span>
               </Card>
@@ -206,6 +268,8 @@ function OrdersTab({ restaurant, userId, toast }) {
   )
 }
 
+// ─── Menu Tab ─────────────────────────────────────────────────────────────────
+
 function MenuTab({ restaurant, userId, toast }) {
   const [menuItems, setMenuItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -216,7 +280,7 @@ function MenuTab({ restaurant, userId, toast }) {
 
   const loadMenu = async () => {
     try {
-      const items = await restaurantApi.getMenuItems(restaurant.id)
+      const items = await restaurantApi.getMenuItems(restaurant.restaurantId, 'menuItemId', 'asc')
       setMenuItems(items)
     } catch (err) {
       toast.error(getErrorMessage(err))
@@ -225,18 +289,27 @@ function MenuTab({ restaurant, userId, toast }) {
     }
   }
 
-  useEffect(() => { loadMenu() }, [restaurant.id])
+  useEffect(() => {
+    loadMenu()
+  }, [restaurant.restaurantId])
 
   const handleSaveItem = async (e) => {
     e.preventDefault()
     setSaving(true)
-    const payload = { ...itemForm, price: Number(itemForm.price) }
+    const payload = {
+      foodName: itemForm.foodName,
+      price: Number(itemForm.price),
+      availableQuantity: Number(itemForm.availableQuantity),
+      foodCategory: itemForm.foodCategory,
+      foodType: itemForm.foodType,
+      isAvailable: itemForm.isAvailable,
+    }
     try {
       if (editingItemId) {
         await restaurantApi.updateMenuItem(userId, editingItemId, payload)
         toast.success('Item updated')
       } else {
-        await restaurantApi.addMenuItem(restaurant.id, userId, payload)
+        await restaurantApi.addMenuItem(restaurant.restaurantId, userId, payload)
         toast.success('Item added')
       }
       setItemForm(emptyItem)
@@ -252,7 +325,7 @@ function MenuTab({ restaurant, userId, toast }) {
   const handleDeleteItem = async () => {
     setSaving(true)
     try {
-      await restaurantApi.deleteMenuItem(restaurant.id, userId, deleteItemId)
+      await restaurantApi.deleteMenuItem(restaurant.restaurantId, userId, deleteItemId)
       toast.success('Item deleted')
       setDeleteItemId(null)
       await loadMenu()
@@ -264,12 +337,14 @@ function MenuTab({ restaurant, userId, toast }) {
   }
 
   const startEditItem = (item) => {
-    setEditingItemId(item.id)
+    setEditingItemId(item.menuItemId)
     setItemForm({
-      name: item.name,
-      description: item.description || '',
+      foodName: item.foodName,
       price: String(item.price),
-      available: item.available ?? true,
+      availableQuantity: String(item.availableQuantity),
+      foodCategory: item.foodCategory || '',
+      foodType: item.foodType || '',
+      isAvailable: item.isAvailable ?? true,
     })
   }
 
@@ -278,15 +353,88 @@ function MenuTab({ restaurant, userId, toast }) {
   return (
     <div>
       <Card className="mb-4">
-        <h3 className="mb-3 text-sm font-semibold text-gray-900">{editingItemId ? 'Edit item' : 'Add item'}</h3>
+        <h3 className="mb-3 text-sm font-semibold text-gray-900">
+          {editingItemId ? 'Edit item' : 'Add item'}
+        </h3>
         <form onSubmit={handleSaveItem} className="space-y-3">
-          <Input label="Name" value={itemForm.name} onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })} required />
-          <Input label="Description" value={itemForm.description} onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })} />
-          <Input label="Price" type="number" min="0" step="0.01" value={itemForm.price} onChange={(e) => setItemForm({ ...itemForm, price: e.target.value })} required />
+          <Input
+            label="Food name"
+            value={itemForm.foodName}
+            onChange={(e) => setItemForm({ ...itemForm, foodName: e.target.value })}
+            required
+          />
+          <Input
+            label="Price (₹)"
+            type="number"
+            min="0"
+            step="1"
+            value={itemForm.price}
+            onChange={(e) => setItemForm({ ...itemForm, price: e.target.value })}
+            required
+          />
+          <Input
+            label="Available quantity"
+            type="number"
+            min="0"
+            value={itemForm.availableQuantity}
+            onChange={(e) => setItemForm({ ...itemForm, availableQuantity: e.target.value })}
+            required
+          />
+          <div className="grid grid-cols-2 gap-3">
+  <div>
+    <label className="block text-sm font-medium text-gray-700">Category</label>
+    <select
+      value={itemForm.foodCategory}
+      onChange={(e) => setItemForm({ ...itemForm, foodCategory: e.target.value })}
+      required
+      className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600"
+    >
+      <option value="" disabled>Select category</option>
+      {FOOD_CATEGORIES.map((c) => (
+        <option key={c} value={c}>{c.replace('_', ' ')}</option>
+      ))}
+    </select>
+  </div>
+  <div>
+    <label className="block text-sm font-medium text-gray-700">Type</label>
+    <select
+      value={itemForm.foodType}
+      onChange={(e) => setItemForm({ ...itemForm, foodType: e.target.value })}
+      required
+      className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600"
+    >
+      <option value="" disabled>Select type</option>
+      {FOOD_TYPES.map((t) => (
+        <option key={t} value={t}>{t.replace('_', ' ')}</option>
+      ))}
+    </select>
+  </div>
+</div>
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={itemForm.isAvailable}
+              onChange={(e) => setItemForm({ ...itemForm, isAvailable: e.target.checked })}
+              className="rounded border-gray-300"
+            />
+            Available
+          </label>
           <div className="flex gap-2">
-            <Button type="submit" size="sm" disabled={saving}>{editingItemId ? 'Update' : 'Add item'}</Button>
+            <Button type="submit" size="sm" disabled={saving}>
+              {editingItemId ? 'Update' : 'Add item'}
+            </Button>
             {editingItemId && (
-              <Button type="button" size="sm" variant="secondary" onClick={() => { setEditingItemId(null); setItemForm(emptyItem) }}>Cancel</Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  setEditingItemId(null)
+                  setItemForm(emptyItem)
+                }}
+              >
+                Cancel
+              </Button>
             )}
           </div>
         </form>
@@ -294,15 +442,30 @@ function MenuTab({ restaurant, userId, toast }) {
 
       <div className="space-y-2">
         {menuItems.map((item) => (
-          <Card key={item.id} className="flex items-center justify-between">
+          <Card key={item.menuItemId} className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-gray-900">{item.name}</p>
-              {item.description && <p className="text-sm text-gray-500">{item.description}</p>}
-              <p className="mt-1 text-sm font-semibold">{formatCurrency(item.price)}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-gray-900">{item.foodName}</p>
+                {!item.isAvailable && (
+                  <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-600">
+                    Unavailable
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-gray-400">
+                {item.foodCategory} · {item.foodType} · Stock: {item.availableQuantity}
+              </p>
+              <p className="mt-1 text-sm font-semibold text-gray-900">
+                {formatCurrency(item.price)}
+              </p>
             </div>
             <div className="flex gap-2">
-              <Button size="sm" variant="secondary" onClick={() => startEditItem(item)}>Edit</Button>
-              <Button size="sm" variant="danger" onClick={() => setDeleteItemId(item.id)}>Delete</Button>
+              <Button size="sm" variant="secondary" onClick={() => startEditItem(item)}>
+                Edit
+              </Button>
+              <Button size="sm" variant="danger" onClick={() => setDeleteItemId(item.menuItemId)}>
+                Delete
+              </Button>
             </div>
           </Card>
         ))}
@@ -323,20 +486,41 @@ function MenuTab({ restaurant, userId, toast }) {
   )
 }
 
+// ─── Details Tab ──────────────────────────────────────────────────────────────
+
 function DetailsTab({ restaurant, setRestaurant, userId, toast }) {
   const [form, setForm] = useState({
     name: restaurant.name || '',
     description: restaurant.description || '',
     cuisine: restaurant.cuisine || '',
-    address: restaurant.address || '',
+    addressDTO: {
+      street: '',
+      area: '',
+      city: '',
+      state: '',
+      zipcode: '',
+    },
   })
   const [saving, setSaving] = useState(false)
+
+  const setAddr = (field, value) =>
+    setForm((prev) => ({ ...prev, addressDTO: { ...prev.addressDTO, [field]: value } }))
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
     try {
-      const updated = await restaurantApi.updateRestaurant(restaurant.id, userId, form)
+      const payload = {
+        id: restaurant.restaurantId,
+        name: form.name,
+        description: form.description,
+        cuisine: form.cuisine,
+        addressDTO: {
+          ...form.addressDTO,
+          zipcode: Number(form.addressDTO.zipcode),
+        },
+      }
+      const updated = await restaurantApi.updateRestaurant(restaurant.restaurantId, userId, payload)
       setRestaurant(updated)
       toast.success('Restaurant updated')
     } catch (err) {
@@ -349,18 +533,33 @@ function DetailsTab({ restaurant, setRestaurant, userId, toast }) {
   return (
     <Card className="max-w-lg">
       <form onSubmit={handleSubmit} className="space-y-3">
-        <Input label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-        <Input label="Cuisine" value={form.cuisine} onChange={(e) => setForm({ ...form, cuisine: e.target.value })} />
-        <Input label="Address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+        <Input label="Name" value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+        <Input label="Cuisine" value={form.cuisine}
+          onChange={(e) => setForm({ ...form, cuisine: e.target.value })} />
         <div>
           <label className="block text-sm font-medium text-gray-700">Description</label>
-          <textarea
-            value={form.description}
+          <textarea value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             rows={3}
             className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600"
           />
         </div>
+
+        <p className="pt-1 text-sm font-medium text-gray-700">Address</p>
+        <Input label="Street" value={form.addressDTO.street}
+          onChange={(e) => setAddr('street', e.target.value)} required />
+        <Input label="Area" value={form.addressDTO.area}
+          onChange={(e) => setAddr('area', e.target.value)} />
+        <div className="grid grid-cols-2 gap-3">
+          <Input label="City" value={form.addressDTO.city}
+            onChange={(e) => setAddr('city', e.target.value)} required />
+          <Input label="State" value={form.addressDTO.state}
+            onChange={(e) => setAddr('state', e.target.value)} required />
+        </div>
+        <Input label="Zipcode" type="number" value={form.addressDTO.zipcode}
+          onChange={(e) => setAddr('zipcode', e.target.value)} required />
+
         <Button type="submit" size="sm" disabled={saving}>Save changes</Button>
       </form>
     </Card>

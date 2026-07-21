@@ -18,7 +18,7 @@ function Navbar() {
   return (
     <header className="border-b border-gray-200 bg-white">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        <Link to={isOwner ? '/restaurant-dashboard' : '/'} className="text-lg font-bold text-gray-900">
+        <Link to={isOwner ? '/restaurant-dashboard' : '/home'} className="text-lg font-bold text-gray-900">
           Fungry
         </Link>
 
@@ -30,7 +30,7 @@ function Navbar() {
             </>
           ) : (
             <>
-              <NavLink to="/" className={linkClass}>Home</NavLink>
+              <NavLink to="/home" className={linkClass}>Home</NavLink>
               <NavLink to="/cart" className={linkClass}>
                 Cart{itemCount > 0 && (
                   <span className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-lg bg-primary-600 px-1.5 py-0.5 text-xs font-semibold text-white">

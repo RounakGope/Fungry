@@ -1,6 +1,5 @@
 package com.fung.fungry.Enums;
 
 public enum FoodCategory {
-    VEG,
-    NON_VEG
+    BREAD, MAIN_COURSE, INDIAN, CONTINENTAL, CHINESE, DESERT
 }

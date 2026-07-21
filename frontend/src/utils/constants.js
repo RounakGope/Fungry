@@ -10,16 +10,17 @@ export const normalizeRole = (data) => {
 }
 
 export const ORDER_STATUSES = [
-  'PENDING',
+  'PLACED',
+  'CREATED',
   'CONFIRMED',
   'PREPARING',
   'OUT_FOR_DELIVERY',
   'DELIVERED',
-  'CANCELLED',
+  'CANCELED',
+  'PAYMENT_PENDING',
 ]
 
-export const CANCELABLE_STATUSES = ['PENDING', 'CONFIRMED']
-
+export const CANCELABLE_STATUSES = ['PLACED', 'CREATED', 'PAYMENT_PENDING']
 export const formatCurrency = (amount) => {
   if (amount == null) return '—'
   return new Intl.NumberFormat('en-IN', {

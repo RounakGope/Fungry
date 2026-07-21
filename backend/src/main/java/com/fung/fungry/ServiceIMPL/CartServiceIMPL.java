@@ -94,14 +94,25 @@ public class CartServiceIMPL implements CartService {
             cart.setCartItems(new ArrayList<>());
         }
         MenuItem menuItem=menuItemRepository.findById(menuItemId).orElseThrow(()->new RuntimeException("No such Menu item"));
+
+        // NEW: block adding items from a different restaurant while cart is non-empty
+        if (!cart.getCartItems().isEmpty()
+                && cart.getRestaurant() != null
+                && !cart.getRestaurant().getRestaurantId().equals(menuItem.getRestaurant().getRestaurantId())) {
+            log.warn("cart already has items from restaurant={}, cannot add item from restaurant={}",
+                    cart.getRestaurant().getRestaurantId(), menuItem.getRestaurant().getRestaurantId());
+            throw new RuntimeException("Your cart has items from " + cart.getRestaurant().getName()
+                    + ". Clear your cart to order from a different restaurant.");
+        }
+
         Optional<CartItem> existingCartItems=cart.getCartItems().stream()
                 .filter(cartItem -> cartItem.getMenuItem().getMenuItemId().equals(menuItemId))
                 .findFirst();
         if(existingCartItems.isPresent())
         {
-           CartItem  cartItem=existingCartItems.get();
-             cartItem.setQuantity(cartItem.getQuantity()+1);
-             log.info("increased cart item quantity by 1");
+            CartItem  cartItem=existingCartItems.get();
+            cartItem.setQuantity(cartItem.getQuantity()+1);
+            log.info("increased cart item quantity by 1");
         }
         else {
             log.info("creating a new cartitem");

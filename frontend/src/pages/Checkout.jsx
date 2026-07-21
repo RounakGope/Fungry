@@ -65,7 +65,7 @@ export default function Checkout() {
     }
     setSubmitting(true)
     try {
-      const order = await orderApi.placeOrder(cart.cartId, user.id, selectedAddressId)
+     const order = await orderApi.createOrder(cart.cartId, user.id, selectedAddressId)
       await fetchCart()
       toast.success('Order placed')
       navigate(`/orders/${order.orderId}`)

@@ -1,9 +1,7 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import { ROLES } from './utils/constants'
 import Layout from './components/Layout'
-import ProtectedRoute from './components/ProtectedRoute'
-import RoleRoute from './components/RoleRoute'
 import LoadingSpinner from './components/LoadingSpinner'
 
 import Login from './pages/Login'
@@ -18,52 +16,65 @@ import Profile from './pages/Profile'
 import RestaurantDashboard from './pages/RestaurantDashboard'
 import OwnerOrders from './pages/OwnerOrders'
 
-function GuestRoute({ children }) {
-  const { isAuthenticated, loading, role } = useAuth()
-  if (loading) return <LoadingSpinner />
-  if (isAuthenticated) {
-    return <Navigate to={role === ROLES.RESTAURANT_OWNER ? '/restaurant-dashboard' : '/'} replace />
-  }
-  return children
-}
-
-function DefaultRedirect() {
-  const { role, loading } = useAuth()
-  if (loading) return <LoadingSpinner />
-  if (role === ROLES.RESTAURANT_OWNER) return <Navigate to="/restaurant-dashboard" replace />
-  return <Navigate to="/" replace />
-}
-
 export default function App() {
+  const { isAuthenticated, role, loading } = useAuth()
+
+  if (loading) return <LoadingSpinner />
+
+  const isOwner = role === ROLES.RESTAURANT_OWNER
+  const isCustomer = role === ROLES.CUSTOMER
+
   return (
     <Routes>
-      <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
-      <Route path="/signup" element={<GuestRoute><Signup /></GuestRoute>} />
+      {/* Guest routes */}
+      <Route
+        path="/login"
+        element={
+          !isAuthenticated
+            ? <Login />
+            : <Navigate to={isOwner ? '/restaurant-dashboard' : '/home'} replace />
+        }
+      />
+      <Route
+        path="/signup"
+        element={
+          !isAuthenticated
+            ? <Signup />
+            : <Navigate to={isOwner ? '/restaurant-dashboard' : '/home'} replace />
+        }
+      />
 
-      <Route element={<ProtectedRoute />}>
-        <Route element={<Layout />}>
-          {/* Customer routes */}
-          <Route element={<RoleRoute allowedRoles={[ROLES.CUSTOMER]} redirectTo="/restaurant-dashboard" />}>
-            <Route index element={<Home />} />
-            <Route path="restaurant/:restId" element={<RestaurantDetail />} />
-            <Route path="cart" element={<Cart />} />
-            <Route path="checkout" element={<Checkout />} />
-            <Route path="orders" element={<Orders />} />
-            <Route path="orders/:orderId" element={<OrderDetail />} />
-          </Route>
+      {/* Protected routes */}
+      <Route
+        element={
+          !isAuthenticated
+            ? <Navigate to="/login" replace />
+            : <Layout />
+        }
+      >
+        {/* Index */}
+        <Route
+          index
+          element={<Navigate to={isOwner ? '/restaurant-dashboard' : '/home'} replace />}
+        />
 
-          {/* Owner routes */}
-          <Route element={<RoleRoute allowedRoles={[ROLES.RESTAURANT_OWNER]} redirectTo="/" />}>
-            <Route path="restaurant-dashboard" element={<RestaurantDashboard />} />
-            <Route path="owner/orders" element={<OwnerOrders />} />
-          </Route>
+        {/* Customer routes */}
+        <Route path="home" element={isCustomer ? <Home /> : <Navigate to="/restaurant-dashboard" replace />} />
+        <Route path="restaurant/:restId" element={isCustomer ? <RestaurantDetail /> : <Navigate to="/restaurant-dashboard" replace />} />
+        <Route path="cart" element={isCustomer ? <Cart /> : <Navigate to="/restaurant-dashboard" replace />} />
+        <Route path="checkout" element={isCustomer ? <Checkout /> : <Navigate to="/restaurant-dashboard" replace />} />
+        <Route path="orders" element={isCustomer ? <Orders /> : <Navigate to="/restaurant-dashboard" replace />} />
+        <Route path="orders/:orderId" element={isCustomer ? <OrderDetail /> : <Navigate to="/restaurant-dashboard" replace />} />
 
-          {/* Shared */}
-          <Route path="profile" element={<Profile />} />
-        </Route>
+        {/* Owner routes */}
+        <Route path="restaurant-dashboard" element={isOwner ? <RestaurantDashboard /> : <Navigate to="/home" replace />} />
+        <Route path="owner/orders" element={isOwner ? <OwnerOrders /> : <Navigate to="/home" replace />} />
+
+        {/* Shared */}
+        <Route path="profile" element={<Profile />} />
       </Route>
 
-      <Route path="*" element={<DefaultRedirect />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   )
 }
