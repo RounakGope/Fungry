@@ -14,11 +14,15 @@ function Navbar() {
   if (!isAuthenticated) return null
 
   const isOwner = role === ROLES.RESTAURANT_OWNER
+  const isAdmin = role === ROLES.ADMIN
 
   return (
     <header className="border-b border-gray-200 bg-white">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        <Link to={isOwner ? '/restaurant-dashboard' : '/home'} className="text-lg font-bold text-gray-900">
+        <Link
+          to={isOwner ? '/restaurant-dashboard' : isAdmin ? '/admin' : '/home'}
+          className="text-lg font-bold text-gray-900"
+        >
           Fungry
         </Link>
 
@@ -28,6 +32,8 @@ function Navbar() {
               <NavLink to="/restaurant-dashboard" className={linkClass}>Dashboard</NavLink>
               <NavLink to="/owner/orders" className={linkClass}>Orders</NavLink>
             </>
+          ) : isAdmin ? (
+            <NavLink to="/admin" className={linkClass}>Admin</NavLink>
           ) : (
             <>
               <NavLink to="/home" className={linkClass}>Home</NavLink>

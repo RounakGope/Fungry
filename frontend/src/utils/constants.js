@@ -1,6 +1,7 @@
 export const ROLES = {
   CUSTOMER: 'CUSTOMER',
   RESTAURANT_OWNER: 'RESTAURANT_OWNER',
+  ADMIN: 'ADMIN',
 }
 
 /** Normalize UserRole from string or enum object */

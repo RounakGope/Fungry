@@ -60,8 +60,22 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         restaurantdto.setCuisine(restaurant.getCuisine());
         restaurantdto.setDescription(restaurant.getDescription());
         restaurantdto.setName(restaurant.getName());
-        restaurantdto.setRating(restaurant.getRating().getRatingAverage());
+        restaurantdto.setRating(restaurant.getRating() != null ? restaurant.getRating().getRatingAverage() : 0.0);
+        restaurantdto.setRestaurantAddressDTO(mapToRestAddressDTO(restaurant.getAddress()));
         return restaurantdto;
+    }
+
+    // new — reverse of your existing mapToRestAddress
+    private RestaurantAddressDTO mapToRestAddressDTO(RestaurantAddress address)
+    {
+        if (address == null) return null;
+        RestaurantAddressDTO dto = new RestaurantAddressDTO();
+        dto.setStreet(address.getStreet());
+        dto.setArea(address.getArea());
+        dto.setCity(address.getCity());
+        dto.setState(address.getState());
+        dto.setZipcode(address.getZipcode());
+        return dto;
     }
     private RestaurantAddress mapToRestAddress(RestaurantAddressDTO restaurantAddressDTO)
     {

@@ -13,6 +13,7 @@ public interface UserService {
     public UserRole getUserRole(Long userId);
   //  public UserDTO updateUserAddress(Long userId, AddressDTO addressDTO);
     public UserDTO updateUserPNo(Long userId,String PHno);
+    List<UserDTO> getAllUsers(int page, int size, String direction, String sortBy, UserRole role);
     public UserDTO updatePassword(Long userId,String oldPassword,String newPassword);
     public List<OrderHistoryDTO> viewOrderHistory(Long userId,
             Integer page,Integer size,String sortBy,String direction);

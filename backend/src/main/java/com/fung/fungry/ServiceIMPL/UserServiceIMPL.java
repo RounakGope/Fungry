@@ -95,6 +95,7 @@ public class UserServiceIMPL implements UserService {
         return mapToDTO(newUser);
     }
 
+
     @Override
     public UserDTO getUserById(Long userId) {
         log.info("Fetching user with id={}", userId);
@@ -123,6 +124,7 @@ public class UserServiceIMPL implements UserService {
         user.setUserMail(userDTO.getUserEmail());
         user.setUserName(userDTO.getUserName());
         user.setPhoneNumber(userDTO.getPhoneNumber());
+        user.setRole(userDTO.getUserRole());
         user.setUpdatedAt(LocalDateTime.now());
         log.info("updated the user with userId={}",userId);
         return mapToDTO(user);
@@ -166,6 +168,22 @@ public class UserServiceIMPL implements UserService {
        log.info("updated user Phone no with userId={}",userId);
        return mapToDTO(user);
 
+    }
+
+    @Override
+    public List<UserDTO> getAllUsers(int page, int size, String direction, String sortBy, UserRole role) {
+        log.info("Fetching all users page={} size={} role={}", page, size, role);
+        Sort sort = "desc".equalsIgnoreCase(direction) ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<User> userPage = (role != null)
+                ? userRepository.findByRole(role, pageable)
+                : userRepository.findAll(pageable);
+
+        return userPage.getContent()
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
     }
 
     @Override

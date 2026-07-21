@@ -15,6 +15,8 @@ import OrderDetail from './pages/OrderDetail'
 import Profile from './pages/Profile'
 import RestaurantDashboard from './pages/RestaurantDashboard'
 import OwnerOrders from './pages/OwnerOrders'
+import AdminDashboard from './pages/AdminDashboard'
+import UnsupportedRole from './pages/UnsupportedRole'
 
 export default function App() {
   const { isAuthenticated, role, loading } = useAuth()
@@ -23,52 +25,47 @@ export default function App() {
 
   const isOwner = role === ROLES.RESTAURANT_OWNER
   const isCustomer = role === ROLES.CUSTOMER
+  const isAdmin = role === ROLES.ADMIN
+  const hasKnownRole = isOwner || isCustomer || isAdmin
+
+  const homeFor = isOwner ? '/restaurant-dashboard' : isAdmin ? '/admin' : isCustomer ? '/home' : '/unsupported-role'
 
   return (
     <Routes>
       {/* Guest routes */}
       <Route
         path="/login"
-        element={
-          !isAuthenticated
-            ? <Login />
-            : <Navigate to={isOwner ? '/restaurant-dashboard' : '/home'} replace />
-        }
+        element={!isAuthenticated ? <Login /> : <Navigate to={homeFor} replace />}
       />
       <Route
         path="/signup"
-        element={
-          !isAuthenticated
-            ? <Signup />
-            : <Navigate to={isOwner ? '/restaurant-dashboard' : '/home'} replace />
-        }
+        element={!isAuthenticated ? <Signup /> : <Navigate to={homeFor} replace />}
       />
 
       {/* Protected routes */}
       <Route
-        element={
-          !isAuthenticated
-            ? <Navigate to="/login" replace />
-            : <Layout />
-        }
+        element={!isAuthenticated ? <Navigate to="/login" replace /> : <Layout />}
       >
         {/* Index */}
-        <Route
-          index
-          element={<Navigate to={isOwner ? '/restaurant-dashboard' : '/home'} replace />}
-        />
+        <Route index element={<Navigate to={homeFor} replace />} />
 
         {/* Customer routes */}
-        <Route path="home" element={isCustomer ? <Home /> : <Navigate to="/restaurant-dashboard" replace />} />
-        <Route path="restaurant/:restId" element={isCustomer ? <RestaurantDetail /> : <Navigate to="/restaurant-dashboard" replace />} />
-        <Route path="cart" element={isCustomer ? <Cart /> : <Navigate to="/restaurant-dashboard" replace />} />
-        <Route path="checkout" element={isCustomer ? <Checkout /> : <Navigate to="/restaurant-dashboard" replace />} />
-        <Route path="orders" element={isCustomer ? <Orders /> : <Navigate to="/restaurant-dashboard" replace />} />
-        <Route path="orders/:orderId" element={isCustomer ? <OrderDetail /> : <Navigate to="/restaurant-dashboard" replace />} />
+        <Route path="home" element={isCustomer ? <Home /> : <Navigate to={hasKnownRole ? homeFor : '/unsupported-role'} replace />} />
+        <Route path="restaurant/:restId" element={isCustomer ? <RestaurantDetail /> : <Navigate to={hasKnownRole ? homeFor : '/unsupported-role'} replace />} />
+        <Route path="cart" element={isCustomer ? <Cart /> : <Navigate to={hasKnownRole ? homeFor : '/unsupported-role'} replace />} />
+        <Route path="checkout" element={isCustomer ? <Checkout /> : <Navigate to={hasKnownRole ? homeFor : '/unsupported-role'} replace />} />
+        <Route path="orders" element={isCustomer ? <Orders /> : <Navigate to={hasKnownRole ? homeFor : '/unsupported-role'} replace />} />
+        <Route path="orders/:orderId" element={isCustomer ? <OrderDetail /> : <Navigate to={hasKnownRole ? homeFor : '/unsupported-role'} replace />} />
 
         {/* Owner routes */}
-        <Route path="restaurant-dashboard" element={isOwner ? <RestaurantDashboard /> : <Navigate to="/home" replace />} />
-        <Route path="owner/orders" element={isOwner ? <OwnerOrders /> : <Navigate to="/home" replace />} />
+        <Route path="restaurant-dashboard" element={isOwner ? <RestaurantDashboard /> : <Navigate to={hasKnownRole ? homeFor : '/unsupported-role'} replace />} />
+        <Route path="owner/orders" element={isOwner ? <OwnerOrders /> : <Navigate to={hasKnownRole ? homeFor : '/unsupported-role'} replace />} />
+
+        {/* Admin routes */}
+        <Route path="admin" element={isAdmin ? <AdminDashboard /> : <Navigate to={hasKnownRole ? homeFor : '/unsupported-role'} replace />} />
+
+        {/* Fallback for unrecognized roles */}
+        <Route path="unsupported-role" element={<UnsupportedRole role={role} />} />
 
         {/* Shared */}
         <Route path="profile" element={<Profile />} />

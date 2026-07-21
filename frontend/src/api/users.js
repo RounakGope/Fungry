@@ -27,6 +27,12 @@ export const updatePhone = (id, data) =>
 /** @param {number} id @param {import('./types').PasswordUpdateDTO} data */
 export const updatePassword = (id, data) =>
   api.put(`/users/updatePassword/${id}`, data).then((r) => r.data)
+/**
+ * @param {{ page?: number, size?: number, dir?: string, sort?: string, role?: import('./types').UserRole }} params
+ * @returns {Promise<import('./types').UserDTO[]>}
+ */
+export const getAllUsers = (params = {}) =>
+  api.get('/users/all', { params }).then((r) => r.data)
 
 /**
  * @param {number} id

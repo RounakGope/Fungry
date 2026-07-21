@@ -2,6 +2,7 @@ package com.fung.fungry.Controller;
 
 import com.fung.fungry.ModelDTO.*;
 import com.fung.fungry.ServiceIMPL.RestaurantServiceIMPL;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.parameters.P;
@@ -39,7 +40,7 @@ public class RestaurantController {
 
     }
     @PostMapping("/{adminId}/{userId}")
-    public ResponseEntity<RestaurantDTO> addRest(@PathVariable Long adminId ,@PathVariable Long userId ,@RequestBody RestaurantCreateDTO restaurantCreateDTO)
+    public ResponseEntity<RestaurantDTO> addRest(@PathVariable Long adminId ,@PathVariable Long userId ,@Valid@RequestBody RestaurantCreateDTO restaurantCreateDTO)
     {
         RestaurantDTO restaurantDTO=restaurantServiceIMPL.addRestaurant(restaurantCreateDTO,adminId,userId);
         return ResponseEntity.ok(restaurantDTO);
@@ -64,7 +65,7 @@ public class RestaurantController {
         return ResponseEntity.noContent().build();
     }
     @PutMapping("/{restId}/{userId}")
-    public ResponseEntity<RestaurantDTO> update(@PathVariable Long restId,@PathVariable Long userId,@RequestBody RestaurantUpdateDTO restaurantDTO) {
+    public ResponseEntity<RestaurantDTO> update(@PathVariable Long restId,@PathVariable Long userId,@Valid @RequestBody RestaurantUpdateDTO restaurantDTO) {
         RestaurantDTO restaurantDTO1 = restaurantServiceIMPL.updateRestaurant(
                 restaurantDTO, userId,restId);
         return ResponseEntity.ok(restaurantDTO1);
