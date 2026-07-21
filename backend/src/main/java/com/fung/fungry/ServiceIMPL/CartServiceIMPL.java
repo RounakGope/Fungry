@@ -76,6 +76,8 @@ public class CartServiceIMPL implements CartService {
     public void addToCart(Long userId, Long menuItemId) {
         log.info("started add to cart for user id ={} , menuitemid={}",userId,menuItemId);
 
+
+
         User user=userRepository.findById(userId).orElseThrow(()->{
             log.error("User not found for {}",userId); return new RuntimeException("User Not Found");
         });
@@ -94,6 +96,10 @@ public class CartServiceIMPL implements CartService {
             cart.setCartItems(new ArrayList<>());
         }
         MenuItem menuItem=menuItemRepository.findById(menuItemId).orElseThrow(()->new RuntimeException("No such Menu item"));
+        if (!menuItem.getIsAvailable())
+        {
+            throw new RuntimeException("The Item is Unavailable right now");
+        }
 
         // NEW: block adding items from a different restaurant while cart is non-empty
         if (!cart.getCartItems().isEmpty()
@@ -108,6 +114,7 @@ public class CartServiceIMPL implements CartService {
         Optional<CartItem> existingCartItems=cart.getCartItems().stream()
                 .filter(cartItem -> cartItem.getMenuItem().getMenuItemId().equals(menuItemId))
                 .findFirst();
+
         if(existingCartItems.isPresent())
         {
             CartItem  cartItem=existingCartItems.get();
@@ -163,34 +170,37 @@ public class CartServiceIMPL implements CartService {
         log.info("saved the cart ");
         return cartToDTO(cart);
     }
-
     @Transactional
     @Override
     public CartDTO clearAll(Long userId) {
-        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No Such User"));
-        Cart cart=cartRepository.findById(user.getCart().getCartId()).orElseThrow(()->new RuntimeException("No such cart available"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("No Such User"));
+        Cart cart = cartRepository.findById(user.getCart().getCartId()).orElseThrow(() -> new RuntimeException("No such cart available"));
         cart.getCartItems().clear();
+        cart.setTotalAmt(0L);   // ← added
 
         cartRepository.save(cart);
-
         return cartToDTO(cart);
-
     }
 
     @Transactional
     @Override
     public CartDTO removeItem(Long userId, Long cartItemId) {
-        User user =userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such user found"));
-        Cart cart=user.getCart();
-        CartItem cartItem=cartItemRepository.findById(cartItemId).orElseThrow(()->new RuntimeException("No such cart Item"));
-        if(user.getCart().getCartId()!=cartItem.getCart().getCartId())
-        {
-            log.warn("user cart mismatch for user_id={}",userId);
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("No such user found"));
+        Cart cart = user.getCart();
+        CartItem cartItem = cartItemRepository.findById(cartItemId).orElseThrow(() -> new RuntimeException("No such cart Item"));
+        if (!user.getCart().getCartId().equals(cartItem.getCart().getCartId())) {
+            log.warn("user cart mismatch for user_id={}", userId);
             throw new RuntimeException("User Cart Mismatch");
         }
         cart.getCartItems().remove(cartItem);
-        log.info("removed the cartitems={}",cartItemId);
+        log.info("removed the cartitems={}", cartItemId);
+
+        long newTotal = cart.getCartItems().stream()
+                .mapToLong(item -> item.getMenuItem().getPrice() * item.getQuantity())
+                .sum();
+        cart.setTotalAmt(newTotal);
+
         cartRepository.save(cart);
-        return  cartToDTO(cart);
+        return cartToDTO(cart);
     }
 }

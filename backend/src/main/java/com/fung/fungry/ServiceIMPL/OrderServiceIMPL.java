@@ -83,7 +83,7 @@ public class OrderServiceIMPL implements OrderService {
         order.setCreatedAt(LocalDateTime.now());
         order.setRestaurant(cart.getRestaurant());
         order.setAmount(cart.getTotalAmt());
-        order.setStatus(OrderStatus.DELIVERED);
+        order.setStatus(OrderStatus.PLACED);
         order.setPaymentStatus(PaymentStatus.SUCCESS);
         order.setUser(user);
         order.setExpectedTimeInMinutes(10);
