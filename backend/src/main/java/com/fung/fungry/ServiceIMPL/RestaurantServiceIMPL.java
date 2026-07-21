@@ -37,6 +37,22 @@ public class RestaurantServiceIMPL  implements RestaurantService {
             throw new RuntimeException("Not authorized to manage this restaurant");
         }
     }
+    public RestaurantDTO getByOwner(Long userId) {
+        log.info("started getByOwner for userId={}", userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.error("User not found with id={}", userId);
+                    return new RuntimeException("USER NOT FOUND");
+                });
+
+        Restaurant restaurant = restaurantRepository.findByOwner_UserId(userId)
+                .orElseThrow(() -> {
+                    log.warn("no restaurant found for owner userId={}", userId);
+                    return new RuntimeException("No restaurant assigned to this user");
+                });
+
+        return mapToRestDTO(restaurant);
+    }
     private RestaurantDTO mapToRestDTO(Restaurant restaurant)
     {
         RestaurantDTO restaurantdto=new RestaurantDTO();

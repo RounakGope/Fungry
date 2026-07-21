@@ -18,5 +18,5 @@ public interface RestaurantService {
     public void addItemInMenu(MenuItemCreateDTO itemDTO, Long restaurantId, Long userId);
     public void deleteItemInMenu(Long menuItemId,Long restaurantId,Long userId);
     public MenuItemDTO updateItemInMenu(Long menuItemId,Long userId,MenuItemDTO menuItemDTO);
-
+    RestaurantDTO getByOwner(Long userId);
 }

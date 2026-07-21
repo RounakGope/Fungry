@@ -144,6 +144,10 @@ public class CartServiceIMPL implements CartService {
         }
         cartItem.setQuantity(cartItem.getQuantity()+1);
         log.info("updated the quantity by one for cart item={}",cartItemId);
+        long newTotal = cart.getCartItems().stream()
+                .mapToLong(item -> item.getMenuItem().getPrice() * item.getQuantity())
+                .sum();
+        cart.setTotalAmt(newTotal);
         cartRepository.save(cart);
         log.info("saved the cart ");
         return cartToDTO(cart);

@@ -28,9 +28,9 @@ export default function RestaurantDetail() {
     setLoading(true)
     try {
       const [rest, items] = await Promise.all([
-        restaurantApi.getRestaurant(restId),
-        restaurantApi.getMenuItems(restId, { sortBy, direction }),
-      ])
+  restaurantApi.viewRestaurant(restId),     // ✅ matches your api file
+  restaurantApi.getMenuItems(restId,  sortBy, direction ),
+])
       setRestaurant(rest)
       setMenuItems(items)
     } catch (err) {

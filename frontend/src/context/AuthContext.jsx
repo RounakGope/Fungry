@@ -26,10 +26,15 @@ export function AuthProvider({ children }) {
     setRole(userRole)
 
     if (userRole === ROLES.RESTAURANT_OWNER) {
-      const rest = await restaurantApi.getRestaurantByOwner(userData.id)
-      setRestaurant(rest)
-      if (rest?.id && !userData.restaurantId) {
-        setUser((prev) => ({ ...prev, restaurantId: rest.id }))
+      try {
+        const rest = await restaurantApi.getRestaurantByOwner(userData.id)
+        setRestaurant(rest)
+        if (rest?.id && !userData.restaurantId) {
+          setUser((prev) => ({ ...prev, restaurantId: rest.id }))
+        }
+      } catch {
+        // Owner has no restaurant assigned yet — not an auth failure.
+        setRestaurant(null)
       }
     } else {
       setRestaurant(null)
@@ -79,12 +84,17 @@ export function AuthProvider({ children }) {
 
   const refreshRestaurant = async () => {
     if (!user?.id) return null
-    const rest = await restaurantApi.getRestaurantByOwner(user.id)
-    setRestaurant(rest)
-    if (rest?.id) {
-      setUser((prev) => ({ ...prev, restaurantId: rest.id }))
+    try {
+      const rest = await restaurantApi.getRestaurantByOwner(user.id)
+      setRestaurant(rest)
+      if (rest?.id) {
+        setUser((prev) => ({ ...prev, restaurantId: rest.id }))
+      }
+      return rest
+    } catch {
+      setRestaurant(null)
+      return null
     }
-    return rest
   }
 
   const value = useMemo(
@@ -102,7 +112,7 @@ export function AuthProvider({ children }) {
       refreshRestaurant,
       setRestaurant,
     }),
-    [user, role, restaurant, loading, refreshMe, refreshRestaurant]
+    [user, role, restaurant, loading, refreshMe]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

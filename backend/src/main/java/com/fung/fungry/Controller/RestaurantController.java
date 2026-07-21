@@ -44,6 +44,13 @@ public class RestaurantController {
         RestaurantDTO restaurantDTO=restaurantServiceIMPL.addRestaurant(restaurantCreateDTO,adminId,userId);
         return ResponseEntity.ok(restaurantDTO);
     }
+    @GetMapping("/owner/{userId}")
+    public ResponseEntity<RestaurantDTO> getByOwner(@PathVariable Long userId)
+    {
+       RestaurantDTO restaurantDTO= restaurantServiceIMPL.getByOwner(userId);
+       return ResponseEntity.ok(restaurantDTO);
+
+    }
     @GetMapping("/viewRestaurant/{restId}")
     public ResponseEntity<RestaurantDTO> viewRestaurant(@PathVariable Long restId)
     {
