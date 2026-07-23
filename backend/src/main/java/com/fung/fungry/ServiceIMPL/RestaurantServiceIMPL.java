@@ -65,7 +65,6 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         return restaurantdto;
     }
 
-    // new — reverse of your existing mapToRestAddress
     private RestaurantAddressDTO mapToRestAddressDTO(RestaurantAddress address)
     {
         if (address == null) return null;
@@ -100,20 +99,8 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
         return menuItemDTO;
     }
-    private MenuItem mapToMenuItem(MenuItemDTO menuItemDTO,Restaurant restaurant)
-    {
-        MenuItem menuItem=new MenuItem();
-        menuItem.setMenuItemId(menuItemDTO.getMenuItemId());
-        menuItem.setRestaurant(restaurant);
-        menuItem.setPrice(menuItemDTO.getPrice());
-        menuItem.setType(menuItemDTO.getFoodType());
-        menuItem.setName(menuItemDTO.getFoodName());
-        menuItem.setCategory(menuItemDTO.getFoodCategory());
-        menuItem.setIsAvailable(menuItemDTO.getIsAvailable());
-        menuItem.setAvailableQuantity(menuItemDTO.getAvailableQuantity());
 
-        return menuItem;
-    }
+
 
     @Override
     public List<RestaurantDTO> getAllRestaurantBy(int page, int size, String direction, String sortBy) {

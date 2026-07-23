@@ -5,11 +5,9 @@ import com.fung.fungry.ServiceIMPL.RestaurantServiceIMPL;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api-v1.0/restaurant")
