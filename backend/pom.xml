@@ -49,12 +49,7 @@
             <optional>true</optional>
         </dependency>
         <!-- Source: https://mvnrepository.com/artifact/com.stripe/stripe-java -->
-        <dependency>
-            <groupId>com.stripe</groupId>
-            <artifactId>stripe-java</artifactId>
-            <version>31.1.0</version>
-            <scope>compile</scope>
-        </dependency>
+
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -80,10 +75,7 @@
             <scope>runtime</scope>
         </dependency>
 
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-security</artifactId>
-            </dependency>
+
         </dependencies>
 
     <build>

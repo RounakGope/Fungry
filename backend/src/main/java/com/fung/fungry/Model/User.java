@@ -31,6 +31,7 @@ public class User {
     private UserRole role;
     @Column(name = "phone_Number",nullable = false)
     private String phoneNumber;
+
     @OneToMany(
             mappedBy = "user",//mappedBy must match the field(variable ) name in the CHILD entity, not the table name.
            cascade = CascadeType.ALL

@@ -263,6 +263,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
             });
             ratings.setRatingSum(ratings.getRatingSum()+rating);
             ratings.setRatingCount(ratings.getRatingCount()+1);
+
            double avg=(double) ratings.getRatingSum()/ratings.getRatingCount();
            ratings.setRatingAverage(avg);
 
