@@ -24,7 +24,7 @@ export default function Button({
     <button
       type={type}
       disabled={disabled}
-      className={`inline-flex min-h-11 items-center justify-center rounded-xl font-medium transition-colors duration-150 touch-manipulation active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex min-h-11 items-center justify-center rounded-xl font-medium shadow-sm transition-all duration-150 touch-manipulation active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
       {children}

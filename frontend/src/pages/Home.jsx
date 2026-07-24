@@ -36,7 +36,7 @@ export default function Home() {
   return (
     <div>
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Restaurants</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Restaurants</h1>
         <p className="mt-1 text-sm text-gray-500">Browse and order from local restaurants</p>
       </div>
 
@@ -63,7 +63,7 @@ export default function Home() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((restaurant) => (
             <Link key={restaurant.restaurantId} to={`/restaurant/${restaurant.restaurantId}`} className="block">
-              <Card className="transition-colors hover:border-primary-600/40">
+              <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-600/40 hover:shadow-md">
                 <h2 className="font-semibold text-gray-900">{restaurant.name}</h2>
                 {restaurant.cuisine && (
                   <p className="mt-1 text-sm text-gray-500">{restaurant.cuisine}</p>

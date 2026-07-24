@@ -63,7 +63,7 @@ export default function Cart() {
   return (
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Cart</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Cart</h1>
         <Button variant="danger" size="sm" className="w-full sm:w-auto" onClick={() => setClearOpen(true)}>Clear cart</Button>
       </div>
 
