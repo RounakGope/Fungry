@@ -5,10 +5,10 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    port: 3000,
+    port: 5173,
     proxy: {
       '/api-v1.0': {
-        target: 'http://localhost:9080',
+        target: 'https://fungry-xt5f.onrender.com',
         changeOrigin: true,
       },
     },
