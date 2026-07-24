@@ -62,14 +62,14 @@ export default function Cart() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Cart</h1>
-        <Button variant="danger" size="sm" onClick={() => setClearOpen(true)}>Clear cart</Button>
+        <Button variant="danger" size="sm" className="w-full sm:w-auto" onClick={() => setClearOpen(true)}>Clear cart</Button>
       </div>
 
       <div className="space-y-3">
         {items.map((item) => (
-          <Card key={item.cartItemId} className="flex items-center justify-between gap-4">
+          <Card key={item.cartItemId} className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="font-medium text-gray-900">{item.itemName}</h3>
               <p className="mt-1 text-sm text-gray-500">Qty: {item.quantity}</p>
@@ -80,14 +80,14 @@ export default function Cart() {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Button size="sm" variant="secondary" onClick={() => handleIncrease(item.cartItemId)}>+</Button>
-              <Button size="sm" variant="danger" onClick={() => handleRemove(item.cartItemId)}>Remove</Button>
+              <Button size="sm" variant="secondary" className="flex-1 sm:flex-none" onClick={() => handleIncrease(item.cartItemId)}>+</Button>
+              <Button size="sm" variant="danger" className="flex-1 sm:flex-none" onClick={() => handleRemove(item.cartItemId)}>Remove</Button>
             </div>
           </Card>
         ))}
       </div>
 
-      <Card className="mt-6">
+      <Card className="mt-6 p-4 sm:p-5">
         <div className="flex items-center justify-between">
           <span className="text-base font-semibold text-gray-900">Total</span>
           <span className="text-lg font-bold text-gray-900">{formatCurrency(total)}</span>

@@ -5,7 +5,7 @@ import { ROLES } from '../utils/constants'
 import Button from './Button'
 
 const linkClass = ({ isActive }) =>
-  `text-sm font-medium transition-colors ${isActive ? 'text-primary-700' : 'text-gray-600 hover:text-gray-900'}`
+  `rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors ${isActive ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`
 
 function Navbar() {
   const { user, role, logout, isAuthenticated } = useAuth()
@@ -17,16 +17,22 @@ function Navbar() {
   const isAdmin = role === ROLES.ADMIN
 
   return (
-    <header className="border-b border-gray-200 bg-white">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        <Link
-          to={isOwner ? '/restaurant-dashboard' : isAdmin ? '/admin' : '/home'}
-          className="text-lg font-bold text-gray-900"
-        >
-          Fungry
-        </Link>
+    <header className="border-b border-gray-200 bg-white/95 backdrop-blur-sm">
+      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+        <div className="flex items-center justify-between gap-3">
+          <Link
+            to={isOwner ? '/restaurant-dashboard' : isAdmin ? '/admin' : '/home'}
+            className="text-lg font-bold text-gray-900"
+          >
+            Fungry
+          </Link>
+          <div className="flex items-center gap-2 sm:hidden">
+            <span className="text-xs text-gray-500">{user?.username || user?.email}</span>
+            <Button variant="secondary" size="sm" onClick={logout}>Out</Button>
+          </div>
+        </div>
 
-        <nav className="flex items-center gap-6">
+        <nav className="flex flex-wrap items-center gap-1.5 sm:gap-3">
           {isOwner ? (
             <>
               <NavLink to="/restaurant-dashboard" className={linkClass}>Dashboard</NavLink>
@@ -39,7 +45,7 @@ function Navbar() {
               <NavLink to="/home" className={linkClass}>Home</NavLink>
               <NavLink to="/cart" className={linkClass}>
                 Cart{itemCount > 0 && (
-                  <span className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-lg bg-primary-600 px-1.5 py-0.5 text-xs font-semibold text-white">
+                  <span className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-lg bg-primary-600 px-1.5 py-0.5 text-[11px] font-semibold text-white">
                     {itemCount}
                   </span>
                 )}
@@ -50,8 +56,8 @@ function Navbar() {
           <NavLink to="/profile" className={linkClass}>Profile</NavLink>
         </nav>
 
-        <div className="flex items-center gap-3">
-          <span className="hidden text-sm text-gray-500 sm:inline">{user?.username || user?.email}</span>
+        <div className="hidden items-center gap-3 sm:flex">
+          <span className="text-sm text-gray-500">{user?.username || user?.email}</span>
           <Button variant="secondary" size="sm" onClick={logout}>Sign out</Button>
         </div>
       </div>

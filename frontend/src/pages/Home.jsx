@@ -35,12 +35,12 @@ export default function Home() {
 
   return (
     <div>
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Restaurants</h1>
         <p className="mt-1 text-sm text-gray-500">Browse and order from local restaurants</p>
       </div>
 
-      <div className="mb-6 max-w-md">
+      <div className="mb-6 w-full max-w-xl">
         <Input
           placeholder="Search by name or cuisine…"
           value={search}
@@ -60,9 +60,9 @@ export default function Home() {
           description={search ? 'Try a different search term.' : 'No restaurants are available yet.'}
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((restaurant) => (
-            <Link key={restaurant.restaurantId} to={`/restaurant/${restaurant.restaurantId}`}>
+            <Link key={restaurant.restaurantId} to={`/restaurant/${restaurant.restaurantId}`} className="block">
               <Card className="transition-colors hover:border-primary-600/40">
                 <h2 className="font-semibold text-gray-900">{restaurant.name}</h2>
                 {restaurant.cuisine && (

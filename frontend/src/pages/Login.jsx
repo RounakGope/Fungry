@@ -31,7 +31,7 @@ export default function Login() {
 
   return (
     <AuthLayout>
-      <Card className="w-full max-w-sm">
+      <Card className="w-full max-w-md p-5 sm:p-6">
         <h1 className="text-xl font-semibold text-gray-900">Sign in</h1>
         <p className="mt-1 text-sm text-gray-500">Enter your credentials to continue</p>
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
