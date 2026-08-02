@@ -1,6 +1,10 @@
 package com.fung.fungry.ServiceIMPL;
 
 import com.fung.fungry.Enums.UserRole;
+import com.fung.fungry.Exception.MenuItemException;
+import com.fung.fungry.Exception.ResourceNotFoundException;
+import com.fung.fungry.Exception.RestaurantOperationException;
+import com.fung.fungry.Exception.UnauthorisedException;
 import com.fung.fungry.Model.*;
 import com.fung.fungry.ModelDTO.*;
 import com.fung.fungry.Repository.MenuItemRepository;
@@ -8,7 +12,7 @@ import com.fung.fungry.Repository.RatingRepository;
 import com.fung.fungry.Repository.RestaurantRepository;
 import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.RestaurantService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,21 +38,17 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         boolean isOwner = restaurant.getOwner() != null
                 && restaurant.getOwner().getUserId().equals(user.getUserId());
         if (user.getRole() != UserRole.ADMIN && !isOwner) {
-            throw new RuntimeException("Not authorized to manage this restaurant");
+            throw new UnauthorisedException("Not authorized to manage this restaurant");
         }
     }
     public RestaurantDTO getByOwner(Long userId) {
         log.info("started getByOwner for userId={}", userId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.error("User not found with id={}", userId);
-                    return new RuntimeException("USER NOT FOUND");
-                });
+
 
         Restaurant restaurant = restaurantRepository.findByOwner_UserId(userId)
                 .orElseThrow(() -> {
                     log.warn("no restaurant found for owner userId={}", userId);
-                    return new RuntimeException("No restaurant assigned to this user");
+                    return new ResourceNotFoundException("No restaurant assigned to this user");
                 });
 
         return mapToRestDTO(restaurant);
@@ -133,13 +133,13 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> {
                     log.error("User not found with id={}", userId);
-                    return new RuntimeException("ADMIN NOT FOUND");
+                    return new ResourceNotFoundException("ADMIN NOT FOUND");
                 });
         if (admin.getRole()!= UserRole.ADMIN)
         {
 
             log.warn("cannot add restaurant as the user is not admin user={}",userId);
-            throw new RuntimeException("ONLY ADMIN CAN ADD RESTAURANT");
+            throw new UnauthorisedException("ONLY ADMIN CAN ADD RESTAURANT");
         }
         Restaurant restaurant=new Restaurant();
         restaurant.setName(restaurantCreateDTO.getName());
@@ -168,7 +168,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         if (!restaurant.isPresent())
         {
             log.warn("no such restaurant available restId={}",restaurantId);
-            throw new RuntimeException("No such restaurant available");
+            throw new ResourceNotFoundException("No such restaurant available");
         }
         RestaurantDTO restaurantDTO=mapToRestDTO(restaurant.get());
         return restaurantDTO;
@@ -182,13 +182,13 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found with id={}", userId);
-                    return new RuntimeException("USER NOT FOUND");
+                    return new ResourceNotFoundException("USER NOT FOUND");
                 });
         if(user.getRole()!=UserRole.ADMIN)
         {
 
             log.warn("cannot delete restaurant as the user is not admin user={}",userId);
-            throw  new RuntimeException("YOU ARE NOT AN ADMIN");
+            throw  new UnauthorisedException("YOU ARE NOT AN ADMIN");
         }
         Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
         if(restaurant.isPresent())
@@ -209,14 +209,14 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         log.info("started updating restaurant for user={}",userId);User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found with id={}", userId);
-                    return new RuntimeException("USER NOT FOUND");
+                    return new ResourceNotFoundException("USER NOT FOUND");
                 });
 
         Optional<Restaurant> restaurant=restaurantRepository.findById(restId);
         if (!restaurant.isPresent())
         {
             log.warn("no such restaurant available restId={}",restId);
-            throw new RuntimeException("No such restaurant available");
+            throw new ResourceNotFoundException("No such restaurant available");
         }
         assertCanManage(restaurant.get(),user);
 
@@ -241,13 +241,13 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         if(rating>5||rating<1)
         {
             log.warn("invalid rating ={}",rating);
-            throw new RuntimeException("Rating must be between 1 and 5");
+            throw new RestaurantOperationException("Rating must be between 1 and 5");
         }
         Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
         if (!restaurant.isPresent())
         {
             log.warn("no such restaurant with restId={}",restaurantId);
-            throw new RuntimeException("NO SUCH RESTAURANT");
+            throw new ResourceNotFoundException("NO SUCH RESTAURANT");
         }
         else
         {
@@ -295,12 +295,12 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         log.info("started add item in menu for rest id={}",restaurantId);User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found with id={}", userId);
-                    return new RuntimeException("USER NOT FOUND");
+                    return new ResourceNotFoundException("USER NOT FOUND");
                 });
         if(!(user.getRole()==UserRole.ADMIN||user.getRole()==UserRole.RESTAURANT_OWNER))
         {
             log.warn("User cannot add item with userid={} for rest={}",userId,restaurantId);
-            throw new RuntimeException( "Only an Admin or Owner can add Menu item");
+            throw new UnauthorisedException( "Only an Admin or Owner can add Menu item");
         }
         Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
         //restaurant ownership to be added
@@ -314,7 +314,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         }
         else {
             log.warn("no such restaurant present with restarant id={}",restaurantId);
-            throw new RuntimeException("No such Restaurant Present");
+            throw new ResourceNotFoundException("No such Restaurant Present");
         }
     }
 
@@ -325,12 +325,12 @@ public class RestaurantServiceIMPL  implements RestaurantService {
                 .info("started deleting item ={} by user={}",menuItemId,userId);User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("User not found with id={}", userId);
-                    return new RuntimeException("USER NOT FOUND");
+                    return new ResourceNotFoundException("USER NOT FOUND");
                 });
         if(!(user.getRole()==UserRole.ADMIN||user.getRole()==UserRole.RESTAURANT_OWNER))
         {
             log.warn("cannot delete menu item with user ={}",userId);
-            throw new RuntimeException( "Only an Admin or Owner can Delete Menu item");
+            throw new UnauthorisedException( "Only an Admin or Owner can Delete Menu item");
 
         }
         Optional<MenuItem > menuItem=menuItemRepository.findById(menuItemId);
@@ -349,18 +349,18 @@ public class RestaurantServiceIMPL  implements RestaurantService {
                 }
                 else {
                     log.warn("menu with id={} do not belong to rest with id={}",menuItem.get().getMenuItemId(),userId);
-                    throw new RuntimeException("Menu item does not belong to restaurant");
+                    throw new RestaurantOperationException("Menu item does not belong to restaurant");
                 }
 
             }
             else {
                 log.warn("no such restaurant with restid={}",restaurantId);
-                throw new RuntimeException("No such restaurant");
+                throw new ResourceNotFoundException("No such restaurant");
             }
         }
         else {
             log.warn("no such menu item with id={}",menuItemId);
-            throw new RuntimeException("Menu item not present");
+            throw new MenuItemException("Menu item not present");
         }
     }
 
@@ -370,17 +370,17 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         log.info("started updating item in menu with id={} by user={}",menuItemId,userId);User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found with id={}", userId);
-                    return new RuntimeException("USER NOT FOUND");
+                    return new ResourceNotFoundException("USER NOT FOUND");
                 });
         if(!(user.getRole()==UserRole.ADMIN||user.getRole()==UserRole.RESTAURANT_OWNER))
         {
             log.error("user has not access to update menu with userId={}",userId);
-            throw new RuntimeException( "Only an Admin or Owner can Update Menu item");
+            throw new UnauthorisedException( "Only an Admin or Owner can Update Menu item");
         }
         MenuItem menuItem = menuItemRepository.findById(menuItemId)
                 .orElseThrow(() -> {
                     log.warn("Menu item not found with id={}", menuItemId);
-                    return new RuntimeException("menuItem not available");
+                    return new MenuItemException("menuItem not available");
                 });
 
 

@@ -2,13 +2,18 @@ package com.fung.fungry.ServiceIMPL;
 
 import com.fung.fungry.Enums.OrderStatus;
 import com.fung.fungry.Enums.PaymentStatus;
+import com.fung.fungry.Exception.CartOperationException;
+import com.fung.fungry.Exception.OrderOperationException;
+import com.fung.fungry.Exception.ResourceNotFoundException;
+import com.fung.fungry.Exception.UnauthorisedException;
 import com.fung.fungry.Model.*;
 import com.fung.fungry.ModelDTO.AddressDTO;
 import com.fung.fungry.ModelDTO.OrderDTO;
 import com.fung.fungry.ModelDTO.OrderItemDTO;
 import com.fung.fungry.Repository.*;
 import com.fung.fungry.Service.OrderService;
-import jakarta.transaction.Transactional;
+
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +31,6 @@ public class OrderServiceIMPL implements OrderService {
     UserRepository userRepository;
     private final
     OrderRepository orderRepository;
-    private final
-    OrderItemRepository orderItemRepository;
     private final
     CartRepository cartRepository;
     private final
@@ -55,21 +58,21 @@ public class OrderServiceIMPL implements OrderService {
     @Transactional
     public OrderDTO createOrder(Long cartId, Long userId, Long addressId) {
         log.info("started create order for userid={}",userId);
-        User user=userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such user"));
+        User user=userRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("No such user"));
         Order order=new Order();
-        Address address=addressRepository.findById(addressId).orElseThrow(()->new RuntimeException("no such address"));
+        Address address=addressRepository.findById(addressId).orElseThrow(()->new ResourceNotFoundException("no such address"));
 
-        Cart cart=cartRepository.findById(cartId).orElseThrow(()->new RuntimeException("No such cart present"));
+        Cart cart=cartRepository.findById(cartId).orElseThrow(()->new ResourceNotFoundException("No such cart present"));
         if (!cart.getUser().getUserId().equals(user.getUserId()))
         {
             log.warn("Userid {} cant create order of cartId{}",userId,cartId);
-            throw new RuntimeException("Cart User Mismatch");
+            throw new CartOperationException("Cart User Mismatch");
 
         }
         if (!address.getUser().getUserId().equals(user.getUserId()))
         {
             log.warn("Userid {} cant create order of cartId{} as address id {} mismatch",userId,cartId,addressId);
-            throw new RuntimeException("Cart address Mismatch");
+            throw new CartOperationException("Cart address Mismatch");
 
         }
         List<CartItem > cartItems=cart.getCartItems();
@@ -138,13 +141,13 @@ public class OrderServiceIMPL implements OrderService {
     @Transactional
     public void removeOrder(Long orderId, Long userId) {// just removing the order entry from this user order history
         log.info("removing order {} , from user id={}",orderId,userId);
-        User user = userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such User Found"));
-        Order order=orderRepository.findById(orderId).orElseThrow(()-> new RuntimeException("No such order found "));
+        User user = userRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("No such User Found"));
+        Order order=orderRepository.findById(orderId).orElseThrow(()-> new ResourceNotFoundException("No such order found "));
         if(!order.getUser().getUserId().equals(user.getUserId()))
         {
             log.warn("cannot remove order {} , from user id={}",orderId,userId);
 
-            throw new  RuntimeException("user order mismatch");
+            throw new CartOperationException("user order mismatch");
         }
         order.setDeleted(true);
         log.info("deleted order ");
@@ -153,19 +156,19 @@ public class OrderServiceIMPL implements OrderService {
 
     @Override
     public OrderDTO viewOrderByIdUser(Long userId, Long orderID) {
-        Order order=orderRepository.findById(orderID).orElseThrow(()->new RuntimeException("No such Order Found"));
+        Order order=orderRepository.findById(orderID).orElseThrow(()->new ResourceNotFoundException("No such Order Found"));
         if (!order.getUser().getUserId().equals(userId))
-            throw new RuntimeException("Order User Mismatch");
+            throw new OrderOperationException("Order User Mismatch");
 
         return mapToOrderDTO(order);
     }
 
     @Override
     public OrderDTO viewOrderByIdRest(Long restId, Long orderId) {
-        Restaurant restaurant=restaurantRepository.findById(restId).orElseThrow(()->new RuntimeException("No such restaturant present"));
-        Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such Order present"));
+        Restaurant restaurant=restaurantRepository.findById(restId).orElseThrow(()->new ResourceNotFoundException("No such restaturant present"));
+        Order order=orderRepository.findById(orderId).orElseThrow(()->new ResourceNotFoundException("No such Order present"));
         if (!order.getRestaurant().equals(restaurant))
-            throw new RuntimeException("Order restaurant mismatch");
+            throw new OrderOperationException("Order restaurant mismatch");
 
         return mapToOrderDTO(order);
     }
@@ -173,7 +176,7 @@ public class OrderServiceIMPL implements OrderService {
     @Override
     @Transactional
     public List<OrderDTO> viewAllOrdersForUser(Long userId) {
-        User user= userRepository.findById(userId).orElseThrow(()->new RuntimeException("No such User Found"));
+        User user= userRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("No such User Found"));
         List<Order> orders=user.getOrderHistory();
         return orders.stream().map(order -> mapToOrderDTO(order)).toList();
 
@@ -182,7 +185,7 @@ public class OrderServiceIMPL implements OrderService {
 
     @Override
     public List<OrderDTO> viewAllOrdersForRest(Long restaurantId) {
-        Restaurant restaurant=restaurantRepository.findById(restaurantId).orElseThrow(()->new RuntimeException("No such restaturant present"));
+        Restaurant restaurant=restaurantRepository.findById(restaurantId).orElseThrow(()->new ResourceNotFoundException("No such restaturant present"));
         List<Order> orderList  =restaurant.getOrders();
         return orderList.stream().map(order -> mapToOrderDTO(order)).toList();
 
@@ -191,12 +194,12 @@ public class OrderServiceIMPL implements OrderService {
     @Override
     @Transactional
     public OrderDTO updateOrderStatus(Long orderId, Long restId, OrderStatus nextStatus) {
-        Restaurant restaurant=restaurantRepository.findById(restId).orElseThrow(()->new RuntimeException("No such restaturant present"));
-        Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such order Present"));
+        Restaurant restaurant=restaurantRepository.findById(restId).orElseThrow(()->new ResourceNotFoundException("No such restaturant present"));
+        Order order=orderRepository.findById(orderId).orElseThrow(()->new ResourceNotFoundException("No such order Present"));
         if (!order.getRestaurant().equals(restaurant))
         {
             log.warn("cannot update order status for order ={} , with restId={}",orderId,restId);
-            throw new RuntimeException("You Dont have Access");
+            throw new UnauthorisedException("You Dont have Access");
         }
         order.setStatus(nextStatus);
         log.info("updated the order status");
@@ -206,10 +209,10 @@ public class OrderServiceIMPL implements OrderService {
 
     @Override
     public OrderStatus getOrderStatus(Long orderId, Long userId) {
-        Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such order Present"));
+        Order order=orderRepository.findById(orderId).orElseThrow(()->new ResourceNotFoundException("No such order Present"));
         if (!order.getUser().getUserId().equals(userId))
         {
-            throw  new RuntimeException("Order user mismatch");
+            throw  new OrderOperationException("Order user mismatch");
         }
         return order.getStatus();
 
@@ -217,10 +220,10 @@ public class OrderServiceIMPL implements OrderService {
 
     @Override
     public Long getOrderAmount(Long orderId, Long userId) {
-        Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such order Present"));
+        Order order=orderRepository.findById(orderId).orElseThrow(()->new ResourceNotFoundException("No such order Present"));
         if (!order.getUser().getUserId().equals(userId))
         {
-            throw  new RuntimeException("Order user mismatch");
+            throw  new OrderOperationException("Order user mismatch");
         }
         return order.getAmount();
     }
@@ -229,10 +232,10 @@ public class OrderServiceIMPL implements OrderService {
     @Transactional
     public void cancelOrder(Long orderId, Long userId) {
         log.info("started cancel order for user ={} with order id{}",userId,orderId);
-        Order order=orderRepository.findById(orderId).orElseThrow(()->new RuntimeException("No such order Present"));
+        Order order=orderRepository.findById(orderId).orElseThrow(()->new ResourceNotFoundException("No such order Present"));
         if (!order.getUser().getUserId().equals(userId))
         {
-            throw  new RuntimeException("Order user mismatch");
+            throw  new OrderOperationException("Order user mismatch");
         }
 
         if(order.getStatus()==OrderStatus.CREATED)
@@ -242,7 +245,7 @@ public class OrderServiceIMPL implements OrderService {
         }
         else
         {
-            throw  new RuntimeException("You cannot cancel order already paid");
+            throw  new OrderOperationException("You cannot cancel order already paid");
         }
 
         log.info("updated the order status for order {}",orderId);

@@ -1,6 +1,8 @@
 package com.fung.fungry.ServiceIMPL;
 
 import com.fung.fungry.Enums.UserRole;
+import com.fung.fungry.Exception.ResourceNotFoundException;
+import com.fung.fungry.Exception.UserOperationException;
 import com.fung.fungry.Model.Cart;
 import com.fung.fungry.Model.Order;
 import com.fung.fungry.Model.User;
@@ -10,7 +12,6 @@ import com.fung.fungry.ModelDTO.UserDTO;
 import com.fung.fungry.Repository.OrderRepository;
 import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.UserService;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -65,8 +67,8 @@ public class UserServiceIMPL implements UserService {
         Optional<User> user=userRepository.findByUserMail(userDTO.getUserEmail());
         if (user.isPresent()) {
             log.warn("User already present with username={}", userDTO.getUserName());
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
+            throw new UserOperationException(
+
                     "Email Already Present"
             );
         }
@@ -95,7 +97,7 @@ public class UserServiceIMPL implements UserService {
         log.info("Fetching user with id={}", userId);
         User user =userRepository.findById(userId).orElseThrow(()->{
             log.warn("no such user found with userid={}",userId);
-            return new RuntimeException("No User Found");
+            return new ResourceNotFoundException("No User Found");
         });
         return mapToDTO(user);
     }
@@ -107,13 +109,13 @@ public class UserServiceIMPL implements UserService {
         log.info("started update user with user id={}",userId);
         User user =userRepository.findById(userId).orElseThrow(()->{
             log.warn("no such user found with userid={}",userId);
-            return new RuntimeException("No User Found");
+            return new ResourceNotFoundException("No User Found");
         });
         Optional<User> existUser=userRepository.findByUserMail(userDTO.getUserEmail());
         if (existUser.isPresent() && !existUser.get().getUserId().equals(user.getUserId()))
         {
             log.warn("User already present with username={}", userDTO.getUserName());
-            throw new RuntimeException("Email Already Present");
+            throw new UserOperationException("Email Already Present");
         }
         user.setUserMail(userDTO.getUserEmail());
         user.setUserName(userDTO.getUserName());
@@ -130,7 +132,7 @@ public class UserServiceIMPL implements UserService {
         log.info("Deactivating user with id={}", userId);
         User user =userRepository.findById(userId).orElseThrow(()->{
             log.warn("no such user found with userid={}",userId);
-            return new RuntimeException("No User Found");
+            return new ResourceNotFoundException("No User Found");
         });
         user.setIsActive(false);
         userRepository.save(user);
@@ -144,7 +146,7 @@ public class UserServiceIMPL implements UserService {
         log.info("Fetching role for user {}", userId);
         User user =userRepository.findById(userId).orElseThrow(()->{
             log.warn("no such user found with userid={}",userId);
-            return new RuntimeException("No User Found");
+            return new ResourceNotFoundException("No User Found");
         });
         UserRole role= user.getRole();
         return role;
@@ -155,7 +157,7 @@ public class UserServiceIMPL implements UserService {
         log.info("Updating phone number for user {}", userId);
         User user =userRepository.findById(userId).orElseThrow(()->{
             log.warn("no such user found with userid={}",userId);
-            return new RuntimeException("No User Found");
+            return new ResourceNotFoundException("No User Found");
         });
        user.setPhoneNumber(PHno);
        userRepository.save(user);
@@ -186,17 +188,17 @@ public class UserServiceIMPL implements UserService {
         log.info("User {} requested password change", userId);
         User user =userRepository.findById(userId).orElseThrow(()->{
             log.warn("no such user found with userid={}",userId);
-            return new RuntimeException("No User Found");
+            return new ResourceNotFoundException("No User Found");
         });
         if (!passwordEncoder.matches(oldPassword,user.getUserPasswordHash()))
         {
             log.warn("User {} entered incorrect old password", userId);
-            throw new RuntimeException("Old Password Is Incorrect");
+            throw new UserOperationException("Old Password Is Incorrect");
         }
         if (passwordEncoder.matches(newPassword,user.getUserPasswordHash()))
         {
             log.warn("User {} attempted to reuse old password", userId);
-            throw new RuntimeException("Old Password and new Password are same");
+            throw new UserOperationException("Old Password and new Password are same");
         }
 
         user.setUserPasswordHash(passwordEncoder.encode(newPassword));
@@ -211,7 +213,7 @@ public class UserServiceIMPL implements UserService {
     public List<OrderHistoryDTO> viewOrderHistory(Long userId, Integer page, Integer size, String sortBy, String direction) {
         User user =userRepository.findById(userId).orElseThrow(()->{
         log.warn("no such user found with userid={}",userId);
-        return new RuntimeException("No User Found");
+        return new ResourceNotFoundException("No User Found");
     });
         Sort sort="descending".equalsIgnoreCase(direction)?Sort.by(sortBy).descending():Sort.by(sortBy).ascending();
         log.info("Fetching order history for user {} page={} size={}", userId, page, size);
