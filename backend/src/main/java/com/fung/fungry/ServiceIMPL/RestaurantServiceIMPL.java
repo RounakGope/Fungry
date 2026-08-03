@@ -303,10 +303,11 @@ public class RestaurantServiceIMPL  implements RestaurantService {
             throw new UnauthorisedException( "Only an Admin or Owner can add Menu item");
         }
         Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
-        //restaurant ownership to be added
+
         if(restaurant.isPresent())
         {
             Restaurant restaurant1=restaurant.get();
+            assertCanManage(restaurant1,user);
             List<MenuItem>menuItemList=restaurant1.getMenuItems();
             menuItemList.add(mapToMenuItemCreate(itemDTO,restaurant1));
             restaurantRepository.save(restaurant1);
@@ -340,6 +341,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
             Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
             if (restaurant.isPresent())
             {
+                assertCanManage(restaurant.get(),user);
                 if(menuItem.get().getRestaurant().getRestaurantId().equals(restaurant.get().getRestaurantId()))
                 {
                     List<MenuItem> menuItems=restaurant.get().getMenuItems();
@@ -382,6 +384,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
                     log.warn("Menu item not found with id={}", menuItemId);
                     return new MenuItemException("menuItem not available");
                 });
+        assertCanManage(menuItem.getRestaurant(),user);
 
 
                     menuItem.setType(menuItemDTO.getFoodType());

@@ -1,10 +1,13 @@
 package com.fung.fungry.Controller;
 
+import com.fung.fungry.Configuration.UserPrincipal;
 import com.fung.fungry.ModelDTO.*;
 import com.fung.fungry.ServiceIMPL.RestaurantServiceIMPL;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,15 +40,19 @@ public class RestaurantController {
             return ResponseEntity.ok(all);
 
     }
-    @PostMapping("/{adminId}/{userId}")
-    public ResponseEntity<RestaurantDTO> addRest(@PathVariable Long adminId ,@PathVariable Long userId ,@Valid@RequestBody RestaurantCreateDTO restaurantCreateDTO)
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{userId}")
+    public ResponseEntity<RestaurantDTO> addRest(@PathVariable Long userId ,@Valid@RequestBody RestaurantCreateDTO restaurantCreateDTO, @AuthenticationPrincipal UserPrincipal userPrincipal)
     {
+        Long adminId=userPrincipal.getUser().getUserId();
         RestaurantDTO restaurantDTO=restaurantServiceIMPL.addRestaurant(restaurantCreateDTO,adminId,userId);
         return ResponseEntity.ok(restaurantDTO);
     }
-    @GetMapping("/owner/{userId}")
-    public ResponseEntity<RestaurantDTO> getByOwner(@PathVariable Long userId)
+    @GetMapping("/owner")
+    public ResponseEntity<RestaurantDTO> getByOwner(@AuthenticationPrincipal UserPrincipal principal)
     {
+        Long userId
+                =principal.getUser().getUserId();
        RestaurantDTO restaurantDTO= restaurantServiceIMPL.getByOwner(userId);
        return ResponseEntity.ok(restaurantDTO);
 
@@ -56,39 +63,48 @@ public class RestaurantController {
         RestaurantDTO restaurantDTO = restaurantServiceIMPL.viewRestaurant(restId);
         return ResponseEntity.ok(restaurantDTO);
     }
-    @DeleteMapping("/{restId}/{userId}")
-    public ResponseEntity<Void> delete(@PathVariable Long restId,@PathVariable Long userId)
+    @DeleteMapping("/{restId}")
+    public ResponseEntity<Void> delete(@PathVariable Long restId,@AuthenticationPrincipal UserPrincipal principal)
     {
-        restaurantServiceIMPL.deleteRestaurant(restId,userId);
+        Long adminId=principal.getUser().getUserId();
+        restaurantServiceIMPL.deleteRestaurant(restId,adminId);
         return ResponseEntity.noContent().build();
     }
-    @PutMapping("/{restId}/{userId}")
-    public ResponseEntity<RestaurantDTO> update(@PathVariable Long restId,@PathVariable Long userId,@Valid @RequestBody RestaurantUpdateDTO restaurantDTO) {
+    @PutMapping("/{restId}")
+    public ResponseEntity<RestaurantDTO> update(@PathVariable Long restId,@Valid @RequestBody RestaurantUpdateDTO restaurantDTO
+    ,@AuthenticationPrincipal UserPrincipal userPrincipal) {
+        Long userId=userPrincipal.getUser().getUserId();
         RestaurantDTO restaurantDTO1 = restaurantServiceIMPL.updateRestaurant(
                 restaurantDTO, userId,restId);
         return ResponseEntity.ok(restaurantDTO1);
     }
-    @PostMapping("/rate/{userId}/{restId}/{rate}")
-    public ResponseEntity<RestaurantDTO> rate(@PathVariable Long userId,@PathVariable Long restId,@PathVariable Integer rate)
+    @PostMapping("/rate/{restId}/{rate}")
+    public ResponseEntity<RestaurantDTO> rate(@PathVariable Long restId,@PathVariable Integer rate
+    ,@AuthenticationPrincipal UserPrincipal userPrincipal)
     {
+        Long userId =userPrincipal.getUser().getUserId();
+
         RestaurantDTO restaurantDTO=restaurantServiceIMPL.rateRestaurant(userId, restId, rate);
         return ResponseEntity.ok(restaurantDTO);
     }
-    @PostMapping("/addItem/{restId}/{userId}")
-    public ResponseEntity<Void> addItem(@PathVariable Long restId,@PathVariable Long userId,@RequestBody MenuItemCreateDTO menuItemDTO)
+    @PostMapping("/addItem/{restId}")
+    public ResponseEntity<Void> addItem(@PathVariable Long restId,@RequestBody MenuItemCreateDTO menuItemDTO,@AuthenticationPrincipal UserPrincipal principal)
     {
+        Long userId=principal.getUser().getUserId();
         restaurantServiceIMPL.addItemInMenu(menuItemDTO,restId,userId);
         return ResponseEntity.noContent().build();
     }
-    @DeleteMapping("/deleteItem/{restId}/{userId}/{itemId}")
-    public ResponseEntity<Void> deleteItem(@PathVariable Long restId, @PathVariable Long userId, @PathVariable Long itemId)
+    @DeleteMapping("/deleteItem/{restId}/{itemId}")
+    public ResponseEntity<Void> deleteItem(@PathVariable Long restId,  @PathVariable Long itemId,@AuthenticationPrincipal UserPrincipal principal)
     {
+        Long userId=principal.getUser().getUserId();
         restaurantServiceIMPL.deleteItemInMenu(itemId,restId,userId);
         return ResponseEntity.noContent().build();
     }
-    @PutMapping("/updateItem/{userId}/{itemId}")
-    public ResponseEntity<MenuItemDTO> updateItem(@PathVariable Long userId,@PathVariable Long itemId,@RequestBody MenuItemDTO menuItemDTO)
+    @PutMapping("/updateItem/{itemId}")
+    public ResponseEntity<MenuItemDTO> updateItem(@PathVariable Long itemId,@RequestBody MenuItemDTO menuItemDTO,@AuthenticationPrincipal UserPrincipal principal)
     {
+        Long userId=principal.getUser().getUserId();
         MenuItemDTO menuItemDTO1=restaurantServiceIMPL.updateItemInMenu(itemId,userId,menuItemDTO);
         return ResponseEntity.ok(menuItemDTO1);
     }
