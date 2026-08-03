@@ -65,8 +65,8 @@ export default function RestaurantDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">{restaurant.name}</h1>
-        <p className="text-sm text-gray-500">Owner dashboard</p>
+        <h1 className="text-2xl font-bold text-white">{restaurant.name}</h1>
+        <p className="text-sm text-white/70">Owner dashboard</p>
       </div>
 
       <div className="flex gap-1 border-b border-gray-200">
@@ -77,7 +77,7 @@ export default function RestaurantDashboard() {
             className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
               tab === t.key
                 ? 'border-primary-600 text-primary-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                : 'border-transparent text-white/70 hover:text-white/90'
             }`}
           >
             {t.label}
@@ -168,12 +168,12 @@ function OrdersTab({ restaurant, toast }) {
   return (
     <div className="space-y-6">
       <section>
-        <h2 className="mb-3 text-sm font-semibold text-gray-900">
+        <h2 className="mb-3 text-sm font-semibold text-white">
           Active orders ({active.length})
         </h2>
         {active.length === 0 ? (
           <Card>
-            <p className="text-sm text-gray-500">No active orders right now.</p>
+            <p className="text-sm text-white/70">No active orders right now.</p>
           </Card>
         ) : (
           <div className="space-y-3">
@@ -182,30 +182,30 @@ function OrdersTab({ restaurant, toast }) {
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-medium text-gray-900">Order #{order.orderId}</p>
+                      <p className="font-medium text-white">Order #{order.orderId}</p>
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                          STATUS_STYLES[order.status] || 'bg-gray-100 text-gray-600'
+                          STATUS_STYLES[order.status] || 'bg-gray-100 text-white/80'
                         }`}
                       >
                         {order.status}
                       </span>
                     </div>
                     {order.expecetedTimeInMinutes && (
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-white/60">
                         ETA: {order.expecetedTimeInMinutes} mins
                       </p>
                     )}
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-white/60">
                       {new Date(order.createdTime).toLocaleTimeString()}
                     </p>
                   </div>
-                  <p className="font-semibold text-gray-900">
+                  <p className="font-semibold text-white">
                     {formatCurrency(order.totalAmt)}
                   </p>
                 </div>
 
-                <ul className="mt-3 space-y-1 border-t border-gray-100 pt-3 text-sm text-gray-600">
+                <ul className="mt-3 space-y-1 border-t border-gray-100 pt-3 text-sm text-white/80">
                   {order.orderItemDTO?.map((it) => (
                     <li key={it.orderItemId}>
                       {it.quantity}× {it.name} — {formatCurrency(it.price)}
@@ -242,13 +242,13 @@ function OrdersTab({ restaurant, toast }) {
 
       {past.length > 0 && (
         <section>
-          <h2 className="mb-3 text-sm font-semibold text-gray-900">Past orders</h2>
+          <h2 className="mb-3 text-sm font-semibold text-white">Past orders</h2>
           <div className="space-y-2">
             {past.map((order) => (
               <Card key={order.orderId} className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-900">Order #{order.orderId}</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="font-medium text-white">Order #{order.orderId}</p>
+                  <p className="text-xs text-white/60">
                     {new Date(order.createdTime).toLocaleDateString()}
                   </p>
                 </div>
@@ -353,7 +353,7 @@ function MenuTab({ restaurant, userId, toast }) {
   return (
     <div>
       <Card className="mb-4">
-        <h3 className="mb-3 text-sm font-semibold text-gray-900">
+        <h3 className="mb-3 text-sm font-semibold text-white">
           {editingItemId ? 'Edit item' : 'Add item'}
         </h3>
         <form onSubmit={handleSaveItem} className="space-y-3">
@@ -382,7 +382,7 @@ function MenuTab({ restaurant, userId, toast }) {
           />
           <div className="grid grid-cols-2 gap-3">
   <div>
-    <label className="block text-sm font-medium text-gray-700">Category</label>
+    <label className="block text-sm font-medium text-white/90">Category</label>
     <select
       value={itemForm.foodCategory}
       onChange={(e) => setItemForm({ ...itemForm, foodCategory: e.target.value })}
@@ -396,7 +396,7 @@ function MenuTab({ restaurant, userId, toast }) {
     </select>
   </div>
   <div>
-    <label className="block text-sm font-medium text-gray-700">Type</label>
+    <label className="block text-sm font-medium text-white/90">Type</label>
     <select
       value={itemForm.foodType}
       onChange={(e) => setItemForm({ ...itemForm, foodType: e.target.value })}
@@ -410,7 +410,7 @@ function MenuTab({ restaurant, userId, toast }) {
     </select>
   </div>
 </div>
-          <label className="flex items-center gap-2 text-sm text-gray-700">
+          <label className="flex items-center gap-2 text-sm text-white/90">
             <input
               type="checkbox"
               checked={itemForm.isAvailable}
@@ -445,17 +445,17 @@ function MenuTab({ restaurant, userId, toast }) {
           <Card key={item.menuItemId} className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <p className="font-medium text-gray-900">{item.foodName}</p>
+                <p className="font-medium text-white">{item.foodName}</p>
                 {!item.isAvailable && (
                   <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-600">
                     Unavailable
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-white/60">
                 {item.foodCategory} · {item.foodType} · Stock: {item.availableQuantity}
               </p>
-              <p className="mt-1 text-sm font-semibold text-gray-900">
+              <p className="mt-1 text-sm font-semibold text-white">
                 {formatCurrency(item.price)}
               </p>
             </div>
@@ -538,7 +538,7 @@ function DetailsTab({ restaurant, setRestaurant, userId, toast }) {
         <Input label="Cuisine" value={form.cuisine}
           onChange={(e) => setForm({ ...form, cuisine: e.target.value })} />
         <div>
-          <label className="block text-sm font-medium text-gray-700">Description</label>
+          <label className="block text-sm font-medium text-white/90">Description</label>
           <textarea value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             rows={3}
@@ -546,7 +546,7 @@ function DetailsTab({ restaurant, setRestaurant, userId, toast }) {
           />
         </div>
 
-        <p className="pt-1 text-sm font-medium text-gray-700">Address</p>
+        <p className="pt-1 text-sm font-medium text-white/90">Address</p>
         <Input label="Street" value={form.addressDTO.street}
           onChange={(e) => setAddr('street', e.target.value)} required />
         <Input label="Area" value={form.addressDTO.area}

@@ -22,8 +22,8 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Admin dashboard</h1>
-        <p className="text-sm text-gray-500">Manage users and restaurants</p>
+        <h1 className="text-2xl font-bold text-white">Admin dashboard</h1>
+        <p className="text-sm text-white/70">Manage users and restaurants</p>
       </div>
 
       <div className="flex gap-1 border-b border-gray-200">
@@ -34,7 +34,7 @@ export default function AdminDashboard() {
             className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
               tab === t.key
                 ? 'border-primary-600 text-primary-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                : 'border-transparent text-white/70 hover:text-white/90'
             }`}
           >
             {t.label}
@@ -90,7 +90,7 @@ function UsersTab() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">All users</h2>
+        <h2 className="text-lg font-semibold text-white">All users</h2>
         <select
           value={roleFilter}
           onChange={(e) => { setRoleFilter(e.target.value); setPage(0); setExpandedId(null) }}
@@ -116,12 +116,12 @@ function UsersTab() {
                 className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
               >
                 <div>
-                  <p className="font-medium text-gray-900">{user.userName}</p>
-                  <p className="text-sm text-gray-500">{user.userEmail}</p>
+                  <p className="font-medium text-white">{user.userName}</p>
+                  <p className="text-sm text-white/70">{user.userEmail}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <Badge status={user.userRole} />
-                  <span className="text-gray-400">{expandedId === user.userId ? '▲' : '▼'}</span>
+                  <span className="text-white/60">{expandedId === user.userId ? '▲' : '▼'}</span>
                 </div>
               </button>
 
@@ -193,10 +193,10 @@ function UserDetailPanel({ user, onUpdated, toast }) {
     <div className="border-t border-gray-100 bg-gray-50 px-4 py-4">
       <div className="grid gap-6 sm:grid-cols-2">
         <div>
-          <h3 className="mb-3 text-sm font-semibold text-gray-900">Edit user</h3>
+          <h3 className="mb-3 text-sm font-semibold text-white">Edit user</h3>
           <form onSubmit={handleSave} className="space-y-3">
             <div>
-              <label className="block text-xs font-medium text-gray-600">Name</label>
+              <label className="block text-xs font-medium text-white/80">Name</label>
               <input
                 value={form.userName}
                 onChange={(e) => setForm({ ...form, userName: e.target.value })}
@@ -205,7 +205,7 @@ function UserDetailPanel({ user, onUpdated, toast }) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600">Email</label>
+              <label className="block text-xs font-medium text-white/80">Email</label>
               <input
                 type="email"
                 value={form.userEmail}
@@ -215,7 +215,7 @@ function UserDetailPanel({ user, onUpdated, toast }) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600">Phone</label>
+              <label className="block text-xs font-medium text-white/80">Phone</label>
               <input
                 value={form.phoneNumber}
                 onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
@@ -223,7 +223,7 @@ function UserDetailPanel({ user, onUpdated, toast }) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600">Role</label>
+              <label className="block text-xs font-medium text-white/80">Role</label>
               <select
                 value={form.userRole}
                 onChange={(e) => setForm({ ...form, userRole: e.target.value })}
@@ -241,24 +241,24 @@ function UserDetailPanel({ user, onUpdated, toast }) {
         </div>
 
         <div>
-          <h3 className="mb-3 text-sm font-semibold text-gray-900">Recent orders</h3>
+          <h3 className="mb-3 text-sm font-semibold text-white">Recent orders</h3>
           {ordersLoading ? (
-            <p className="text-sm text-gray-500">Loading…</p>
+            <p className="text-sm text-white/70">Loading…</p>
           ) : orders.length === 0 ? (
-            <p className="text-sm text-gray-500">No orders yet.</p>
+            <p className="text-sm text-white/70">No orders yet.</p>
           ) : (
             <div className="space-y-2">
               {orders.map((order) => (
                 <div key={order.orderId} className="rounded-lg border border-gray-200 bg-white px-3 py-2">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-gray-900">Order #{order.orderId}</p>
+                    <p className="text-sm font-medium text-white">Order #{order.orderId}</p>
                     <Badge status={order.status} />
                   </div>
-                  <div className="mt-1 flex items-center justify-between text-xs text-gray-500">
+                  <div className="mt-1 flex items-center justify-between text-xs text-white/70">
                     <span>{order.restaurantName}</span>
                     <span>{formatDate(order.createdTime)}</span>
                   </div>
-                  <p className="mt-1 text-sm font-semibold text-gray-900">{formatCurrency(order.totalAmt)}</p>
+                  <p className="mt-1 text-sm font-semibold text-white">{formatCurrency(order.totalAmt)}</p>
                 </div>
               ))}
             </div>

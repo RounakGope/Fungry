@@ -54,7 +54,7 @@ export default function RestaurantsTab() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">All restaurants</h2>
+        <h2 className="text-lg font-semibold text-white">All restaurants</h2>
         <Button size="sm" onClick={() => setShowAddForm((s) => !s)}>
           {showAddForm ? 'Cancel' : '+ Add restaurant'}
         </Button>
@@ -83,14 +83,14 @@ export default function RestaurantsTab() {
                 className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
               >
                 <div>
-                  <p className="font-medium text-gray-900">{rest.name}</p>
-                  <p className="text-sm text-gray-500">{rest.cuisine}</p>
+                  <p className="font-medium text-white">{rest.name}</p>
+                  <p className="text-sm text-white/70">{rest.cuisine}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-white/80">
                     {rest.rating != null ? `★ ${rest.rating.toFixed(1)}` : 'No rating'}
                   </span>
-                  <span className="text-gray-400">{expandedId === rest.restaurantId ? '▲' : '▼'}</span>
+                  <span className="text-white/60">{expandedId === rest.restaurantId ? '▲' : '▼'}</span>
                 </div>
               </button>
 
@@ -178,10 +178,10 @@ function AddRestaurantForm({ adminId, onCreated, toast }) {
 
   return (
     <Card>
-      <h3 className="mb-3 text-sm font-semibold text-gray-900">New restaurant</h3>
+      <h3 className="mb-3 text-sm font-semibold text-white">New restaurant</h3>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label className="block text-xs font-medium text-gray-600">Owner</label>
+          <label className="block text-xs font-medium text-white/80">Owner</label>
           <select
             value={form.ownerId}
             onChange={(e) => setForm({ ...form, ownerId: e.target.value })}
@@ -200,7 +200,7 @@ function AddRestaurantForm({ adminId, onCreated, toast }) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-600">Name</label>
+          <label className="block text-xs font-medium text-white/80">Name</label>
           <input
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -209,7 +209,7 @@ function AddRestaurantForm({ adminId, onCreated, toast }) {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-600">Cuisine</label>
+          <label className="block text-xs font-medium text-white/80">Cuisine</label>
           <input
             value={form.cuisine}
             onChange={(e) => setForm({ ...form, cuisine: e.target.value })}
@@ -217,7 +217,7 @@ function AddRestaurantForm({ adminId, onCreated, toast }) {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-600">Description</label>
+          <label className="block text-xs font-medium text-white/80">Description</label>
           <textarea
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -228,7 +228,7 @@ function AddRestaurantForm({ adminId, onCreated, toast }) {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-gray-600">Street</label>
+            <label className="block text-xs font-medium text-white/80">Street</label>
             <input
               value={form.restaurantAddressDTO.street}
               onChange={(e) => setForm({ ...form, restaurantAddressDTO: { ...form.restaurantAddressDTO, street: e.target.value } })}
@@ -237,7 +237,7 @@ function AddRestaurantForm({ adminId, onCreated, toast }) {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600">Area</label>
+            <label className="block text-xs font-medium text-white/80">Area</label>
             <input
               value={form.restaurantAddressDTO.area}
               onChange={(e) => setForm({ ...form, restaurantAddressDTO: { ...form.restaurantAddressDTO, area: e.target.value } })}
@@ -245,7 +245,7 @@ function AddRestaurantForm({ adminId, onCreated, toast }) {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600">City</label>
+            <label className="block text-xs font-medium text-white/80">City</label>
             <input
               value={form.restaurantAddressDTO.city}
               onChange={(e) => setForm({ ...form, restaurantAddressDTO: { ...form.restaurantAddressDTO, city: e.target.value } })}
@@ -254,7 +254,7 @@ function AddRestaurantForm({ adminId, onCreated, toast }) {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600">State</label>
+            <label className="block text-xs font-medium text-white/80">State</label>
             <input
               value={form.restaurantAddressDTO.state}
               onChange={(e) => setForm({ ...form, restaurantAddressDTO: { ...form.restaurantAddressDTO, state: e.target.value } })}
@@ -263,7 +263,7 @@ function AddRestaurantForm({ adminId, onCreated, toast }) {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600">Zipcode</label>
+            <label className="block text-xs font-medium text-white/80">Zipcode</label>
             <input
               type="number"
               value={form.restaurantAddressDTO.zipcode}
@@ -329,7 +329,7 @@ function RestaurantDetailPanel({ restaurant, adminUserId, onUpdated, onDelete, t
     <div className="border-t border-gray-100 bg-gray-50 px-4 py-4">
       <form onSubmit={handleSave} className="space-y-3">
         <div>
-          <label className="block text-xs font-medium text-gray-600">Name</label>
+          <label className="block text-xs font-medium text-white/80">Name</label>
           <input
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -338,7 +338,7 @@ function RestaurantDetailPanel({ restaurant, adminUserId, onUpdated, onDelete, t
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-600">Cuisine</label>
+          <label className="block text-xs font-medium text-white/80">Cuisine</label>
           <input
             value={form.cuisine}
             onChange={(e) => setForm({ ...form, cuisine: e.target.value })}
@@ -346,7 +346,7 @@ function RestaurantDetailPanel({ restaurant, adminUserId, onUpdated, onDelete, t
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-600">Description</label>
+          <label className="block text-xs font-medium text-white/80">Description</label>
           <textarea
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -357,7 +357,7 @@ function RestaurantDetailPanel({ restaurant, adminUserId, onUpdated, onDelete, t
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-gray-600">Street</label>
+            <label className="block text-xs font-medium text-white/80">Street</label>
             <input
               value={form.addressDTO.street}
               onChange={(e) => setForm({ ...form, addressDTO: { ...form.addressDTO, street: e.target.value } })}
@@ -365,7 +365,7 @@ function RestaurantDetailPanel({ restaurant, adminUserId, onUpdated, onDelete, t
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600">Area</label>
+            <label className="block text-xs font-medium text-white/80">Area</label>
             <input
               value={form.addressDTO.area}
               onChange={(e) => setForm({ ...form, addressDTO: { ...form.addressDTO, area: e.target.value } })}
@@ -373,7 +373,7 @@ function RestaurantDetailPanel({ restaurant, adminUserId, onUpdated, onDelete, t
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600">City</label>
+            <label className="block text-xs font-medium text-white/80">City</label>
             <input
               value={form.addressDTO.city}
               onChange={(e) => setForm({ ...form, addressDTO: { ...form.addressDTO, city: e.target.value } })}
@@ -382,7 +382,7 @@ function RestaurantDetailPanel({ restaurant, adminUserId, onUpdated, onDelete, t
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600">State</label>
+            <label className="block text-xs font-medium text-white/80">State</label>
             <input
               value={form.addressDTO.state}
               onChange={(e) => setForm({ ...form, addressDTO: { ...form.addressDTO, state: e.target.value } })}
@@ -391,7 +391,7 @@ function RestaurantDetailPanel({ restaurant, adminUserId, onUpdated, onDelete, t
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600">Zipcode</label>
+            <label className="block text-xs font-medium text-white/80">Zipcode</label>
             <input
               type="number"
               value={form.addressDTO.zipcode}

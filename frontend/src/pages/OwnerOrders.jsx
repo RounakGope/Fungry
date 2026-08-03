@@ -53,7 +53,7 @@ export default function OwnerOrders() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Order history</h1>
+      <h1 className="mb-6 text-2xl font-bold text-white">Order history</h1>
 
       {orders.length === 0 ? (
         <EmptyState title="No orders yet" description="Orders for this restaurant will appear here." />
@@ -63,9 +63,9 @@ export default function OwnerOrders() {
             <Card key={order.orderId}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <p className="font-medium text-gray-900">Order #{order.orderId}</p>
-                  <p className="mt-1 text-sm text-gray-500">{formatDate(order.createdTime)}</p>
-                  <p className="mt-2 text-sm font-semibold text-gray-900">{formatCurrency(order.totalAmt)}</p>
+                  <p className="font-medium text-white">Order #{order.orderId}</p>
+                  <p className="mt-1 text-sm text-white/70">{formatDate(order.createdTime)}</p>
+                  <p className="mt-2 text-sm font-semibold text-white">{formatCurrency(order.totalAmt)}</p>
                 </div>
                 <Badge status={order.status} />
               </div>
@@ -81,7 +81,7 @@ export default function OwnerOrders() {
                   ))}
                 </select>
                 {updatingId === order.orderId && (
-                  <span className="text-xs text-gray-500">Updating…</span>
+                  <span className="text-xs text-white/70">Updating…</span>
                 )}
               </div>
             </Card>

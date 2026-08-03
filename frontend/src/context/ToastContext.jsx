@@ -34,7 +34,7 @@ export function ToastProvider({ children }) {
                 ? 'border-red-200 bg-white text-red-700'
                 : toast.type === 'success'
                   ? 'border-primary-600/30 bg-white text-primary-700'
-                  : 'border-gray-200 bg-white text-gray-800'
+                  : 'border-gray-200 bg-white text-white'
             }`}
           >
             {toast.message}

@@ -80,11 +80,11 @@ export default function Checkout() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Checkout</h1>
+      <h1 className="mb-6 text-2xl font-bold text-white">Checkout</h1>
 
       <section className="mb-8">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">Delivery address</h2>
+          <h2 className="text-lg font-semibold text-white">Delivery address</h2>
           <Button size="sm" variant="secondary" onClick={() => setShowForm(!showForm)}>
             {showForm ? 'Cancel' : 'Add address'}
           </Button>
@@ -151,11 +151,11 @@ export default function Checkout() {
                   className="mt-1"
                 />
                 <div className="text-sm">
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-white">
                     {addr.houseNumber ? `${addr.houseNumber}, ` : ''}{addr.address}
                   </p>
-                  {addr.landmark && <p className="text-gray-500">Near {addr.landmark}</p>}
-                  <p className="text-gray-500">{addr.state} {addr.zipcode}</p>
+                  {addr.landmark && <p className="text-white/70">Near {addr.landmark}</p>}
+                  <p className="text-white/70">{addr.state} {addr.zipcode}</p>
                 </div>
               </label>
             ))}
@@ -165,7 +165,7 @@ export default function Checkout() {
 
       <Card>
         <div className="flex items-center justify-between">
-          <span className="font-semibold text-gray-900">Order total</span>
+          <span className="font-semibold text-white">Order total</span>
           <span className="text-lg font-bold">{formatCurrency(total)}</span>
         </div>
         <Button

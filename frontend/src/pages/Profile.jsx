@@ -124,18 +124,18 @@ export default function Profile() {
 
   return (
     <div className="max-w-2xl space-y-8">
-      <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
+      <h1 className="text-2xl font-bold text-white">Profile</h1>
 
       <Card>
-        <h2 className="text-sm font-semibold text-gray-900">Account</h2>
+        <h2 className="text-sm font-semibold text-white">Account</h2>
         <dl className="mt-3 space-y-2 text-sm">
-          <div className="flex justify-between"><dt className="text-gray-500">Username</dt><dd>{user.username}</dd></div>
-          <div className="flex justify-between"><dt className="text-gray-500">Email</dt><dd>{user.email}</dd></div>
+          <div className="flex justify-between"><dt className="text-white/70">Username</dt><dd>{user.username}</dd></div>
+          <div className="flex justify-between"><dt className="text-white/70">Email</dt><dd>{user.email}</dd></div>
         </dl>
       </Card>
 
       <Card>
-        <h2 className="mb-4 text-sm font-semibold text-gray-900">Update phone</h2>
+        <h2 className="mb-4 text-sm font-semibold text-white">Update phone</h2>
         <form onSubmit={handlePhoneUpdate} className="flex gap-3">
           <Input className="flex-1" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone number" />
           <Button type="submit" size="sm" disabled={saving}>Save</Button>
@@ -143,7 +143,7 @@ export default function Profile() {
       </Card>
 
       <Card>
-        <h2 className="mb-4 text-sm font-semibold text-gray-900">Change password</h2>
+        <h2 className="mb-4 text-sm font-semibold text-white">Change password</h2>
         <form onSubmit={handlePasswordUpdate} className="space-y-3">
           <Input type="password" label="Current password" value={passwords.currentPassword} onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })} required />
           <Input type="password" label="New password" value={passwords.newPassword} onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })} required />
@@ -153,10 +153,10 @@ export default function Profile() {
       </Card>
 
       <section>
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">Addresses</h2>
+        <h2 className="mb-4 text-lg font-semibold text-white">Addresses</h2>
 
         <Card className="mb-4">
-          <h3 className="mb-3 text-sm font-semibold text-gray-900">{editingId ? 'Edit address' : 'Add address'}</h3>
+          <h3 className="mb-3 text-sm font-semibold text-white">{editingId ? 'Edit address' : 'Add address'}</h3>
           <form onSubmit={handleSaveAddress} className="space-y-3">
             <Input label="House number" value={addressForm.houseNumber} onChange={(e) => setAddressForm({ ...addressForm, houseNumber: e.target.value })} required />
             <Input label="Address" value={addressForm.address} onChange={(e) => setAddressForm({ ...addressForm, address: e.target.value })} required />
@@ -179,8 +179,8 @@ export default function Profile() {
           {addresses.map((addr) => (
             <Card key={addr.addressId} className="flex items-start justify-between">
               <div className="text-sm">
-                <p className="font-medium text-gray-900">{addr.houseNumber}, {addr.address}</p>
-                <p className="text-gray-500">{addr.landMark && `${addr.landMark}, `}{addr.state} {addr.zipCode}</p>
+                <p className="font-medium text-white">{addr.houseNumber}, {addr.address}</p>
+                <p className="text-white/70">{addr.landMark && `${addr.landMark}, `}{addr.state} {addr.zipCode}</p>
               </div>
               <div className="flex gap-2">
                 <Button size="sm" variant="secondary" onClick={() => startEdit(addr)}>Edit</Button>

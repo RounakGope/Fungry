@@ -80,16 +80,16 @@ export default function RestaurantDetail() {
   return (
     <div>
       <div className="mb-8 border-b border-gray-200 pb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{restaurant.name}</h1>
-        {restaurant.cuisine && <p className="mt-1 text-sm text-gray-500">{restaurant.cuisine}</p>}
-        {restaurant.description && <p className="mt-3 text-sm text-gray-600">{restaurant.description}</p>}
+        <h1 className="text-2xl font-bold text-white">{restaurant.name}</h1>
+        {restaurant.cuisine && <p className="mt-1 text-sm text-white/70">{restaurant.cuisine}</p>}
+        {restaurant.description && <p className="mt-3 text-sm text-white/80">{restaurant.description}</p>}
         {restaurant.rating != null && (
-          <p className="mt-2 text-sm font-medium text-gray-700">{Number(restaurant.rating).toFixed(1)} rating</p>
+          <p className="mt-2 text-sm font-medium text-white/90">{Number(restaurant.rating).toFixed(1)} rating</p>
         )}
 
         {isCustomer && (
           <div className="mt-4 flex items-center gap-3">
-            <label className="text-sm text-gray-600">Rate:</label>
+            <label className="text-sm text-white/80">Rate:</label>
             <select
               value={rating}
               onChange={(e) => setRating(Number(e.target.value))}
@@ -105,7 +105,7 @@ export default function RestaurantDetail() {
       </div>
 
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
+        <h2 className="text-lg font-semibold text-white">Menu</h2>
         <div className="flex gap-2">
           <select
             value={sortBy}
@@ -135,8 +135,8 @@ export default function RestaurantDetail() {
           {menuItems.map((item) => (
             <Card key={item.menuItemId} className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="font-medium text-gray-900">{item.foodName}</h3>
-                <p className="mt-2 text-sm font-semibold text-gray-900">{formatCurrency(item.price)}</p>
+                <h3 className="font-medium text-white">{item.foodName}</h3>
+                <p className="mt-2 text-sm font-semibold text-white">{formatCurrency(item.price)}</p>
               </div>
               {isCustomer && (
                 <Button

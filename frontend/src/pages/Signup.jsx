@@ -51,8 +51,8 @@ export default function Signup() {
   return (
     <AuthLayout>
       <Card className="w-full max-w-md p-5 sm:p-6">
-        <h1 className="text-xl font-semibold text-gray-900">Create account</h1>
-        <p className="mt-1 text-sm text-gray-500">Join Fungry to order food</p>
+        <h1 className="text-xl font-semibold text-white">Create account</h1>
+        <p className="mt-1 text-sm text-white/70">Join Fungry to order food</p>
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <Input label="Username" name="username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required />
           <Input label="Email" name="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
@@ -63,7 +63,7 @@ export default function Signup() {
             {loading ? 'Creating…' : 'Create account'}
           </Button>
         </form>
-        <p className="mt-4 text-center text-sm text-gray-500">
+        <p className="mt-4 text-center text-sm text-white/70">
           Already have an account?{' '}
           <Link to="/login" className="font-medium text-primary-700 hover:underline">Sign in</Link>
         </p>

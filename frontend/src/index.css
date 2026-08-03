@@ -9,7 +9,7 @@
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 html {
@@ -18,7 +18,7 @@ html {
 
 body {
   font-family: var(--font-sans);
-  @apply bg-gray-50 text-gray-900 antialiased;
+  @apply bg-zinc-950 text-zinc-100 antialiased;
   min-height: 100vh;
   padding-bottom: env(safe-area-inset-bottom);
 }

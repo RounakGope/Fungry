@@ -1,18 +1,18 @@
 const statusStyles = {
-  PENDING: 'bg-primary-100 text-primary-700 border-primary-600/20',
-  CONFIRMED: 'bg-primary-100 text-primary-700 border-primary-600/20',
-  PREPARING: 'bg-primary-100 text-primary-700 border-primary-600/20',
-  OUT_FOR_DELIVERY: 'bg-primary-100 text-primary-700 border-primary-600/20',
-  DELIVERED: 'bg-gray-100 text-gray-700 border-gray-200',
-  CANCELLED: 'bg-gray-100 text-gray-500 border-gray-200',
+  PENDING: 'bg-amber-500/10 text-amber-400 border-amber-400/20',
+  CONFIRMED: 'bg-emerald-500/10 text-emerald-400 border-emerald-400/20',
+  PREPARING: 'bg-sky-500/10 text-sky-400 border-sky-400/20',
+  OUT_FOR_DELIVERY: 'bg-violet-500/10 text-violet-400 border-violet-400/20',
+  DELIVERED: 'bg-emerald-500/10 text-emerald-400 border-emerald-400/20',
+  CANCELLED: 'bg-rose-500/10 text-rose-400 border-rose-400/20',
 }
 
 export default function Badge({ status, children }) {
   const label = children || status?.replace(/_/g, ' ')
-  const style = statusStyles[status] || 'bg-gray-100 text-gray-700 border-gray-200'
+  const style = statusStyles[status] || 'bg-zinc-800/70 text-white/80 border-zinc-700'
 
   return (
-    <span className={`inline-flex items-center rounded-lg border px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide ${style}`}>
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.2em] ${style}`}>
       {label}
     </span>
   )

@@ -67,35 +67,35 @@ export default function OrderDetail() {
   if (loading) return <LoadingSpinner />
 
   if (!order) {
-    return <p className="text-sm text-gray-500">Order not found.</p>
+    return <p className="text-sm text-white/70">Order not found.</p>
   }
 
   return (
     <div className="max-w-2xl">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Order #{order.orderId}</h1>
-          <p className="mt-1 text-sm text-gray-500">{formatDate(order.createdTime)}</p>
+          <h1 className="text-2xl font-bold text-white">Order #{order.orderId}</h1>
+          <p className="mt-1 text-sm text-white/70">{formatDate(order.createdTime)}</p>
         </div>
         <Badge status={order.status} />
       </div>
 
       <Card className="mb-4">
         <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Total</span>
-          <span className="font-semibold text-gray-900">{formatCurrency(amount)}</span>
+          <span className="text-white/70">Total</span>
+          <span className="font-semibold text-white">{formatCurrency(amount)}</span>
         </div>
         {order.restaurantName && (
           <div className="mt-3 flex justify-between text-sm">
-            <span className="text-gray-500">Restaurant</span>
-            <span className="text-gray-900">{order.restaurantName}</span>
+            <span className="text-white/70">Restaurant</span>
+            <span className="text-white">{order.restaurantName}</span>
           </div>
         )}
       </Card>
 
       {order.orderItemDTO?.length > 0 && (
         <Card className="mb-4">
-          <h2 className="mb-3 text-sm font-semibold text-gray-900">Items</h2>
+          <h2 className="mb-3 text-sm font-semibold text-white">Items</h2>
           <ul className="space-y-2">
             {order.orderItemDTO.map((item, i) => (
               <li key={item.orderItemId || i} className="flex justify-between text-sm">
