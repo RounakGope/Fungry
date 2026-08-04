@@ -56,10 +56,11 @@ public class OrderServiceIMPL implements OrderService {
     }
     @Override
     @Transactional
-    public OrderDTO createOrder(Long cartId, Long userId, Long addressId) {
+    public OrderDTO createOrder(Long userId, Long addressId) {
         log.info("started create order for userid={}",userId);
         User user=userRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("No such user"));
         Order order=new Order();
+        Long cartId=user.getCart().getCartId();
         Address address=addressRepository.findById(addressId).orElseThrow(()->new ResourceNotFoundException("no such address"));
 
         Cart cart=cartRepository.findById(cartId).orElseThrow(()->new ResourceNotFoundException("No such cart present"));
@@ -164,11 +165,13 @@ public class OrderServiceIMPL implements OrderService {
     }
 
     @Override
-    public OrderDTO viewOrderByIdRest(Long restId, Long orderId) {
+    public OrderDTO viewOrderByIdRest(Long userId,Long restId, Long orderId) {
         Restaurant restaurant=restaurantRepository.findById(restId).orElseThrow(()->new ResourceNotFoundException("No such restaturant present"));
         Order order=orderRepository.findById(orderId).orElseThrow(()->new ResourceNotFoundException("No such Order present"));
         if (!order.getRestaurant().equals(restaurant))
             throw new OrderOperationException("Order restaurant mismatch");
+        if (!order.getRestaurant().getOwner().getUserId().equals(userId))
+            throw new UnauthorisedException("You are Unauthorised");
 
         return mapToOrderDTO(order);
     }
@@ -184,10 +187,14 @@ public class OrderServiceIMPL implements OrderService {
     }
 
     @Override
-    public List<OrderDTO> viewAllOrdersForRest(Long restaurantId) {
+    public List<OrderDTO> viewAllOrdersForRest(Long userId,Long restaurantId) {
         Restaurant restaurant=restaurantRepository.findById(restaurantId).orElseThrow(()->new ResourceNotFoundException("No such restaturant present"));
+        if (!restaurant.getOwner().getUserId().equals(userId))
+            throw new UnauthorisedException("You are unauthorised");
         List<Order> orderList  =restaurant.getOrders();
-        return orderList.stream().map(order -> mapToOrderDTO(order)).toList();
+        return orderList.stream().map(order ->
+
+                mapToOrderDTO(order)).toList();
 
     }
 

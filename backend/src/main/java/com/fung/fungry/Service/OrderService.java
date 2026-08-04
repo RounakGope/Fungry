@@ -12,17 +12,17 @@ import java.util.Optional;
 //businness logic
 public interface OrderService{
 
-    public OrderDTO createOrder(Long cartId, Long userId, Long addressId);
+    public OrderDTO createOrder( Long userId, Long addressId);
 
     public void removeOrder(Long orderId,Long userId);
 
     public OrderDTO viewOrderByIdUser(Long userId,Long orderID);//user wants to see order
 
-    public OrderDTO viewOrderByIdRest(Long restId,Long orderId);
+    public OrderDTO viewOrderByIdRest(Long userId,Long restId,Long orderId);
 
     public List<OrderDTO> viewAllOrdersForUser(Long userId);// user perspective implementation of paging and sorting
 
-    public List<OrderDTO> viewAllOrdersForRest(Long restaurantId);
+    public List<OrderDTO> viewAllOrdersForRest(Long userId,Long restaurantId);
 
     public OrderDTO updateOrderStatus(Long orderId, Long restId, OrderStatus nextStatus);//by restaurant can only go forward
 

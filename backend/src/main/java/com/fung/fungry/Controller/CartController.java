@@ -1,9 +1,11 @@
 package com.fung.fungry.Controller;
 
+import com.fung.fungry.Configuration.UserPrincipal;
 import com.fung.fungry.ModelDTO.CartDTO;
 import com.fung.fungry.ServiceIMPL.CartServiceIMPL;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,44 +16,46 @@ public class CartController {
     private final CartServiceIMPL cartServiceIMPL;
 
     // View Cart
-    @GetMapping("/{userId}")
-    public ResponseEntity<CartDTO> viewCart(@PathVariable Long userId) {
+    @GetMapping("/")
+    public ResponseEntity<CartDTO> viewCart(@AuthenticationPrincipal UserPrincipal principal) {
+        Long userId=principal.getUser().getUserId();
 
         CartDTO cartDTO = cartServiceIMPL.viewCart(userId);
         return ResponseEntity.ok(cartDTO);
     }
 
     // Add Item to Cart
-    @PostMapping("/add/{userId}/{menuItemId}")
-    public ResponseEntity<String> addToCart(@PathVariable Long userId,
-                                          @PathVariable Long menuItemId) {
+    @PostMapping("/add/{menuItemId}")
+    public ResponseEntity<String> addToCart(
+                                          @PathVariable Long menuItemId,@AuthenticationPrincipal UserPrincipal principal) {
 
+        Long userId=principal.getUser().getUserId();
         cartServiceIMPL.addToCart(userId, menuItemId);
         return ResponseEntity.ok("Menu item added successfully.");
     }
 
     //Increase Quantity by 1
-    @PutMapping("/increase/{cartItemId}/{userId}")
+    @PutMapping("/increase/{cartItemId}")
     public ResponseEntity<CartDTO> increaseQuantity(@PathVariable Long cartItemId,
-                                                    @PathVariable Long userId) {
-
+                                                    @AuthenticationPrincipal UserPrincipal principal) {
+        Long userId=principal.getUser().getUserId();
         CartDTO cartDTO = cartServiceIMPL.updateItemQuantityByOne(cartItemId, userId);
         return ResponseEntity.ok(cartDTO);
     }
 
     //Remove Item from Cart
-    @DeleteMapping("/remove/{cartItemId}/{userId}")
+    @DeleteMapping("/remove/{cartItemId}")
     public ResponseEntity<CartDTO> removeItem(@PathVariable Long cartItemId,
-                                              @PathVariable Long userId) {
-
+                                              @AuthenticationPrincipal UserPrincipal principal) {
+        Long userId=principal.getUser().getUserId();
         CartDTO cartDTO = cartServiceIMPL.removeItem(userId, cartItemId);
         return ResponseEntity.ok(cartDTO);
     }
 
     //Clear Entire Cart
-    @DeleteMapping("/clear/{userId}")
-    public ResponseEntity<CartDTO> clearCart(@PathVariable Long userId) {
-
+    @DeleteMapping("/clear")
+    public ResponseEntity<CartDTO> clearCart(@AuthenticationPrincipal UserPrincipal principal) {
+        Long userId=principal.getUser().getUserId();
         CartDTO cartDTO = cartServiceIMPL.clearAll(userId);
         return ResponseEntity.ok(cartDTO);
     }

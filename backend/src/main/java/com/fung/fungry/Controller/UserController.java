@@ -30,18 +30,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/all")
-    public ResponseEntity<List<UserDTO>> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "asc") String dir,
-            @RequestParam(defaultValue = "userId") String sort,
-            @RequestParam(required = false) UserRole role
-    ) {
-        List<UserDTO> users = userServiceIMPL.getAllUsers(page, size, dir, sort, role);
-        return ResponseEntity.ok(users);
-    }
+
     //updated
     @GetMapping("/fetch")
     public ResponseEntity<UserDTO> fetchUser(@AuthenticationPrincipal UserPrincipal principal)
