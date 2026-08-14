@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import * as usersApi from '../api/users'
+import * as adminApi from '../api/admin'
 import { useToast } from '../context/ToastContext'
 import { formatCurrency, formatDate, getErrorMessage, ROLES } from '../utils/constants'
 import Button from '../components/Button'
@@ -64,7 +65,8 @@ function UsersTab() {
   const load = async () => {
     setLoading(true)
     try {
-      const data = await usersApi.getAllUsers({
+      // FIXED: getAllUsers lives in admin.js, not users.js
+      const data = await adminApi.getAllUsers({
         page,
         size,
         dir: 'asc',
@@ -169,7 +171,7 @@ function UserDetailPanel({ user, onUpdated, toast }) {
 
   useEffect(() => {
     setOrdersLoading(true)
-    usersApi.getOrderHistory(user.userId, { page: 0, size: 5, sortBy: 'createdAt', direction: 'descending' })
+    adminApi.getUserOrderHistory(user.userId, { page: 0, size: 5, sortBy: 'createdAt', direction: 'descending' })
       .then(setOrders)
       .catch((err) => toast.error(getErrorMessage(err)))
       .finally(() => setOrdersLoading(false))
@@ -179,7 +181,7 @@ function UserDetailPanel({ user, onUpdated, toast }) {
     e.preventDefault()
     setSaving(true)
     try {
-      await usersApi.updateUser(user.userId, form)
+      await adminApi.updateUserById(user.userId, form)
       toast.success('User updated')
       onUpdated()
     } catch (err) {

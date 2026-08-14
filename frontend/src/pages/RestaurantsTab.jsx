@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import * as restaurantsApi from '../api/restaurant' // matches AuthContext's import path
-import * as usersApi from '../api/users'
+import * as adminApi from '../api/admin'
 import { useToast } from '../context/ToastContext'
 import { useAuth } from '../context/AuthContext'
 import { getErrorMessage } from '../utils/constants'
@@ -42,7 +42,8 @@ export default function RestaurantsTab() {
   const handleDelete = async (restId) => {
     if (!window.confirm('Delete this restaurant? This cannot be undone.')) return
     try {
-      await restaurantsApi.deleteRestaurant(restId, user.id)
+      // FIXED: deleteRestaurant(restId) — no userId param
+      await restaurantsApi.deleteRestaurant(restId)
       toast.success('Restaurant deleted')
       if (expandedId === restId) setExpandedId(null)
       load()
@@ -63,7 +64,6 @@ export default function RestaurantsTab() {
       {showAddForm && (
         <div className="mb-4">
           <AddRestaurantForm
-            adminId={user?.id}
             onCreated={() => { setShowAddForm(false); load() }}
             toast={toast}
           />
@@ -97,7 +97,6 @@ export default function RestaurantsTab() {
               {expandedId === rest.restaurantId && (
                 <RestaurantDetailPanel
                   restaurant={rest}
-                  adminUserId={user?.id}
                   onUpdated={load}
                   onDelete={() => handleDelete(rest.restaurantId)}
                   toast={toast}
@@ -130,7 +129,7 @@ export default function RestaurantsTab() {
 
 // ─── Add restaurant form ───────────────────────────────────────────────────
 
-function AddRestaurantForm({ adminId, onCreated, toast }) {
+function AddRestaurantForm({ onCreated, toast }) {
   const [owners, setOwners] = useState([])
   const [ownersLoading, setOwnersLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -143,7 +142,8 @@ function AddRestaurantForm({ adminId, onCreated, toast }) {
   })
 
   useEffect(() => {
-    usersApi.getAllUsers({ page: 0, size: 100, dir: 'asc', sort: 'userId', role: 'RESTAURANT_OWNER' })
+    // FIXED: getAllUsers lives in admin.js, not users.js
+    adminApi.getAllUsers({ page: 0, size: 100, dir: 'asc', sort: 'userId', role: 'RESTAURANT_OWNER' })
       .then(setOwners)
       .catch((err) => toast.error(getErrorMessage(err)))
       .finally(() => setOwnersLoading(false))
@@ -166,7 +166,9 @@ function AddRestaurantForm({ adminId, onCreated, toast }) {
           zipcode: form.restaurantAddressDTO.zipcode ? Number(form.restaurantAddressDTO.zipcode) : null,
         },
       }
-      await restaurantsApi.addRestaurant(adminId, form.ownerId, payload)
+      // FIXED: addRestaurant(ownerId, restaurant) — no adminId param;
+      // admin identity comes from the session, only the target owner is passed
+      await restaurantsApi.addRestaurant(form.ownerId, payload)
       toast.success('Restaurant created')
       onCreated()
     } catch (err) {
@@ -286,11 +288,10 @@ function AddRestaurantForm({ adminId, onCreated, toast }) {
 
 // ─── Expanded restaurant detail: edit info + delete ───────────────────────
 
-function RestaurantDetailPanel({ restaurant, adminUserId, onUpdated, onDelete, toast }) {
+function RestaurantDetailPanel({ restaurant, onUpdated, onDelete, toast }) {
   const existingAddress = restaurant.restaurantAddressDTO || restaurant.addressDTO || {}
 
   const [form, setForm] = useState({
-    id: restaurant.restaurantId,
     name: restaurant.name || '',
     description: restaurant.description || '',
     cuisine: restaurant.cuisine || '',
@@ -315,7 +316,8 @@ function RestaurantDetailPanel({ restaurant, adminUserId, onUpdated, onDelete, t
           zipcode: form.addressDTO.zipcode ? Number(form.addressDTO.zipcode) : null,
         },
       }
-      await restaurantsApi.updateRestaurant(restaurant.restaurantId, adminUserId, payload)
+      // FIXED: updateRestaurant(restId, restaurant) — no adminUserId param
+      await restaurantsApi.updateRestaurant(restaurant.restaurantId, payload)
       toast.success('Restaurant updated')
       onUpdated()
     } catch (err) {

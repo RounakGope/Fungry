@@ -28,9 +28,9 @@ export default function RestaurantDetail() {
     setLoading(true)
     try {
       const [rest, items] = await Promise.all([
-  restaurantApi.viewRestaurant(restId),     // ✅ matches your api file
-  restaurantApi.getMenuItems(restId,  sortBy, direction ),
-])
+        restaurantApi.viewRestaurant(restId),
+        restaurantApi.getMenuItems(restId, sortBy, direction),
+      ])
       setRestaurant(rest)
       setMenuItems(items)
     } catch (err) {
@@ -63,7 +63,10 @@ export default function RestaurantDetail() {
   const handleRate = async () => {
     if (!isAuthenticated || !isCustomer || !user?.id) return
     try {
-      const updated = await restaurantApi.rateRestaurant(user.id, restId, rating)
+      // FIXED: rateRestaurant(restId, rate) — no userId param, identity comes from session.
+      // Previously called as rateRestaurant(user.id, restId, rating), which shifted
+      // user.id into restId, restId into rate, and dropped the real rating entirely.
+      const updated = await restaurantApi.rateRestaurant(restId, rating)
       setRestaurant(updated)
       toast.success('Rating submitted')
     } catch (err) {

@@ -10,12 +10,13 @@ import Input from '../components/Input'
 import Modal from '../components/Modal'
 import LoadingSpinner from '../components/LoadingSpinner'
 
-const emptyAddress = { houseNumber: '', address: '', landMark: '', state: '', zipCode: '', country: '' }
+// Matches AddressCreateDTO: street, city, state, zipCode, country, isDefault
+const emptyAddress = { street: '', city: '', state: '', zipCode: '', country: '', isDefault: false }
 
 export default function Profile() {
   const { user, refreshMe } = useAuth()
   const toast = useToast()
-  const [phone, setPhone] = useState(user?.phoneNumber || '')
+  const [phone, setPhone] = useState(user?.phone || '')
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirm: '' })
   const [addresses, setAddresses] = useState([])
   const [loading, setLoading] = useState(true)
@@ -24,20 +25,21 @@ export default function Profile() {
   const [deleteId, setDeleteId] = useState(null)
   const [saving, setSaving] = useState(false)
 
-  const loadAddresses = () =>
-    addressApi.getUserAddresses(user.id).then(setAddresses)
+  // getUserAddresses() is session-scoped now — no userId param
+  const loadAddresses = () => addressApi.getUserAddresses().then(setAddresses)
 
   useEffect(() => {
     loadAddresses()
       .catch((err) => toast.error(getErrorMessage(err)))
       .finally(() => setLoading(false))
-  }, [user.id])
+  }, [])
 
   const handlePhoneUpdate = async (e) => {
     e.preventDefault()
     setSaving(true)
     try {
-      await usersApi.updatePhone(user.id, { number: phone })
+      // PhoneDTO: { number: string } — single arg, no userId
+      await usersApi.updatePhone({ number: phone })
       await refreshMe()
       toast.success('Phone updated')
     } catch (err) {
@@ -55,7 +57,8 @@ export default function Profile() {
     }
     setSaving(true)
     try {
-      await usersApi.updatePassword(user.id, {
+      // PasswordUpdateDTO: { oldPassword, newPassword } — single arg, no userId
+      await usersApi.updatePassword({
         oldPassword: passwords.currentPassword,
         newPassword: passwords.newPassword,
       })
@@ -74,14 +77,15 @@ export default function Profile() {
     try {
       const payload = {
         ...addressForm,
-        houseNumber: addressForm.houseNumber === '' ? null : Number(addressForm.houseNumber),
-        zipCode: addressForm.zipCode === '' ? null : Number(addressForm.zipCode),
+        zipCode: addressForm.zipCode, // AddressCreateDTO.zipCode is a string
       }
       if (editingId) {
-        await addressApi.updateAddress(editingId, user.id, { ...payload, addressId: editingId })
+        // updateAddress(addressId, data) — no userId, no addressId in body
+        await addressApi.updateAddress(editingId, payload)
         toast.success('Address updated')
       } else {
-        await addressApi.createAddress(user.id, payload)
+        // createAddress(data) — no userId
+        await addressApi.createAddress(payload)
         toast.success('Address added')
       }
       setAddressForm(emptyAddress)
@@ -97,7 +101,8 @@ export default function Profile() {
   const handleDeleteAddress = async () => {
     setSaving(true)
     try {
-      await addressApi.deleteAddress(deleteId, user.id)
+      // deleteAddress(addressId) — no userId
+      await addressApi.deleteAddress(deleteId)
       toast.success('Address deleted')
       setDeleteId(null)
       await loadAddresses()
@@ -109,14 +114,14 @@ export default function Profile() {
   }
 
   const startEdit = (addr) => {
-    setEditingId(addr.addressId)
+    setEditingId(addr.id)
     setAddressForm({
-      houseNumber: addr.houseNumber ?? '',
-      address: addr.address ?? '',
-      landMark: addr.landMark ?? '',
+      street: addr.street ?? '',
+      city: addr.city ?? '',
       state: addr.state ?? '',
       zipCode: addr.zipCode ?? '',
       country: addr.country ?? '',
+      isDefault: addr.isDefault ?? false,
     })
   }
 
@@ -158,14 +163,21 @@ export default function Profile() {
         <Card className="mb-4">
           <h3 className="mb-3 text-sm font-semibold text-white">{editingId ? 'Edit address' : 'Add address'}</h3>
           <form onSubmit={handleSaveAddress} className="space-y-3">
-            <Input label="House number" value={addressForm.houseNumber} onChange={(e) => setAddressForm({ ...addressForm, houseNumber: e.target.value })} required />
-            <Input label="Address" value={addressForm.address} onChange={(e) => setAddressForm({ ...addressForm, address: e.target.value })} required />
-            <Input label="Landmark" value={addressForm.landMark} onChange={(e) => setAddressForm({ ...addressForm, landMark: e.target.value })} />
+            <Input label="Street" value={addressForm.street} onChange={(e) => setAddressForm({ ...addressForm, street: e.target.value })} required />
+            <Input label="City" value={addressForm.city} onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })} required />
             <div className="grid gap-3 sm:grid-cols-2">
               <Input label="State" value={addressForm.state} onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })} required />
               <Input label="ZIP code" value={addressForm.zipCode} onChange={(e) => setAddressForm({ ...addressForm, zipCode: e.target.value })} required />
             </div>
             <Input label="Country" value={addressForm.country} onChange={(e) => setAddressForm({ ...addressForm, country: e.target.value })} required />
+            <label className="flex items-center gap-2 text-sm text-white/70">
+              <input
+                type="checkbox"
+                checked={addressForm.isDefault}
+                onChange={(e) => setAddressForm({ ...addressForm, isDefault: e.target.checked })}
+              />
+              Set as default address
+            </label>
             <div className="flex gap-2">
               <Button type="submit" size="sm" disabled={saving}>{editingId ? 'Update' : 'Add'}</Button>
               {editingId && (
@@ -177,14 +189,14 @@ export default function Profile() {
 
         <div className="space-y-2">
           {addresses.map((addr) => (
-            <Card key={addr.addressId} className="flex items-start justify-between">
+            <Card key={addr.id} className="flex items-start justify-between">
               <div className="text-sm">
-                <p className="font-medium text-white">{addr.houseNumber}, {addr.address}</p>
-                <p className="text-white/70">{addr.landMark && `${addr.landMark}, `}{addr.state} {addr.zipCode}</p>
+                <p className="font-medium text-white">{addr.street}, {addr.city}</p>
+                <p className="text-white/70">{addr.state} {addr.zipCode}{addr.isDefault ? ' · Default' : ''}</p>
               </div>
               <div className="flex gap-2">
                 <Button size="sm" variant="secondary" onClick={() => startEdit(addr)}>Edit</Button>
-                <Button size="sm" variant="danger" onClick={() => setDeleteId(addr.addressId)}>Delete</Button>
+                <Button size="sm" variant="danger" onClick={() => setDeleteId(addr.id)}>Delete</Button>
               </div>
             </Card>
           ))}

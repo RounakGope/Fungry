@@ -89,13 +89,12 @@ export default function RestaurantDashboard() {
         <OrdersTab restaurant={restaurant} toast={toast} />
       )}
       {tab === 'menu' && (
-        <MenuTab restaurant={restaurant} userId={user.id} toast={toast} />
+        <MenuTab restaurant={restaurant} toast={toast} />
       )}
       {tab === 'details' && (
         <DetailsTab
           restaurant={restaurant}
           setRestaurant={setRestaurant}
-          userId={user.id}
           toast={toast}
         />
       )}
@@ -270,7 +269,7 @@ function OrdersTab({ restaurant, toast }) {
 
 // ─── Menu Tab ─────────────────────────────────────────────────────────────────
 
-function MenuTab({ restaurant, userId, toast }) {
+function MenuTab({ restaurant, toast }) {
   const [menuItems, setMenuItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [itemForm, setItemForm] = useState(emptyItem)
@@ -306,10 +305,12 @@ function MenuTab({ restaurant, userId, toast }) {
     }
     try {
       if (editingItemId) {
-        await restaurantApi.updateMenuItem(userId, editingItemId, payload)
+        // FIXED: updateMenuItem(itemId, item) — no restId/userId, derived server-side
+        await restaurantApi.updateMenuItem(editingItemId, payload)
         toast.success('Item updated')
       } else {
-        await restaurantApi.addMenuItem(restaurant.restaurantId, userId, payload)
+        // FIXED: addMenuItem(restId, item) — no userId param
+        await restaurantApi.addMenuItem(restaurant.restaurantId, payload)
         toast.success('Item added')
       }
       setItemForm(emptyItem)
@@ -325,7 +326,8 @@ function MenuTab({ restaurant, userId, toast }) {
   const handleDeleteItem = async () => {
     setSaving(true)
     try {
-      await restaurantApi.deleteMenuItem(restaurant.restaurantId, userId, deleteItemId)
+      // FIXED: deleteMenuItem(restId, itemId) — no userId param
+      await restaurantApi.deleteMenuItem(restaurant.restaurantId, deleteItemId)
       toast.success('Item deleted')
       setDeleteItemId(null)
       await loadMenu()
@@ -488,7 +490,7 @@ function MenuTab({ restaurant, userId, toast }) {
 
 // ─── Details Tab ──────────────────────────────────────────────────────────────
 
-function DetailsTab({ restaurant, setRestaurant, userId, toast }) {
+function DetailsTab({ restaurant, setRestaurant, toast }) {
   const [form, setForm] = useState({
     name: restaurant.name || '',
     description: restaurant.description || '',
@@ -510,8 +512,11 @@ function DetailsTab({ restaurant, setRestaurant, userId, toast }) {
     e.preventDefault()
     setSaving(true)
     try {
+      // NOTE: RestaurantUpdateDTO (per types.js) only lists a flat `address: string`
+      // field, not a nested addressDTO with street/area/city/state/zipcode. If this
+      // doesn't persist, the backend RestaurantUpdateDTO/controller likely needs
+      // checking the same way PhoneDTO turned out to differ from the JSDoc guess.
       const payload = {
-        id: restaurant.restaurantId,
         name: form.name,
         description: form.description,
         cuisine: form.cuisine,
@@ -520,7 +525,8 @@ function DetailsTab({ restaurant, setRestaurant, userId, toast }) {
           zipcode: Number(form.addressDTO.zipcode),
         },
       }
-      const updated = await restaurantApi.updateRestaurant(restaurant.restaurantId, userId, payload)
+      // FIXED: updateRestaurant(restId, restaurant) — no userId param
+      const updated = await restaurantApi.updateRestaurant(restaurant.restaurantId, payload)
       setRestaurant(updated)
       toast.success('Restaurant updated')
     } catch (err) {
