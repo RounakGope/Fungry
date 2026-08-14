@@ -1,6 +1,7 @@
 package com.fung.fungry.Controller;
 
 import com.fung.fungry.Enums.UserRole;
+import com.fung.fungry.ModelDTO.OrderHistoryDTO;
 import com.fung.fungry.ModelDTO.UserDTO;
 import com.fung.fungry.ServiceIMPL.UserServiceIMPL;
 import lombok.RequiredArgsConstructor;
@@ -35,5 +36,23 @@ public class AdminUserController {
         return ResponseEntity.ok(userDTO);
 
 
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
+        UserDTO updated = userServiceIMPL.updateUser(id, userDTO);
+        return ResponseEntity.ok(updated);
+    }
+
+    @GetMapping("/{id}/orderHistory")
+    public ResponseEntity<List<OrderHistoryDTO>> orderHistory(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "15") Integer size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "descending") String direction
+    ) {
+        List<OrderHistoryDTO> dtoList = userServiceIMPL.viewOrderHistory(id, page, size, sortBy, direction);
+        return ResponseEntity.ok(dtoList);
     }
 }

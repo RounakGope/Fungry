@@ -41,11 +41,11 @@ public class RestaurantController {
 
     }
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/{userId}")
-    public ResponseEntity<RestaurantDTO> addRest(@PathVariable Long userId ,@Valid@RequestBody RestaurantCreateDTO restaurantCreateDTO, @AuthenticationPrincipal UserPrincipal userPrincipal)
+    @PostMapping("/{ownerId}")
+    public ResponseEntity<RestaurantDTO> addRest(@PathVariable Long ownerId ,@Valid@RequestBody RestaurantCreateDTO restaurantCreateDTO, @AuthenticationPrincipal UserPrincipal userPrincipal)
     {
         Long adminId=userPrincipal.getUser().getUserId();
-        RestaurantDTO restaurantDTO=restaurantServiceIMPL.addRestaurant(restaurantCreateDTO,adminId,userId);
+        RestaurantDTO restaurantDTO=restaurantServiceIMPL.addRestaurant(restaurantCreateDTO,adminId,ownerId);
         return ResponseEntity.ok(restaurantDTO);
     }
     @GetMapping("/owner")
