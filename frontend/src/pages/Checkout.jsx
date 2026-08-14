@@ -12,8 +12,6 @@ import Input from '../components/Input'
 import LoadingSpinner from '../components/LoadingSpinner'
 import EmptyState from '../components/EmptyState'
 
-// Matches AddressDTO: addressId, zipcode, address, landmark, houseNumber, state
-// Change zipcode to zipCode and landmark to landMark
 const emptyAddress = { address: '', houseNumber: '', landMark: '', state: '', zipCode: '' }
 
 export default function Checkout() {
@@ -30,7 +28,7 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    addressApi.getUserAddresses(user.id)
+    addressApi.getUserAddresses()
       .then((data) => {
         setAddresses(data)
         const defaultAddr = data.find((a) => a.isDefault) || data[0]
@@ -38,12 +36,12 @@ export default function Checkout() {
       })
       .catch((err) => toast.error(getErrorMessage(err)))
       .finally(() => setLoading(false))
-  }, [user.id])
+  }, [])
 
   const handleAddAddress = async (e) => {
     e.preventDefault()
     try {
-      const created = await addressApi.createAddress(user.id, form)
+      const created = await addressApi.createAddress(form)
       setAddresses((prev) => [...prev, created])
       setSelectedAddressId(created.addressId)
       setForm(emptyAddress)
@@ -65,7 +63,7 @@ export default function Checkout() {
     }
     setSubmitting(true)
     try {
-     const order = await orderApi.createOrder(cart.cartId, user.id, selectedAddressId)
+      const order = await orderApi.createOrder(selectedAddressId)
       await fetchCart()
       toast.success('Order placed')
       navigate(`/orders/${order.orderId}`)

@@ -1,21 +1,21 @@
 import api from './client'
 
-/** @param {number} userId @returns {Promise<import('./types').CartDTO>} */
-export const getCart = (userId) =>
-  api.get(`/cart/${userId}`).then((r) => r.data)
+/** View the logged-in user's cart. */
+export const getCart = () =>
+  api.get('/cart/').then((r) => r.data)
 
-/** @param {number} userId @param {number} menuItemId */
-export const addToCart = (userId, menuItemId) =>
-  api.post(`/cart/add/${userId}/${menuItemId}`).then((r) => r.data)
+/** Add a menu item to the logged-in user's cart. */
+export const addToCart = (menuItemId) =>
+  api.post(`/cart/add/${menuItemId}`).then((r) => r.data)
 
-/** @param {number} cartItemId @param {number} userId */
-export const increaseQuantity = (cartItemId, userId) =>
-  api.put(`/cart/increase/${cartItemId}/${userId}`).then((r) => r.data)
+/** Increase quantity of a specific cart item by 1. */
+export const increaseQuantity = (cartItemId) =>
+  api.put(`/cart/increase/${cartItemId}`).then((r) => r.data)
 
-/** @param {number} cartItemId @param {number} userId */
-export const removeFromCart = (cartItemId, userId) =>
-  api.delete(`/cart/remove/${cartItemId}/${userId}`).then((r) => r.data)
+/** Remove a specific item from the cart. */
+export const removeFromCart = (cartItemId) =>
+  api.delete(`/cart/remove/${cartItemId}`).then((r) => r.data)
 
-/** @param {number} userId */
-export const clearCart = (userId) =>
-  api.delete(`/cart/clear/${userId}`).then((r) => r.data)
+/** Clear the entire cart. */
+export const clearCart = () =>
+  api.delete('/cart/clear').then((r) => r.data)

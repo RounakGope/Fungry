@@ -11,49 +11,45 @@ export function CartProvider({ children }) {
   const [loading, setLoading] = useState(false)
 
   const fetchCart = useCallback(async () => {
-    if (!user?.id || role !== ROLES.CUSTOMER) {
-      setCart(null)
-      return null
-    }
-    setLoading(true)
-    try {
-      const data = await cartApi.getCart(user.id)
-      setCart(data)
-      return data
-    } catch {
-      setCart(null)
-      return null
-    } finally {
-      setLoading(false)
-    }
-  }, [user?.id, role])
-
-  useEffect(() => {
-    fetchCart()
-  }, [fetchCart])
-
+  if (!user?.id || role !== ROLES.CUSTOMER) {
+    setCart(null)
+    return null
+  }
+  setLoading(true)
+  try {
+    const data = await cartApi.getCart()   // ← was cartApi.getCart(user.id)
+    setCart(data)
+    return data
+  } catch {
+    setCart(null)
+    return null
+  } finally {
+    setLoading(false)
+  }
+}, [user?.id, role])
 const addItem = useCallback(async (menuItemId) => {
   if (!user?.id) return
-  await cartApi.addToCart(user.id, menuItemId)
+  await cartApi.addToCart(menuItemId)
   return fetchCart()
 }, [user?.id, fetchCart])
 
 const increaseItem = useCallback(async (cartItemId) => {
   if (!user?.id) return
-  const data = await cartApi.increaseQuantity(cartItemId, user.id)
-  setCart(data)
-  return data
-}, [user?.id])
- const removeItem = useCallback(async (cartItemId) => {
-  if (!user?.id) return
-  const data = await cartApi.removeFromCart(cartItemId, user.id)
+  const data = await cartApi.increaseQuantity(cartItemId)
   setCart(data)
   return data
 }, [user?.id])
 
-  const clear = useCallback(async () => {
+const removeItem = useCallback(async (cartItemId) => {
   if (!user?.id) return
-  const data = await cartApi.clearCart(user.id)
+  const data = await cartApi.removeFromCart(cartItemId)
+  setCart(data)
+  return data
+}, [user?.id])
+
+const clear = useCallback(async () => {
+  if (!user?.id) return
+  const data = await cartApi.clearCart()
   setCart(data)
   return data
 }, [user?.id])
