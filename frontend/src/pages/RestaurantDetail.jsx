@@ -82,7 +82,7 @@ export default function RestaurantDetail() {
 
   return (
     <div>
-      <div className="mb-8 border-b border-gray-200 pb-6">
+      <div className="mb-8 border-b border-border pb-6">
         <h1 className="text-2xl font-bold text-white">{restaurant.name}</h1>
         {restaurant.cuisine && <p className="mt-1 text-sm text-white/70">{restaurant.cuisine}</p>}
         {restaurant.description && <p className="mt-3 text-sm text-white/80">{restaurant.description}</p>}
@@ -96,7 +96,7 @@ export default function RestaurantDetail() {
             <select
               value={rating}
               onChange={(e) => setRating(Number(e.target.value))}
-              className="rounded-lg border border-gray-200 px-2 py-1 text-sm"
+              className="min-h-9"
             >
               {[1, 2, 3, 4, 5].map((n) => (
                 <option key={n} value={n}>{n}</option>
@@ -113,7 +113,6 @@ export default function RestaurantDetail() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
           >
             <option value="price">Price</option>
             <option value="rating">Rating</option>
@@ -122,7 +121,6 @@ export default function RestaurantDetail() {
           <select
             value={direction}
             onChange={(e) => setDirection(e.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
           >
             <option value="asc">Ascending</option>
             <option value="desc">Descending</option>

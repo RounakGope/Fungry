@@ -16,16 +16,16 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -93,6 +93,7 @@ public class UserServiceIMPL implements UserService {
 
 
     @Override
+    @Cacheable(value = "user",key = "#userId")
     public UserDTO getUserById(Long userId) {
         log.info("Fetching user with id={}", userId);
         User user =userRepository.findById(userId).orElseThrow(()->{
@@ -105,6 +106,10 @@ public class UserServiceIMPL implements UserService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "user", key = "#userId"),
+            @CacheEvict(value = "userRole", key = "#userId")
+    })
     public UserDTO updateUser(Long userId, UserDTO userDTO) {
         log.info("started update user with user id={}",userId);
         User user =userRepository.findById(userId).orElseThrow(()->{
@@ -128,6 +133,7 @@ public class UserServiceIMPL implements UserService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "user",key = "#userId")
     public void deleteUser(Long userId) {
         log.info("Deactivating user with id={}", userId);
         User user =userRepository.findById(userId).orElseThrow(()->{
@@ -142,6 +148,7 @@ public class UserServiceIMPL implements UserService {
 
 
     @Override
+    @Cacheable(value = "userRole",key = "#userId")
     public UserRole getUserRole(Long userId) {
         log.info("Fetching role for user {}", userId);
         User user =userRepository.findById(userId).orElseThrow(()->{
@@ -153,6 +160,8 @@ public class UserServiceIMPL implements UserService {
     }
 
     @Override
+    @Transactional
+    @CacheEvict(value = "user",key = "#userId")
     public UserDTO updateUserPNo(Long userId, String PHno) {
         log.info("Updating phone number for user {}", userId);
         User user =userRepository.findById(userId).orElseThrow(()->{

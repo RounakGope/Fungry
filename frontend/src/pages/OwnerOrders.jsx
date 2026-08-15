@@ -74,7 +74,6 @@ export default function OwnerOrders() {
                   defaultValue={order.status}
                   disabled={updatingId === order.orderId}
                   onChange={(e) => handleStatusUpdate(order.orderId, e.target.value)}
-                  className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
                 >
                   {ORDER_STATUSES.filter((s) => s !== 'CANCELED').map((status) => (
                     <option key={status} value={status}>{status.replace(/_/g, ' ')}</option>

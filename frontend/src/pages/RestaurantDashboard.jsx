@@ -31,14 +31,14 @@ const TABS = [
 const ORDER_FLOW = ['PLACED', 'CONFIRMED', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED']
 
 const STATUS_STYLES = {
-  PLACED: 'bg-amber-100 text-amber-800',
-  CREATED: 'bg-amber-100 text-amber-800',
-  PAYMENT_PENDING: 'bg-amber-100 text-amber-800',
-  CONFIRMED: 'bg-blue-100 text-blue-800',
-  PREPARING: 'bg-blue-100 text-blue-800',
-  OUT_FOR_DELIVERY: 'bg-blue-100 text-blue-800',
-  DELIVERED: 'bg-green-100 text-green-800',
-  CANCELED: 'bg-red-100 text-red-700',
+  PLACED: 'bg-amber-500/10 text-amber-400 border-amber-400/20',
+  CREATED: 'bg-amber-500/10 text-amber-400 border-amber-400/20',
+  PAYMENT_PENDING: 'bg-amber-500/10 text-amber-400 border-amber-400/20',
+  CONFIRMED: 'bg-emerald-500/10 text-emerald-400 border-emerald-400/20',
+  PREPARING: 'bg-sky-500/10 text-sky-400 border-sky-400/20',
+  OUT_FOR_DELIVERY: 'bg-violet-500/10 text-violet-400 border-violet-400/20',
+  DELIVERED: 'bg-emerald-500/10 text-emerald-400 border-emerald-400/20',
+  CANCELED: 'bg-rose-500/10 text-rose-400 border-rose-400/20',
 }
 
 export default function RestaurantDashboard() {
@@ -69,15 +69,15 @@ export default function RestaurantDashboard() {
         <p className="text-sm text-white/70">Owner dashboard</p>
       </div>
 
-      <div className="flex gap-1 border-b border-gray-200">
+      <div className="flex gap-1 border-b border-border">
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
             className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
               tab === t.key
-                ? 'border-primary-600 text-primary-600'
-                : 'border-transparent text-white/70 hover:text-white/90'
+                ? 'border-primary-500 text-primary-400'
+                : 'border-transparent text-muted hover:text-zinc-100'
             }`}
           >
             {t.label}
@@ -183,8 +183,8 @@ function OrdersTab({ restaurant, toast }) {
                     <div className="flex items-center gap-2">
                       <p className="font-medium text-white">Order #{order.orderId}</p>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                          STATUS_STYLES[order.status] || 'bg-gray-100 text-white/80'
+                        className={`rounded-full border px-2 py-0.5 text-xs font-medium ${
+                          STATUS_STYLES[order.status] || 'bg-surface-overlay text-muted border border-border'
                         }`}
                       >
                         {order.status}
@@ -204,7 +204,7 @@ function OrdersTab({ restaurant, toast }) {
                   </p>
                 </div>
 
-                <ul className="mt-3 space-y-1 border-t border-gray-100 pt-3 text-sm text-white/80">
+                <ul className="mt-3 space-y-1 border-t border-border pt-3 text-sm text-white/80">
                   {order.orderItemDTO?.map((it) => (
                     <li key={it.orderItemId}>
                       {it.quantity}× {it.name} — {formatCurrency(it.price)}
@@ -389,7 +389,7 @@ function MenuTab({ restaurant, toast }) {
       value={itemForm.foodCategory}
       onChange={(e) => setItemForm({ ...itemForm, foodCategory: e.target.value })}
       required
-      className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600"
+      className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600"
     >
       <option value="" disabled>Select category</option>
       {FOOD_CATEGORIES.map((c) => (
@@ -403,7 +403,7 @@ function MenuTab({ restaurant, toast }) {
       value={itemForm.foodType}
       onChange={(e) => setItemForm({ ...itemForm, foodType: e.target.value })}
       required
-      className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600"
+      className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600"
     >
       <option value="" disabled>Select type</option>
       {FOOD_TYPES.map((t) => (
@@ -417,7 +417,7 @@ function MenuTab({ restaurant, toast }) {
               type="checkbox"
               checked={itemForm.isAvailable}
               onChange={(e) => setItemForm({ ...itemForm, isAvailable: e.target.checked })}
-              className="rounded border-gray-300"
+              className="rounded border-border"
             />
             Available
           </label>
@@ -548,7 +548,7 @@ function DetailsTab({ restaurant, setRestaurant, toast }) {
           <textarea value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             rows={3}
-            className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-600"
           />
         </div>
 

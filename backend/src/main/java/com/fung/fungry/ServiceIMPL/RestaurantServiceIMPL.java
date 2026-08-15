@@ -12,16 +12,17 @@ import com.fung.fungry.Repository.RatingRepository;
 import com.fung.fungry.Repository.RestaurantRepository;
 import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.RestaurantService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +35,8 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
     private final MenuItemRepository menuItemRepository;
     private final UserRepository userRepository;
+
+
     private void assertCanManage(Restaurant restaurant, User user) {
         boolean isOwner = restaurant.getOwner() != null
                 && restaurant.getOwner().getUserId().equals(user.getUserId());
@@ -41,6 +44,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
             throw new UnauthorisedException("Not authorized to manage this restaurant");
         }
     }
+
     public RestaurantDTO getByOwner(Long userId) {
         log.info("started getByOwner for userId={}", userId);
 
@@ -53,6 +57,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
         return mapToRestDTO(restaurant);
     }
+
     private RestaurantDTO mapToRestDTO(Restaurant restaurant)
     {
         RestaurantDTO restaurantdto=new RestaurantDTO();
@@ -101,33 +106,40 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     }
 
 
-
+private final  RestaurantCacheHelper restaurantCacheHelper;
     @Override
     public List<RestaurantDTO> getAllRestaurantBy(int page, int size, String direction, String sortBy) {
-        Sort sort =direction.equalsIgnoreCase("desc")?Sort.by(sortBy).descending():Sort.by(sortBy).ascending();
-        Pageable pageable= PageRequest.of(page,size, sort);
-        Page<Restaurant> restaurantPage=restaurantRepository.findAll(pageable);
-        return restaurantPage
-                .getContent()
-                .stream()
-                .map(this::mapToRestDTO)
-                .toList();
+
+
+        List<RestaurantDTO> all = restaurantCacheHelper.getAllRestaurantsRaw().getRestaurants();
+        Comparator<RestaurantDTO> comparator =switch (sortBy) {
+            case "name" -> Comparator.comparing(RestaurantDTO::getName);
+            case "rating" -> Comparator.comparing(RestaurantDTO::getRating);
+            default -> Comparator.comparing(RestaurantDTO::getRestaurantId);
+        };
+        if (direction.equalsIgnoreCase("desc")) {
+            comparator = comparator.reversed();
+        }
+        List<RestaurantDTO> sorted = all.stream().sorted(comparator).toList();
+        int from = Math.min(page * size, sorted.size());
+        int to = Math.min(from + size, sorted.size());
+        return sorted.subList(from, to);
 
     }
-
+    @Cacheable(value = "menuItems", key = "#restaurantId + '-' + #sortBy + '-' + #direction")
     @Override
-    public List<MenuItemDTO> getMenuItem(Long restaurantId, String sortBy, String direction) {
+    public MenuItemListResponse getMenuItem(Long restaurantId, String sortBy, String direction) {
+
         log.info("started get menu items for restId={}",restaurantId);
         Sort sort=direction.equalsIgnoreCase("desc")?Sort.by(sortBy).descending():Sort.by(sortBy).ascending();
         List< MenuItem> menuItems = menuItemRepository.findByRestaurant_RestaurantId(restaurantId,sort);
-
-        return menuItems.stream()
-                .map(this::mapToMenuDTO)
-                .toList();
+        List<MenuItemDTO> dtos = menuItems.stream().map(this::mapToMenuDTO).toList();
+        return new MenuItemListResponse(dtos);
     }
 
     @Transactional
     @Override
+    @CacheEvict(value = "restaurants", key = "'all'")
     public RestaurantDTO addRestaurant(RestaurantCreateDTO restaurantCreateDTO, Long adminId,Long userId) {
         log.info("started adding restaurant for userId={}",userId);
         User admin = userRepository.findById(adminId)
@@ -162,9 +174,11 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         return restaurantDTO;
     }
 
+    @Cacheable(value  ="restaurant",key="#restaurantId")
     @Override
     public RestaurantDTO viewRestaurant(Long restaurantId) {
         Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
+        log.info("started fetching restaurant from databse={}",restaurantId);
         if (!restaurant.isPresent())
         {
             log.warn("no such restaurant available restId={}",restaurantId);
@@ -177,6 +191,10 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
     @Transactional
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "restaurant", key = "#restaurantId"),
+            @CacheEvict(value = "restaurants", key = "'all'")
+    })
     public void deleteRestaurant(Long restaurantId, Long userId) {
         log.info("started deleting restaurant for userId={}",userId);
         User user = userRepository.findById(userId)
@@ -203,10 +221,16 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         }
     }
 
+
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "restaurant", key = "#restId"),
+            @CacheEvict(value = "restaurants", key = "'all'")
+    })
     public RestaurantDTO updateRestaurant(RestaurantUpdateDTO restaurantDTO, Long userId,Long restId) {
-        log.info("started updating restaurant for user={}",userId);User user = userRepository.findById(userId)
+        log.info("started updating restaurant for user={}",userId);
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found with id={}", userId);
                     return new ResourceNotFoundException("USER NOT FOUND");
@@ -236,6 +260,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     private final RatingRepository ratingRepository;
     @Transactional
     @Override
+    @CacheEvict(value = "restaurant", key = "#restaurantId")
     public RestaurantDTO rateRestaurant(Long userId, Long restaurantId, Integer rating) {
         log.info("started rateRestaurant for user={} ,of restaurant ={}",userId,restaurantId);
         if(rating>5||rating<1)
@@ -290,6 +315,8 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     }
 
     @Override
+    @CacheEvict(value = "menuItems", allEntries = true)
+
     @Transactional
     public void addItemInMenu(MenuItemCreateDTO itemDTO, Long restaurantId, Long userId) {
         log.info("started add item in menu for rest id={}",restaurantId);User user = userRepository.findById(userId)
@@ -321,6 +348,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
     @Transactional
     @Override
+    @CacheEvict(value = "menuItems", allEntries = true)
     public void deleteItemInMenu(Long menuItemId, Long restaurantId, Long userId) {
         log
                 .info("started deleting item ={} by user={}",menuItemId,userId);User user = userRepository.findById(userId)
@@ -368,6 +396,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
     @Transactional
     @Override
+    @CacheEvict(value = "menuItems", allEntries = true)
     public MenuItemDTO updateItemInMenu(Long menuItemId, Long userId,MenuItemDTO menuItemDTO) {
         log.info("started updating item in menu with id={} by user={}",menuItemId,userId);User user = userRepository.findById(userId)
                 .orElseThrow(() -> {

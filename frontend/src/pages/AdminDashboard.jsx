@@ -24,18 +24,18 @@ export default function AdminDashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Admin dashboard</h1>
-        <p className="text-sm text-white/70">Manage users and restaurants</p>
+        <p className="text-sm text-muted">Manage users and restaurants</p>
       </div>
 
-      <div className="flex gap-1 border-b border-gray-200">
+      <div className="flex gap-1 border-b border-border">
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
             className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
               tab === t.key
-                ? 'border-primary-600 text-primary-600'
-                : 'border-transparent text-white/70 hover:text-white/90'
+                ? 'border-primary-500 text-primary-400'
+                : 'border-transparent text-muted hover:text-zinc-100'
             }`}
           >
             {t.label}
@@ -96,7 +96,7 @@ function UsersTab() {
         <select
           value={roleFilter}
           onChange={(e) => { setRoleFilter(e.target.value); setPage(0); setExpandedId(null) }}
-          className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+          className="rounded-lg border border-border px-3 py-1.5 text-sm"
         >
           <option value="">All roles</option>
           {ALL_ROLES.map((r) => (
@@ -115,7 +115,7 @@ function UsersTab() {
             <Card key={user.userId} className="p-0 overflow-hidden">
               <button
                 onClick={() => toggleExpand(user.userId)}
-                className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
+                className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-surface-overlay"
               >
                 <div>
                   <p className="font-medium text-white">{user.userName}</p>
@@ -139,14 +139,14 @@ function UsersTab() {
         <button
           disabled={page === 0}
           onClick={() => { setPage((p) => p - 1); setExpandedId(null) }}
-          className="rounded-lg border border-gray-200 px-4 py-2 text-sm disabled:opacity-50"
+          className="rounded-lg border border-border px-4 py-2 text-sm disabled:opacity-50"
         >
           Previous
         </button>
         <button
           disabled={users.length < size}
           onClick={() => { setPage((p) => p + 1); setExpandedId(null) }}
-          className="rounded-lg border border-gray-200 px-4 py-2 text-sm disabled:opacity-50"
+          className="rounded-lg border border-border px-4 py-2 text-sm disabled:opacity-50"
         >
           Next
         </button>
@@ -192,7 +192,7 @@ function UserDetailPanel({ user, onUpdated, toast }) {
   }
 
   return (
-    <div className="border-t border-gray-100 bg-gray-50 px-4 py-4">
+    <div className="border-t border-border bg-surface px-4 py-4">
       <div className="grid gap-6 sm:grid-cols-2">
         <div>
           <h3 className="mb-3 text-sm font-semibold text-white">Edit user</h3>
@@ -202,7 +202,7 @@ function UserDetailPanel({ user, onUpdated, toast }) {
               <input
                 value={form.userName}
                 onChange={(e) => setForm({ ...form, userName: e.target.value })}
-                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+                className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
                 required
               />
             </div>
@@ -212,7 +212,7 @@ function UserDetailPanel({ user, onUpdated, toast }) {
                 type="email"
                 value={form.userEmail}
                 onChange={(e) => setForm({ ...form, userEmail: e.target.value })}
-                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+                className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
                 required
               />
             </div>
@@ -221,7 +221,7 @@ function UserDetailPanel({ user, onUpdated, toast }) {
               <input
                 value={form.phoneNumber}
                 onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
-                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+                className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
               />
             </div>
             <div>
@@ -229,7 +229,7 @@ function UserDetailPanel({ user, onUpdated, toast }) {
               <select
                 value={form.userRole}
                 onChange={(e) => setForm({ ...form, userRole: e.target.value })}
-                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+                className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
               >
                 {ALL_ROLES.map((r) => (
                   <option key={r} value={r}>{r.replace('_', ' ')}</option>
@@ -251,7 +251,7 @@ function UserDetailPanel({ user, onUpdated, toast }) {
           ) : (
             <div className="space-y-2">
               {orders.map((order) => (
-                <div key={order.orderId} className="rounded-lg border border-gray-200 bg-white px-3 py-2">
+                <div key={order.orderId} className="rounded-lg border border-border bg-surface-raised px-3 py-2">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium text-white">Order #{order.orderId}</p>
                     <Badge status={order.status} />

@@ -63,7 +63,7 @@ export default function Cart() {
   return (
     <div>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-white">Cart</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-50">Cart</h1>
         <Button variant="danger" size="sm" className="w-full sm:w-auto" onClick={() => setClearOpen(true)}>Clear cart</Button>
       </div>
 
@@ -71,10 +71,10 @@ export default function Cart() {
         {items.map((item) => (
           <Card key={item.cartItemId} className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="font-medium text-white">{item.itemName}</h3>
-              <p className="mt-1 text-sm text-white/70">Qty: {item.quantity}</p>
+              <h3 className="font-medium text-zinc-50">{item.itemName}</h3>
+              <p className="mt-1 text-sm text-muted">Qty: {item.quantity}</p>
               {item.price != null && (
-                <p className="mt-1 text-sm font-medium text-white">
+                <p className="mt-1 text-sm font-medium text-zinc-200">
                   {formatCurrency(item.price * item.quantity)}
                 </p>
               )}
@@ -89,8 +89,8 @@ export default function Cart() {
 
       <Card className="mt-6 p-4 sm:p-5">
         <div className="flex items-center justify-between">
-          <span className="text-base font-semibold text-white">Total</span>
-          <span className="text-lg font-bold text-white">{formatCurrency(total)}</span>
+          <span className="text-base font-semibold text-zinc-50">Total</span>
+          <span className="text-lg font-bold text-zinc-50">{formatCurrency(total)}</span>
         </div>
         <Button className="mt-4 w-full" onClick={() => navigate('/checkout')}>
           Proceed to checkout

@@ -29,12 +29,12 @@ export function ToastProvider({ children }) {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`min-w-64 border px-4 py-3 text-sm shadow-sm rounded-lg ${
+            className={`min-w-64 rounded-lg border px-4 py-3 text-sm ${
               toast.type === 'error'
-                ? 'border-red-200 bg-white text-red-700'
+                ? 'border-red-500/30 bg-surface-overlay text-red-400'
                 : toast.type === 'success'
-                  ? 'border-primary-600/30 bg-white text-primary-700'
-                  : 'border-gray-200 bg-white text-white'
+                  ? 'border-primary-500/30 bg-surface-overlay text-primary-400'
+                  : 'border-border bg-surface-overlay text-zinc-100'
             }`}
           >
             {toast.message}

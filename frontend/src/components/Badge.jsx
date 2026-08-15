@@ -9,7 +9,7 @@ const statusStyles = {
 
 export default function Badge({ status, children }) {
   const label = children || status?.replace(/_/g, ' ')
-  const style = statusStyles[status] || 'bg-zinc-800/70 text-white/80 border-zinc-700'
+  const style = statusStyles[status] || 'bg-surface-overlay text-muted border-border'
 
   return (
     <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.2em] ${style}`}>

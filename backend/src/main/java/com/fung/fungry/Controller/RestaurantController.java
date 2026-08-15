@@ -23,7 +23,7 @@ public class RestaurantController {
     , @RequestParam String sortBy,@RequestParam String direction)
     {
         List<MenuItemDTO> menuItemDTOS=restaurantServiceIMPL
-                .getMenuItem(id, sortBy, direction);
+                .getMenuItem(id, sortBy, direction).getMenuItems();
         return ResponseEntity.ok(menuItemDTOS);
     }
     @GetMapping("/all")

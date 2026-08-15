@@ -32,8 +32,8 @@ export default function Login() {
   return (
     <AuthLayout>
       <Card className="w-full max-w-md p-5 sm:p-6">
-        <h1 className="text-xl font-semibold text-white">Sign in</h1>
-        <p className="mt-1 text-sm text-white/70">Enter your credentials to continue</p>
+        <h1 className="text-xl font-semibold text-zinc-50">Sign in</h1>
+        <p className="mt-1 text-sm text-muted">Enter your credentials to continue</p>
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <Input
             label="Email"
@@ -56,9 +56,9 @@ export default function Login() {
             {loading ? 'Signing in…' : 'Sign in'}
           </Button>
         </form>
-        <p className="mt-4 text-center text-sm text-white/70">
+        <p className="mt-4 text-center text-sm text-muted">
           No account?{' '}
-          <Link to="/signup" className="font-medium text-primary-700 hover:underline">Create one</Link>
+          <Link to="/signup" className="font-medium text-primary-400 hover:text-primary-300">Create one</Link>
         </p>
       </Card>
     </AuthLayout>

@@ -1,14 +1,14 @@
 const variants = {
-  primary: 'bg-[#00d09c] text-black hover:bg-[#00e6ac] border border-transparent font-semibold',
-  secondary: 'bg-[#232323] text-white hover:bg-[#2c2c2c] border border-zinc-700',
-  danger: 'bg-[#232323] text-red-500 hover:bg-red-500/10 border border-red-500/30',
-  ghost: 'bg-transparent text-white/60 hover:bg-[#232323] hover:text-white border border-transparent',
+  primary: 'bg-primary-600 text-white hover:bg-primary-500 border border-primary-600 font-medium',
+  secondary: 'bg-surface-overlay text-zinc-100 hover:bg-surface-raised border border-border',
+  danger: 'bg-surface-overlay text-red-400 hover:bg-red-500/10 border border-red-500/30',
+  ghost: 'bg-transparent text-muted hover:bg-surface-overlay hover:text-zinc-100 border border-transparent',
 }
 
 const sizes = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2.5 text-sm',
-  lg: 'px-6 py-3 text-base',
+  sm: 'px-3 py-1.5 text-sm min-h-9',
+  md: 'px-4 py-2.5 text-sm min-h-11',
+  lg: 'px-6 py-3 text-base min-h-12',
 }
 
 export default function Button({
@@ -24,7 +24,7 @@ export default function Button({
     <button
       type={type}
       disabled={disabled}
-      className={`inline-flex min-h-11 items-center justify-center rounded-xl transition-all duration-200 touch-manipulation active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex items-center justify-center rounded-lg transition-colors touch-manipulation disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
       {children}

@@ -13,6 +13,7 @@ import com.fung.fungry.ModelDTO.OrderItemDTO;
 import com.fung.fungry.Repository.*;
 import com.fung.fungry.Service.OrderService;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;

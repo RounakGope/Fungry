@@ -80,7 +80,7 @@ export default function RestaurantsTab() {
             <Card key={rest.restaurantId} className="p-0 overflow-hidden">
               <button
                 onClick={() => toggleExpand(rest.restaurantId)}
-                className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
+                className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-surface-overlay"
               >
                 <div>
                   <p className="font-medium text-white">{rest.name}</p>
@@ -111,14 +111,14 @@ export default function RestaurantsTab() {
         <button
           disabled={page === 0}
           onClick={() => { setPage((p) => p - 1); setExpandedId(null) }}
-          className="rounded-lg border border-gray-200 px-4 py-2 text-sm disabled:opacity-50"
+          className="rounded-lg border border-border px-4 py-2 text-sm disabled:opacity-50"
         >
           Previous
         </button>
         <button
           disabled={restaurants.length < size}
           onClick={() => { setPage((p) => p + 1); setExpandedId(null) }}
-          className="rounded-lg border border-gray-200 px-4 py-2 text-sm disabled:opacity-50"
+          className="rounded-lg border border-border px-4 py-2 text-sm disabled:opacity-50"
         >
           Next
         </button>
@@ -187,7 +187,7 @@ function AddRestaurantForm({ onCreated, toast }) {
           <select
             value={form.ownerId}
             onChange={(e) => setForm({ ...form, ownerId: e.target.value })}
-            className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
             disabled={ownersLoading}
             required
           >
@@ -206,7 +206,7 @@ function AddRestaurantForm({ onCreated, toast }) {
           <input
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
             required
           />
         </div>
@@ -215,7 +215,7 @@ function AddRestaurantForm({ onCreated, toast }) {
           <input
             value={form.cuisine}
             onChange={(e) => setForm({ ...form, cuisine: e.target.value })}
-            className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
           />
         </div>
         <div>
@@ -223,7 +223,7 @@ function AddRestaurantForm({ onCreated, toast }) {
           <textarea
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
             rows={2}
           />
         </div>
@@ -234,7 +234,7 @@ function AddRestaurantForm({ onCreated, toast }) {
             <input
               value={form.restaurantAddressDTO.street}
               onChange={(e) => setForm({ ...form, restaurantAddressDTO: { ...form.restaurantAddressDTO, street: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
               required
             />
           </div>
@@ -243,7 +243,7 @@ function AddRestaurantForm({ onCreated, toast }) {
             <input
               value={form.restaurantAddressDTO.area}
               onChange={(e) => setForm({ ...form, restaurantAddressDTO: { ...form.restaurantAddressDTO, area: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
             />
           </div>
           <div>
@@ -251,7 +251,7 @@ function AddRestaurantForm({ onCreated, toast }) {
             <input
               value={form.restaurantAddressDTO.city}
               onChange={(e) => setForm({ ...form, restaurantAddressDTO: { ...form.restaurantAddressDTO, city: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
               required
             />
           </div>
@@ -260,7 +260,7 @@ function AddRestaurantForm({ onCreated, toast }) {
             <input
               value={form.restaurantAddressDTO.state}
               onChange={(e) => setForm({ ...form, restaurantAddressDTO: { ...form.restaurantAddressDTO, state: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
               required
             />
           </div>
@@ -270,7 +270,7 @@ function AddRestaurantForm({ onCreated, toast }) {
               type="number"
               value={form.restaurantAddressDTO.zipcode}
               onChange={(e) => setForm({ ...form, restaurantAddressDTO: { ...form.restaurantAddressDTO, zipcode: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
               min={100000}
               max={999999}
               required
@@ -328,14 +328,14 @@ function RestaurantDetailPanel({ restaurant, onUpdated, onDelete, toast }) {
   }
 
   return (
-    <div className="border-t border-gray-100 bg-gray-50 px-4 py-4">
+    <div className="border-t border-border bg-surface px-4 py-4">
       <form onSubmit={handleSave} className="space-y-3">
         <div>
           <label className="block text-xs font-medium text-white/80">Name</label>
           <input
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
             required
           />
         </div>
@@ -344,7 +344,7 @@ function RestaurantDetailPanel({ restaurant, onUpdated, onDelete, toast }) {
           <input
             value={form.cuisine}
             onChange={(e) => setForm({ ...form, cuisine: e.target.value })}
-            className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
           />
         </div>
         <div>
@@ -352,7 +352,7 @@ function RestaurantDetailPanel({ restaurant, onUpdated, onDelete, toast }) {
           <textarea
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
             rows={2}
           />
         </div>
@@ -363,7 +363,7 @@ function RestaurantDetailPanel({ restaurant, onUpdated, onDelete, toast }) {
             <input
               value={form.addressDTO.street}
               onChange={(e) => setForm({ ...form, addressDTO: { ...form.addressDTO, street: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
             />
           </div>
           <div>
@@ -371,7 +371,7 @@ function RestaurantDetailPanel({ restaurant, onUpdated, onDelete, toast }) {
             <input
               value={form.addressDTO.area}
               onChange={(e) => setForm({ ...form, addressDTO: { ...form.addressDTO, area: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
             />
           </div>
           <div>
@@ -379,7 +379,7 @@ function RestaurantDetailPanel({ restaurant, onUpdated, onDelete, toast }) {
             <input
               value={form.addressDTO.city}
               onChange={(e) => setForm({ ...form, addressDTO: { ...form.addressDTO, city: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
               required
             />
           </div>
@@ -388,7 +388,7 @@ function RestaurantDetailPanel({ restaurant, onUpdated, onDelete, toast }) {
             <input
               value={form.addressDTO.state}
               onChange={(e) => setForm({ ...form, addressDTO: { ...form.addressDTO, state: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
               required
             />
           </div>
@@ -398,7 +398,7 @@ function RestaurantDetailPanel({ restaurant, onUpdated, onDelete, toast }) {
               type="number"
               value={form.addressDTO.zipcode}
               onChange={(e) => setForm({ ...form, addressDTO: { ...form.addressDTO, zipcode: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
               min={100000}
               max={999999}
               required

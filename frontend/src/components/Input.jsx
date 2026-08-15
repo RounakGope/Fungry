@@ -10,13 +10,13 @@ export default function Input({
   return (
     <div className="space-y-1">
       {label && (
-        <label htmlFor={inputId} className="block text-sm font-medium text-white/80">
+        <label htmlFor={inputId} className="block text-sm font-medium text-zinc-200">
           {label}
         </label>
       )}
       <input
         id={inputId}
-        className={`w-full min-h-11 rounded-xl border border-zinc-800 bg-zinc-950/70 px-3 py-2.5 text-base text-zinc-100 shadow-sm placeholder:text-white/70 focus:border-teal-400/70 focus:outline-none focus:ring-2 focus:ring-teal-400/20 sm:text-sm ${error ? 'border-red-400/60' : ''} ${className}`}
+        className={`w-full min-h-11 rounded-lg border border-border bg-surface px-3 py-2.5 text-base text-zinc-100 placeholder:text-muted focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500/30 sm:text-sm ${error ? 'border-red-400/60' : ''} ${className}`}
         {...props}
       />
       {error && <p className="text-xs text-red-400">{error}</p>}
