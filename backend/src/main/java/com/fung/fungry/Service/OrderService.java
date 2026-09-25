@@ -24,7 +24,7 @@ public interface OrderService{
 
     public List<OrderDTO> viewAllOrdersForRest(Long userId,Long restaurantId);
 
-    public OrderDTO updateOrderStatus(Long orderId, Long restId, OrderStatus nextStatus);//by restaurant can only go forward
+    public OrderDTO updateOrderStatus(Long orderId, Long restId, OrderStatus nextStatus, Long userId);//by restaurant can only go forward
 
     //public Optional<List<Order>> addOrderItem();
 

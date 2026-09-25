@@ -3,7 +3,6 @@ package com.fung.fungry.Scheduler;
 import com.fung.fungry.Enums.OrderStatus;
 import com.fung.fungry.Model.Order;
 import com.fung.fungry.Repository.OrderRepository;
-import com.fung.fungry.ServiceIMPL.CartServiceIMPL;
 import com.fung.fungry.ServiceIMPL.OrderServiceIMPL;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -20,13 +19,13 @@ import java.util.List;
 public class OrderExpiryScheduler {
     private final OrderRepository orderRepository;
     private final OrderServiceIMPL orderServiceIMPL;
-    private static final Logger log= LoggerFactory.getLogger(CartServiceIMPL.class);
+    private static final Logger log= LoggerFactory.getLogger(OrderExpiryScheduler.class);
     @Value("${order.expiry-minutes}")
     private int expiryMinutes;
 
     @Scheduled(fixedRate = 60000) // runs every 60 seconds
     public void expireStaleOrders() {
-        LocalDateTime cutoff = LocalDateTime.now().minusMinutes(10);
+        LocalDateTime cutoff = LocalDateTime.now().minusMinutes(expiryMinutes);
         List<Order> staleOrders = orderRepository.findByStatusAndCreatedAtBefore(OrderStatus.CREATED, cutoff);
         for (Order order : staleOrders) {
             try {

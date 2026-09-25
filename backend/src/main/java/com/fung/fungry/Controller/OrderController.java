@@ -82,9 +82,11 @@ public class OrderController {
     }
     @PutMapping("/updateOrderStatus/{orderId}/{restId}")
     public ResponseEntity<OrderDTO> updateStatus(@PathVariable Long orderId , @PathVariable
-                                                 Long restId, @RequestParam OrderStatus orderStatus)
+                                                 Long restId, @RequestParam OrderStatus orderStatus,
+                                                 @AuthenticationPrincipal UserPrincipal principal)
     {
-        OrderDTO orderDTO=orderServiceIMPL.updateOrderStatus(orderId,restId,orderStatus);
+        Long userId = principal.getUser().getUserId();
+        OrderDTO orderDTO=orderServiceIMPL.updateOrderStatus(orderId,restId,orderStatus,userId);
      return ResponseEntity.ok(orderDTO);
     }
     @GetMapping("/orderStatus/{orderId}")

@@ -32,7 +32,7 @@ export const getOrdersByUser = () =>
 export const getOrdersByRestaurant = (restId) =>
   api.get(`/order/viewAllOrderByRest/${restId}`).then((r) => r.data)
 
-/** Update an order's status. See note below — this endpoint has no auth check today. */
+/** Update an order's status (caller must own the restaurant, or be an admin). */
 export const updateOrderStatus = (orderId, restId, orderStatus) =>
   api
     .put(`/order/updateOrderStatus/${orderId}/${restId}`, null, { params: { orderStatus } })

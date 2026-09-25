@@ -1,6 +1,7 @@
 package com.fung.fungry.ServiceIMPL;
 
 import com.fung.fungry.Enums.OrderStatus;
+import com.fung.fungry.Enums.UserRole;
 import com.fung.fungry.Enums.PaymentMode;
 import com.fung.fungry.Enums.PaymentStatus;
 import com.fung.fungry.Exception.CartOperationException;
@@ -268,13 +269,24 @@ public class OrderServiceIMPL implements OrderService {
 
     @Override
     @Transactional
-    public OrderDTO updateOrderStatus(Long orderId, Long restId, OrderStatus nextStatus) {
+    public OrderDTO updateOrderStatus(Long orderId, Long restId, OrderStatus nextStatus, Long userId) {
         Restaurant restaurant = restaurantRepository.findById(restId)
                 .orElseThrow(() -> new ResourceNotFoundException("No such restaturant present"));
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("No such order Present"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("No such user present"));
 
-        if (!order.getRestaurant().equals(restaurant)) {
+        // The caller must own this restaurant (or be an admin); otherwise anyone
+        // logged in could advance any order just by changing the IDs in the URL.
+        boolean isOwner = restaurant.getOwner() != null
+                && restaurant.getOwner().getUserId().equals(userId);
+        if (!isOwner && user.getRole() != UserRole.ADMIN) {
+            log.warn("user={} tried to update order={} of restaurant={} without access", userId, orderId, restId);
+            throw new UnauthorisedException("You Dont have Access");
+        }
+
+        if (!order.getRestaurant().getRestaurantId().equals(restaurant.getRestaurantId())) {
             log.warn("cannot update order status for order={}, with restId={}", orderId, restId);
             throw new UnauthorisedException("You Dont have Access");
         }
