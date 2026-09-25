@@ -12,7 +12,7 @@ A food ordering platform with separate apps for customers, restaurant owners and
 |---|---|
 | **Customer** | Browse restaurants (paginated, sortable) and their menus, rate restaurants, keep a cart, manage delivery addresses, check out with card (Stripe) or cash on delivery, track and cancel orders, see order history |
 | **Restaurant owner** | Edit restaurant details, add, update and remove menu items and stock, and move incoming orders through *Confirmed → Preparing → Out for delivery → Delivered* |
-| **Admin** | List and filter users by role, edit users, view any user's order history, and create restaurants for owners through the API (`POST /restaurant/{ownerId}`); an owner without a restaurant sees an onboarding screen |
+| **Admin** | Create restaurants and assign them to owners, edit or delete restaurants, list and filter users by role, edit users, view any user's order history. An owner without a restaurant sees an onboarding screen until an admin creates one |
 
 ## Engineering highlights
 
@@ -89,7 +89,7 @@ sequenceDiagram
 
 ## API overview
 
-All endpoints are under `/api-v2.0`. Everything except registration, login and the Stripe webhook needs a logged-in session.
+All endpoints are under `/api-v2.0`. Everything except registration, login, the health check and the Stripe webhook needs a logged-in session. Admin-only endpoints are guarded with `@PreAuthorize("hasRole('ADMIN')")`.
 
 | Resource | Endpoints |
 |---|---|
