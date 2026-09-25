@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import * as restaurantsApi from '../api/restaurant' // matches AuthContext's import path
-import * as usersApi from '../api/users'
+import * as adminApi from '../api/admin'
 import { useToast } from '../context/ToastContext'
 import { useAuth } from '../context/AuthContext'
 import { getErrorMessage } from '../utils/constants'
@@ -42,7 +42,8 @@ export default function RestaurantsTab() {
   const handleDelete = async (restId) => {
     if (!window.confirm('Delete this restaurant? This cannot be undone.')) return
     try {
-      await restaurantsApi.deleteRestaurant(restId, user.id)
+      // FIXED: deleteRestaurant(restId) — no userId param
+      await restaurantsApi.deleteRestaurant(restId)
       toast.success('Restaurant deleted')
       if (expandedId === restId) setExpandedId(null)
       load()
@@ -54,7 +55,7 @@ export default function RestaurantsTab() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">All restaurants</h2>
+        <h2 className="text-lg font-semibold text-white">All restaurants</h2>
         <Button size="sm" onClick={() => setShowAddForm((s) => !s)}>
           {showAddForm ? 'Cancel' : '+ Add restaurant'}
         </Button>
@@ -63,7 +64,6 @@ export default function RestaurantsTab() {
       {showAddForm && (
         <div className="mb-4">
           <AddRestaurantForm
-            adminId={user?.id}
             onCreated={() => { setShowAddForm(false); load() }}
             toast={toast}
           />
@@ -80,24 +80,23 @@ export default function RestaurantsTab() {
             <Card key={rest.restaurantId} className="p-0 overflow-hidden">
               <button
                 onClick={() => toggleExpand(rest.restaurantId)}
-                className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
+                className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-surface-overlay"
               >
                 <div>
-                  <p className="font-medium text-gray-900">{rest.name}</p>
-                  <p className="text-sm text-gray-500">{rest.cuisine}</p>
+                  <p className="font-medium text-white">{rest.name}</p>
+                  <p className="text-sm text-white/70">{rest.cuisine}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-white/80">
                     {rest.rating != null ? `★ ${rest.rating.toFixed(1)}` : 'No rating'}
                   </span>
-                  <span className="text-gray-400">{expandedId === rest.restaurantId ? '▲' : '▼'}</span>
+                  <span className="text-white/60">{expandedId === rest.restaurantId ? '▲' : '▼'}</span>
                 </div>
               </button>
 
               {expandedId === rest.restaurantId && (
                 <RestaurantDetailPanel
                   restaurant={rest}
-                  adminUserId={user?.id}
                   onUpdated={load}
                   onDelete={() => handleDelete(rest.restaurantId)}
                   toast={toast}
@@ -112,14 +111,14 @@ export default function RestaurantsTab() {
         <button
           disabled={page === 0}
           onClick={() => { setPage((p) => p - 1); setExpandedId(null) }}
-          className="rounded-lg border border-gray-200 px-4 py-2 text-sm disabled:opacity-50"
+          className="rounded-lg border border-border px-4 py-2 text-sm disabled:opacity-50"
         >
           Previous
         </button>
         <button
           disabled={restaurants.length < size}
           onClick={() => { setPage((p) => p + 1); setExpandedId(null) }}
-          className="rounded-lg border border-gray-200 px-4 py-2 text-sm disabled:opacity-50"
+          className="rounded-lg border border-border px-4 py-2 text-sm disabled:opacity-50"
         >
           Next
         </button>
@@ -130,7 +129,7 @@ export default function RestaurantsTab() {
 
 // ─── Add restaurant form ───────────────────────────────────────────────────
 
-function AddRestaurantForm({ adminId, onCreated, toast }) {
+function AddRestaurantForm({ onCreated, toast }) {
   const [owners, setOwners] = useState([])
   const [ownersLoading, setOwnersLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -143,7 +142,8 @@ function AddRestaurantForm({ adminId, onCreated, toast }) {
   })
 
   useEffect(() => {
-    usersApi.getAllUsers({ page: 0, size: 100, dir: 'asc', sort: 'userId', role: 'RESTAURANT_OWNER' })
+    // FIXED: getAllUsers lives in admin.js, not users.js
+    adminApi.getAllUsers({ page: 0, size: 100, dir: 'asc', sort: 'userId', role: 'RESTAURANT_OWNER' })
       .then(setOwners)
       .catch((err) => toast.error(getErrorMessage(err)))
       .finally(() => setOwnersLoading(false))
@@ -166,7 +166,9 @@ function AddRestaurantForm({ adminId, onCreated, toast }) {
           zipcode: form.restaurantAddressDTO.zipcode ? Number(form.restaurantAddressDTO.zipcode) : null,
         },
       }
-      await restaurantsApi.addRestaurant(adminId, form.ownerId, payload)
+      // FIXED: addRestaurant(ownerId, restaurant) — no adminId param;
+      // admin identity comes from the session, only the target owner is passed
+      await restaurantsApi.addRestaurant(form.ownerId, payload)
       toast.success('Restaurant created')
       onCreated()
     } catch (err) {
@@ -178,14 +180,14 @@ function AddRestaurantForm({ adminId, onCreated, toast }) {
 
   return (
     <Card>
-      <h3 className="mb-3 text-sm font-semibold text-gray-900">New restaurant</h3>
+      <h3 className="mb-3 text-sm font-semibold text-white">New restaurant</h3>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label className="block text-xs font-medium text-gray-600">Owner</label>
+          <label className="block text-xs font-medium text-white/80">Owner</label>
           <select
             value={form.ownerId}
             onChange={(e) => setForm({ ...form, ownerId: e.target.value })}
-            className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
             disabled={ownersLoading}
             required
           >
@@ -200,75 +202,75 @@ function AddRestaurantForm({ adminId, onCreated, toast }) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-600">Name</label>
+          <label className="block text-xs font-medium text-white/80">Name</label>
           <input
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
             required
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-600">Cuisine</label>
+          <label className="block text-xs font-medium text-white/80">Cuisine</label>
           <input
             value={form.cuisine}
             onChange={(e) => setForm({ ...form, cuisine: e.target.value })}
-            className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-600">Description</label>
+          <label className="block text-xs font-medium text-white/80">Description</label>
           <textarea
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
             rows={2}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-gray-600">Street</label>
+            <label className="block text-xs font-medium text-white/80">Street</label>
             <input
               value={form.restaurantAddressDTO.street}
               onChange={(e) => setForm({ ...form, restaurantAddressDTO: { ...form.restaurantAddressDTO, street: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
               required
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600">Area</label>
+            <label className="block text-xs font-medium text-white/80">Area</label>
             <input
               value={form.restaurantAddressDTO.area}
               onChange={(e) => setForm({ ...form, restaurantAddressDTO: { ...form.restaurantAddressDTO, area: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600">City</label>
+            <label className="block text-xs font-medium text-white/80">City</label>
             <input
               value={form.restaurantAddressDTO.city}
               onChange={(e) => setForm({ ...form, restaurantAddressDTO: { ...form.restaurantAddressDTO, city: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
               required
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600">State</label>
+            <label className="block text-xs font-medium text-white/80">State</label>
             <input
               value={form.restaurantAddressDTO.state}
               onChange={(e) => setForm({ ...form, restaurantAddressDTO: { ...form.restaurantAddressDTO, state: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
               required
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600">Zipcode</label>
+            <label className="block text-xs font-medium text-white/80">Zipcode</label>
             <input
               type="number"
               value={form.restaurantAddressDTO.zipcode}
               onChange={(e) => setForm({ ...form, restaurantAddressDTO: { ...form.restaurantAddressDTO, zipcode: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
               min={100000}
               max={999999}
               required
@@ -286,11 +288,10 @@ function AddRestaurantForm({ adminId, onCreated, toast }) {
 
 // ─── Expanded restaurant detail: edit info + delete ───────────────────────
 
-function RestaurantDetailPanel({ restaurant, adminUserId, onUpdated, onDelete, toast }) {
+function RestaurantDetailPanel({ restaurant, onUpdated, onDelete, toast }) {
   const existingAddress = restaurant.restaurantAddressDTO || restaurant.addressDTO || {}
 
   const [form, setForm] = useState({
-    id: restaurant.restaurantId,
     name: restaurant.name || '',
     description: restaurant.description || '',
     cuisine: restaurant.cuisine || '',
@@ -315,7 +316,8 @@ function RestaurantDetailPanel({ restaurant, adminUserId, onUpdated, onDelete, t
           zipcode: form.addressDTO.zipcode ? Number(form.addressDTO.zipcode) : null,
         },
       }
-      await restaurantsApi.updateRestaurant(restaurant.restaurantId, adminUserId, payload)
+      // FIXED: updateRestaurant(restId, restaurant) — no adminUserId param
+      await restaurantsApi.updateRestaurant(restaurant.restaurantId, payload)
       toast.success('Restaurant updated')
       onUpdated()
     } catch (err) {
@@ -326,77 +328,77 @@ function RestaurantDetailPanel({ restaurant, adminUserId, onUpdated, onDelete, t
   }
 
   return (
-    <div className="border-t border-gray-100 bg-gray-50 px-4 py-4">
+    <div className="border-t border-border bg-surface px-4 py-4">
       <form onSubmit={handleSave} className="space-y-3">
         <div>
-          <label className="block text-xs font-medium text-gray-600">Name</label>
+          <label className="block text-xs font-medium text-white/80">Name</label>
           <input
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
             required
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-600">Cuisine</label>
+          <label className="block text-xs font-medium text-white/80">Cuisine</label>
           <input
             value={form.cuisine}
             onChange={(e) => setForm({ ...form, cuisine: e.target.value })}
-            className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-600">Description</label>
+          <label className="block text-xs font-medium text-white/80">Description</label>
           <textarea
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+            className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
             rows={2}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-gray-600">Street</label>
+            <label className="block text-xs font-medium text-white/80">Street</label>
             <input
               value={form.addressDTO.street}
               onChange={(e) => setForm({ ...form, addressDTO: { ...form.addressDTO, street: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600">Area</label>
+            <label className="block text-xs font-medium text-white/80">Area</label>
             <input
               value={form.addressDTO.area}
               onChange={(e) => setForm({ ...form, addressDTO: { ...form.addressDTO, area: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600">City</label>
+            <label className="block text-xs font-medium text-white/80">City</label>
             <input
               value={form.addressDTO.city}
               onChange={(e) => setForm({ ...form, addressDTO: { ...form.addressDTO, city: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
               required
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600">State</label>
+            <label className="block text-xs font-medium text-white/80">State</label>
             <input
               value={form.addressDTO.state}
               onChange={(e) => setForm({ ...form, addressDTO: { ...form.addressDTO, state: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
               required
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600">Zipcode</label>
+            <label className="block text-xs font-medium text-white/80">Zipcode</label>
             <input
               type="number"
               value={form.addressDTO.zipcode}
               onChange={(e) => setForm({ ...form, addressDTO: { ...form.addressDTO, zipcode: e.target.value } })}
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm"
+              className="mt-1 w-full rounded-lg border border-border px-3 py-1.5 text-sm"
               min={100000}
               max={999999}
               required

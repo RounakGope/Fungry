@@ -1,6 +1,10 @@
 package com.fung.fungry.ServiceIMPL;
 
 import com.fung.fungry.Enums.UserRole;
+import com.fung.fungry.Exception.MenuItemException;
+import com.fung.fungry.Exception.ResourceNotFoundException;
+import com.fung.fungry.Exception.RestaurantOperationException;
+import com.fung.fungry.Exception.UnauthorisedException;
 import com.fung.fungry.Model.*;
 import com.fung.fungry.ModelDTO.*;
 import com.fung.fungry.Repository.MenuItemRepository;
@@ -8,16 +12,17 @@ import com.fung.fungry.Repository.RatingRepository;
 import com.fung.fungry.Repository.RestaurantRepository;
 import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.RestaurantService;
-import jakarta.transaction.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,29 +35,29 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
     private final MenuItemRepository menuItemRepository;
     private final UserRepository userRepository;
+
+
     private void assertCanManage(Restaurant restaurant, User user) {
         boolean isOwner = restaurant.getOwner() != null
                 && restaurant.getOwner().getUserId().equals(user.getUserId());
         if (user.getRole() != UserRole.ADMIN && !isOwner) {
-            throw new RuntimeException("Not authorized to manage this restaurant");
+            throw new UnauthorisedException("Not authorized to manage this restaurant");
         }
     }
+
     public RestaurantDTO getByOwner(Long userId) {
         log.info("started getByOwner for userId={}", userId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.error("User not found with id={}", userId);
-                    return new RuntimeException("USER NOT FOUND");
-                });
+
 
         Restaurant restaurant = restaurantRepository.findByOwner_UserId(userId)
                 .orElseThrow(() -> {
                     log.warn("no restaurant found for owner userId={}", userId);
-                    return new RuntimeException("No restaurant assigned to this user");
+                    return new ResourceNotFoundException("No restaurant assigned to this user");
                 });
 
         return mapToRestDTO(restaurant);
     }
+
     private RestaurantDTO mapToRestDTO(Restaurant restaurant)
     {
         RestaurantDTO restaurantdto=new RestaurantDTO();
@@ -101,45 +106,52 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     }
 
 
-
+private final  RestaurantCacheHelper restaurantCacheHelper;
     @Override
     public List<RestaurantDTO> getAllRestaurantBy(int page, int size, String direction, String sortBy) {
-        Sort sort =direction.equalsIgnoreCase("desc")?Sort.by(sortBy).descending():Sort.by(sortBy).ascending();
-        Pageable pageable= PageRequest.of(page,size, sort);
-        Page<Restaurant> restaurantPage=restaurantRepository.findAll(pageable);
-        return restaurantPage
-                .getContent()
-                .stream()
-                .map(this::mapToRestDTO)
-                .toList();
+
+
+        List<RestaurantDTO> all = restaurantCacheHelper.getAllRestaurantsRaw().getRestaurants();
+        Comparator<RestaurantDTO> comparator =switch (sortBy) {
+            case "name" -> Comparator.comparing(RestaurantDTO::getName);
+            case "rating" -> Comparator.comparing(RestaurantDTO::getRating);
+            default -> Comparator.comparing(RestaurantDTO::getRestaurantId);
+        };
+        if (direction.equalsIgnoreCase("desc")) {
+            comparator = comparator.reversed();
+        }
+        List<RestaurantDTO> sorted = all.stream().sorted(comparator).toList();
+        int from = Math.min(page * size, sorted.size());
+        int to = Math.min(from + size, sorted.size());
+        return sorted.subList(from, to);
 
     }
-
+    @Cacheable(value = "menuItems", key = "#restaurantId + '-' + #sortBy + '-' + #direction")
     @Override
-    public List<MenuItemDTO> getMenuItem(Long restaurantId, String sortBy, String direction) {
+    public MenuItemListResponse getMenuItem(Long restaurantId, String sortBy, String direction) {
+
         log.info("started get menu items for restId={}",restaurantId);
         Sort sort=direction.equalsIgnoreCase("desc")?Sort.by(sortBy).descending():Sort.by(sortBy).ascending();
         List< MenuItem> menuItems = menuItemRepository.findByRestaurant_RestaurantId(restaurantId,sort);
-
-        return menuItems.stream()
-                .map(this::mapToMenuDTO)
-                .toList();
+        List<MenuItemDTO> dtos = menuItems.stream().map(this::mapToMenuDTO).toList();
+        return new MenuItemListResponse(dtos);
     }
 
     @Transactional
     @Override
+    @CacheEvict(value = "restaurants", key = "'all'")
     public RestaurantDTO addRestaurant(RestaurantCreateDTO restaurantCreateDTO, Long adminId,Long userId) {
         log.info("started adding restaurant for userId={}",userId);
         User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> {
                     log.error("User not found with id={}", userId);
-                    return new RuntimeException("ADMIN NOT FOUND");
+                    return new ResourceNotFoundException("ADMIN NOT FOUND");
                 });
         if (admin.getRole()!= UserRole.ADMIN)
         {
 
             log.warn("cannot add restaurant as the user is not admin user={}",userId);
-            throw new RuntimeException("ONLY ADMIN CAN ADD RESTAURANT");
+            throw new UnauthorisedException("ONLY ADMIN CAN ADD RESTAURANT");
         }
         Restaurant restaurant=new Restaurant();
         restaurant.setName(restaurantCreateDTO.getName());
@@ -162,13 +174,15 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         return restaurantDTO;
     }
 
+    @Cacheable(value  ="restaurant",key="#restaurantId")
     @Override
     public RestaurantDTO viewRestaurant(Long restaurantId) {
         Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
+        log.info("started fetching restaurant from databse={}",restaurantId);
         if (!restaurant.isPresent())
         {
             log.warn("no such restaurant available restId={}",restaurantId);
-            throw new RuntimeException("No such restaurant available");
+            throw new ResourceNotFoundException("No such restaurant available");
         }
         RestaurantDTO restaurantDTO=mapToRestDTO(restaurant.get());
         return restaurantDTO;
@@ -177,18 +191,22 @@ public class RestaurantServiceIMPL  implements RestaurantService {
 
     @Transactional
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "restaurant", key = "#restaurantId"),
+            @CacheEvict(value = "restaurants", key = "'all'")
+    })
     public void deleteRestaurant(Long restaurantId, Long userId) {
         log.info("started deleting restaurant for userId={}",userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found with id={}", userId);
-                    return new RuntimeException("USER NOT FOUND");
+                    return new ResourceNotFoundException("USER NOT FOUND");
                 });
         if(user.getRole()!=UserRole.ADMIN)
         {
 
             log.warn("cannot delete restaurant as the user is not admin user={}",userId);
-            throw  new RuntimeException("YOU ARE NOT AN ADMIN");
+            throw  new UnauthorisedException("YOU ARE NOT AN ADMIN");
         }
         Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
         if(restaurant.isPresent())
@@ -203,20 +221,26 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         }
     }
 
+
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "restaurant", key = "#restId"),
+            @CacheEvict(value = "restaurants", key = "'all'")
+    })
     public RestaurantDTO updateRestaurant(RestaurantUpdateDTO restaurantDTO, Long userId,Long restId) {
-        log.info("started updating restaurant for user={}",userId);User user = userRepository.findById(userId)
+        log.info("started updating restaurant for user={}",userId);
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found with id={}", userId);
-                    return new RuntimeException("USER NOT FOUND");
+                    return new ResourceNotFoundException("USER NOT FOUND");
                 });
 
         Optional<Restaurant> restaurant=restaurantRepository.findById(restId);
         if (!restaurant.isPresent())
         {
             log.warn("no such restaurant available restId={}",restId);
-            throw new RuntimeException("No such restaurant available");
+            throw new ResourceNotFoundException("No such restaurant available");
         }
         assertCanManage(restaurant.get(),user);
 
@@ -236,18 +260,19 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     private final RatingRepository ratingRepository;
     @Transactional
     @Override
+    @CacheEvict(value = "restaurant", key = "#restaurantId")
     public RestaurantDTO rateRestaurant(Long userId, Long restaurantId, Integer rating) {
         log.info("started rateRestaurant for user={} ,of restaurant ={}",userId,restaurantId);
         if(rating>5||rating<1)
         {
             log.warn("invalid rating ={}",rating);
-            throw new RuntimeException("Rating must be between 1 and 5");
+            throw new RestaurantOperationException("Rating must be between 1 and 5");
         }
         Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
         if (!restaurant.isPresent())
         {
             log.warn("no such restaurant with restId={}",restaurantId);
-            throw new RuntimeException("NO SUCH RESTAURANT");
+            throw new ResourceNotFoundException("NO SUCH RESTAURANT");
         }
         else
         {
@@ -290,23 +315,26 @@ public class RestaurantServiceIMPL  implements RestaurantService {
     }
 
     @Override
+    @CacheEvict(value = "menuItems", allEntries = true)
+
     @Transactional
     public void addItemInMenu(MenuItemCreateDTO itemDTO, Long restaurantId, Long userId) {
         log.info("started add item in menu for rest id={}",restaurantId);User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found with id={}", userId);
-                    return new RuntimeException("USER NOT FOUND");
+                    return new ResourceNotFoundException("USER NOT FOUND");
                 });
         if(!(user.getRole()==UserRole.ADMIN||user.getRole()==UserRole.RESTAURANT_OWNER))
         {
             log.warn("User cannot add item with userid={} for rest={}",userId,restaurantId);
-            throw new RuntimeException( "Only an Admin or Owner can add Menu item");
+            throw new UnauthorisedException( "Only an Admin or Owner can add Menu item");
         }
         Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
-        //restaurant ownership to be added
+
         if(restaurant.isPresent())
         {
             Restaurant restaurant1=restaurant.get();
+            assertCanManage(restaurant1,user);
             List<MenuItem>menuItemList=restaurant1.getMenuItems();
             menuItemList.add(mapToMenuItemCreate(itemDTO,restaurant1));
             restaurantRepository.save(restaurant1);
@@ -314,23 +342,24 @@ public class RestaurantServiceIMPL  implements RestaurantService {
         }
         else {
             log.warn("no such restaurant present with restarant id={}",restaurantId);
-            throw new RuntimeException("No such Restaurant Present");
+            throw new ResourceNotFoundException("No such Restaurant Present");
         }
     }
 
     @Transactional
     @Override
+    @CacheEvict(value = "menuItems", allEntries = true)
     public void deleteItemInMenu(Long menuItemId, Long restaurantId, Long userId) {
         log
                 .info("started deleting item ={} by user={}",menuItemId,userId);User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("User not found with id={}", userId);
-                    return new RuntimeException("USER NOT FOUND");
+                    return new ResourceNotFoundException("USER NOT FOUND");
                 });
         if(!(user.getRole()==UserRole.ADMIN||user.getRole()==UserRole.RESTAURANT_OWNER))
         {
             log.warn("cannot delete menu item with user ={}",userId);
-            throw new RuntimeException( "Only an Admin or Owner can Delete Menu item");
+            throw new UnauthorisedException( "Only an Admin or Owner can Delete Menu item");
 
         }
         Optional<MenuItem > menuItem=menuItemRepository.findById(menuItemId);
@@ -340,6 +369,7 @@ public class RestaurantServiceIMPL  implements RestaurantService {
             Optional<Restaurant> restaurant=restaurantRepository.findById(restaurantId);
             if (restaurant.isPresent())
             {
+                assertCanManage(restaurant.get(),user);
                 if(menuItem.get().getRestaurant().getRestaurantId().equals(restaurant.get().getRestaurantId()))
                 {
                     List<MenuItem> menuItems=restaurant.get().getMenuItems();
@@ -349,39 +379,41 @@ public class RestaurantServiceIMPL  implements RestaurantService {
                 }
                 else {
                     log.warn("menu with id={} do not belong to rest with id={}",menuItem.get().getMenuItemId(),userId);
-                    throw new RuntimeException("Menu item does not belong to restaurant");
+                    throw new RestaurantOperationException("Menu item does not belong to restaurant");
                 }
 
             }
             else {
                 log.warn("no such restaurant with restid={}",restaurantId);
-                throw new RuntimeException("No such restaurant");
+                throw new ResourceNotFoundException("No such restaurant");
             }
         }
         else {
             log.warn("no such menu item with id={}",menuItemId);
-            throw new RuntimeException("Menu item not present");
+            throw new MenuItemException("Menu item not present");
         }
     }
 
     @Transactional
     @Override
+    @CacheEvict(value = "menuItems", allEntries = true)
     public MenuItemDTO updateItemInMenu(Long menuItemId, Long userId,MenuItemDTO menuItemDTO) {
         log.info("started updating item in menu with id={} by user={}",menuItemId,userId);User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found with id={}", userId);
-                    return new RuntimeException("USER NOT FOUND");
+                    return new ResourceNotFoundException("USER NOT FOUND");
                 });
         if(!(user.getRole()==UserRole.ADMIN||user.getRole()==UserRole.RESTAURANT_OWNER))
         {
             log.error("user has not access to update menu with userId={}",userId);
-            throw new RuntimeException( "Only an Admin or Owner can Update Menu item");
+            throw new UnauthorisedException( "Only an Admin or Owner can Update Menu item");
         }
         MenuItem menuItem = menuItemRepository.findById(menuItemId)
                 .orElseThrow(() -> {
                     log.warn("Menu item not found with id={}", menuItemId);
-                    return new RuntimeException("menuItem not available");
+                    return new MenuItemException("menuItem not available");
                 });
+        assertCanManage(menuItem.getRestaurant(),user);
 
 
                     menuItem.setType(menuItemDTO.getFoodType());

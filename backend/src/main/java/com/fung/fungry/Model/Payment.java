@@ -29,6 +29,7 @@ public class Payment {
 
     @Column(name = "stripe_session_id",unique = true)
     private String stripeSessionId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false,name = "order_id")
     private Order order;

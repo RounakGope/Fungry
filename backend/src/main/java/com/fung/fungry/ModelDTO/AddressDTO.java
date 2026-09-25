@@ -1,5 +1,7 @@
 package com.fung.fungry.ModelDTO;
 
+import com.fung.fungry.Enums.PaymentMode;
+import com.fung.fungry.Enums.PaymentStatus;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -14,5 +16,6 @@ public class AddressDTO {
     private String landMark;
     private Integer houseNumber;
     private String state;
+
     
 }

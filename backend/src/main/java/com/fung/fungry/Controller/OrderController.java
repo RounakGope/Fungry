@@ -1,89 +1,109 @@
 package com.fung.fungry.Controller;
 
+import com.fung.fungry.Configuration.UserPrincipal;
 import com.fung.fungry.Enums.OrderStatus;
 import com.fung.fungry.ModelDTO.OrderDTO;
 import com.fung.fungry.ServiceIMPL.OrderServiceIMPL;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api-v1.0/order")
+@RequestMapping("/api-v2.0/order")
 @RequiredArgsConstructor
 public class OrderController {
 
    private final OrderServiceIMPL orderServiceIMPL;
 
-   @PostMapping("/{cartId}/{userId}/{addressId}")
-    public ResponseEntity<OrderDTO> create(@PathVariable Long cartId,
-                                           @PathVariable Long userId,
-                                           @PathVariable Long addressId)
+   @PostMapping("/")
+    public ResponseEntity<OrderDTO> create(
+           @AuthenticationPrincipal UserPrincipal principal)
    {
-       OrderDTO orderDTO=orderServiceIMPL.createOrder(cartId,userId,addressId);
+       Long userId=principal.getUser().getUserId();
+       OrderDTO orderDTO=orderServiceIMPL.createOrder(userId);
        return ResponseEntity.ok(orderDTO);
    }
-   @DeleteMapping("/{orderId}/{userId}")
+    @PutMapping("/{orderId}/address/{addressId}")
+    public ResponseEntity<OrderDTO> setAddress(@PathVariable Long orderId,
+                                               @PathVariable Long addressId,
+                                               @AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = principal.getUser().getUserId();
+        OrderDTO orderDTO = orderServiceIMPL.setOrderAddress(orderId, addressId, userId);
+        return ResponseEntity.ok(orderDTO);
+    }
+    @PostMapping("/confirmCod/{orderId}")
+    public ResponseEntity<Void> confirmCod(@PathVariable Long orderId,
+                                           @AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = principal.getUser().getUserId();
+        orderServiceIMPL.confirmCodOrder(orderId, userId);
+        return ResponseEntity.noContent().build();
+    }
+   @DeleteMapping("/{orderId}")
     public ResponseEntity<Void > delete(@PathVariable Long orderId,
-                                        @PathVariable Long userId)
-   {
+                                        @AuthenticationPrincipal UserPrincipal principal)
+   {Long userId=principal.getUser().getUserId();
        orderServiceIMPL.removeOrder(orderId,userId);
        return  ResponseEntity.noContent().build();
    }
 
-   @GetMapping("/viewOrderByUser/{orderId}/{userId}")
+   @GetMapping("/viewOrderByUser/{orderId}")
     public ResponseEntity<OrderDTO> viewOrder1(@PathVariable Long orderId
-   ,@PathVariable Long userId)
-   {
+   ,@AuthenticationPrincipal UserPrincipal principal)
+   {Long userId=principal.getUser().getUserId();
        OrderDTO orderDTO=orderServiceIMPL.viewOrderByIdUser(userId,orderId);
        return ResponseEntity.ok(orderDTO);
    }
     @GetMapping("/viewOrderByRes/{restId}/{orderId}")
     public ResponseEntity<OrderDTO> viewOrder2(@PathVariable Long restId
-            ,@PathVariable Long orderId)
+            ,@PathVariable Long orderId, @AuthenticationPrincipal UserPrincipal principal)
     {
-        OrderDTO orderDTO=orderServiceIMPL.viewOrderByIdRest(restId,orderId);
+        Long userId=principal.getUser().getUserId();
+        OrderDTO orderDTO=orderServiceIMPL.viewOrderByIdRest(userId,restId,orderId);
         return ResponseEntity.ok(orderDTO);
     }
-    @GetMapping("/viewAllOrderUser/{userId}")
+    @GetMapping("/viewAllOrderUser")
     public ResponseEntity<List<OrderDTO>> viewOrder3(
-            @PathVariable Long userId)
-    {
+            @AuthenticationPrincipal UserPrincipal principal)
+    {Long userId=principal.getUser().getUserId();
         List<OrderDTO> orderDTO=orderServiceIMPL.viewAllOrdersForUser(userId);
         return ResponseEntity.ok(orderDTO);
     }
 
     @GetMapping("/viewAllOrderByRest/{restId}")
-    public ResponseEntity<List<OrderDTO>> viewOrder4(@PathVariable Long restId)
+    public ResponseEntity<List<OrderDTO>> viewOrder4(@PathVariable Long restId,@AuthenticationPrincipal UserPrincipal userPrincipal)
+
     {
-        List<OrderDTO> orderDTO=orderServiceIMPL.viewAllOrdersForRest(restId);
+        Long userId=userPrincipal.getUser().getUserId();
+        List<OrderDTO> orderDTO=orderServiceIMPL.viewAllOrdersForRest(userId,restId);
         return ResponseEntity.ok(orderDTO);
     }
-    @GetMapping("/updateOrderStatus/{orderId}/{restId}")
+    @PutMapping("/updateOrderStatus/{orderId}/{restId}")
     public ResponseEntity<OrderDTO> updateStatus(@PathVariable Long orderId , @PathVariable
                                                  Long restId, @RequestParam OrderStatus orderStatus)
     {
         OrderDTO orderDTO=orderServiceIMPL.updateOrderStatus(orderId,restId,orderStatus);
      return ResponseEntity.ok(orderDTO);
     }
-    @GetMapping("/orderStatus/{orderId}/{userId}")
-    public ResponseEntity<OrderStatus> orderStat(@PathVariable Long orderId,
-                                                 @PathVariable Long userId)
-    {
+    @GetMapping("/orderStatus/{orderId}")
+    public ResponseEntity<OrderStatus> orderStat(@PathVariable Long orderId,@AuthenticationPrincipal UserPrincipal principal
+                                                 )
+    {Long userId=principal.getUser().getUserId();
         OrderStatus orderStatus=orderServiceIMPL.getOrderStatus(orderId,userId);
         return ResponseEntity.ok(orderStatus);
     }
-    @GetMapping("/orderAmt/{orderId}/{userId}")
-    public ResponseEntity<Long> amount(@PathVariable Long orderId,@PathVariable Long userId)
-    {
+    @GetMapping("/orderAmt/{orderId}")
+    public ResponseEntity<Long> amount(@PathVariable Long orderId,@AuthenticationPrincipal UserPrincipal principal)
+    {Long userId=principal.getUser().getUserId();
         Long amount =orderServiceIMPL.getOrderAmount(orderId,userId);
         return ResponseEntity.ok(amount);
     }
 
-    @PutMapping("/cancelOrder/{orderId}/{userId}")
-    public ResponseEntity<Void > cancel(@PathVariable Long orderId,@PathVariable Long userId)
-    {
+    @PutMapping("/cancelOrder/{orderId}")
+    public ResponseEntity<Void > cancel(@PathVariable Long orderId,@AuthenticationPrincipal UserPrincipal principal)
+    {Long userId=principal.getUser().getUserId();
         orderServiceIMPL.cancelOrder(orderId,userId);
         return ResponseEntity.noContent().build();
     }

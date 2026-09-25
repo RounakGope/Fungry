@@ -12,28 +12,36 @@ import java.util.Optional;
 //businness logic
 public interface OrderService{
 
-    public OrderDTO createOrder(Long cartId, Long userId, Long addressId);
+    public OrderDTO createOrder(Long userId);
 
     public void removeOrder(Long orderId,Long userId);
 
     public OrderDTO viewOrderByIdUser(Long userId,Long orderID);//user wants to see order
 
-    public OrderDTO viewOrderByIdRest(Long restId,Long orderId);
+    public OrderDTO viewOrderByIdRest(Long userId,Long restId,Long orderId);
 
     public List<OrderDTO> viewAllOrdersForUser(Long userId);// user perspective implementation of paging and sorting
 
-    public List<OrderDTO> viewAllOrdersForRest(Long restaurantId);
+    public List<OrderDTO> viewAllOrdersForRest(Long userId,Long restaurantId);
 
     public OrderDTO updateOrderStatus(Long orderId, Long restId, OrderStatus nextStatus);//by restaurant can only go forward
 
     //public Optional<List<Order>> addOrderItem();
 
+
     public OrderStatus getOrderStatus(Long orderId,Long userId);
 
+    public void reduceMenuItems(Long menuItemId,Integer quantity);
+
+    public void revertMenuItems(Long menuItemId,Integer quantity);
+
+    public void expireStaleOrder(Long orderId);
     public Long getOrderAmount(Long orderId,Long userId);
 
     public void cancelOrder(Long orderId,Long userId);
 
+    public void confirmCodOrder(Long orderId, Long userId);
+    public OrderDTO setOrderAddress(Long orderId, Long addressId, Long userId);
     //ADMIN
 
 

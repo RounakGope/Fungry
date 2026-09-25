@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/api-v2.0/:path*", "destination": "https://fungry-xt5f.onrender.com/api-v2.0/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

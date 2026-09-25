@@ -17,7 +17,7 @@ export function CartProvider({ children }) {
     }
     setLoading(true)
     try {
-      const data = await cartApi.getCart(user.id)
+      const data = await cartApi.getCart()
       setCart(data)
       return data
     } catch {
@@ -32,31 +32,32 @@ export function CartProvider({ children }) {
     fetchCart()
   }, [fetchCart])
 
-const addItem = useCallback(async (menuItemId) => {
-  if (!user?.id) return
-  await cartApi.addToCart(user.id, menuItemId)
-  return fetchCart()
-}, [user?.id, fetchCart])
+  const addItem = useCallback(async (menuItemId) => {
+    if (!user?.id) return
+    await cartApi.addToCart(menuItemId)
+    return fetchCart()
+  }, [user?.id, fetchCart])
 
-const increaseItem = useCallback(async (cartItemId) => {
-  if (!user?.id) return
-  const data = await cartApi.increaseQuantity(cartItemId, user.id)
-  setCart(data)
-  return data
-}, [user?.id])
- const removeItem = useCallback(async (cartItemId) => {
-  if (!user?.id) return
-  const data = await cartApi.removeFromCart(cartItemId, user.id)
-  setCart(data)
-  return data
-}, [user?.id])
+  const increaseItem = useCallback(async (cartItemId) => {
+    if (!user?.id) return
+    const data = await cartApi.increaseQuantity(cartItemId)
+    setCart(data)
+    return data
+  }, [user?.id])
+
+  const removeItem = useCallback(async (cartItemId) => {
+    if (!user?.id) return
+    const data = await cartApi.removeFromCart(cartItemId)
+    setCart(data)
+    return data
+  }, [user?.id])
 
   const clear = useCallback(async () => {
-  if (!user?.id) return
-  const data = await cartApi.clearCart(user.id)
-  setCart(data)
-  return data
-}, [user?.id])
+    if (!user?.id) return
+    const data = await cartApi.clearCart()
+    setCart(data)
+    return data
+  }, [user?.id])
 
   const itemCount = useMemo(() => {
     if (!cart?.cartItemDTOS) return 0
@@ -65,9 +66,9 @@ const increaseItem = useCallback(async (cartItemId) => {
   const total = cart?.totalAmt ?? 0
 
   const value = useMemo(
-  () => ({ cart, loading, itemCount, total, fetchCart, addItem, increaseItem, removeItem, clear }),
-  [cart, loading, itemCount, total, fetchCart, addItem, increaseItem, removeItem, clear]
-)
+    () => ({ cart, loading, itemCount, total, fetchCart, addItem, increaseItem, removeItem, clear }),
+    [cart, loading, itemCount, total, fetchCart, addItem, increaseItem, removeItem, clear]
+  )
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }

@@ -7,10 +7,10 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api-v1.0': {
-        target: 'https://fungry-xt5f.onrender.com',
-        changeOrigin: true,
-      },
-    },
+  '/api-v2.0': {
+    target: 'http://127.0.0.1:9080',
+    changeOrigin: true,
+  },
+},
   },
 })

@@ -1,5 +1,7 @@
 package com.fung.fungry.ServiceIMPL;
 
+import com.fung.fungry.Exception.ResourceNotFoundException;
+import com.fung.fungry.Exception.UnauthorisedException;
 import com.fung.fungry.Model.Address;
 import com.fung.fungry.Model.User;
 import com.fung.fungry.ModelDTO.AddressCreateDTO;
@@ -7,7 +9,7 @@ import com.fung.fungry.ModelDTO.AddressDTO;
 import com.fung.fungry.Repository.AddressRepository;
 import com.fung.fungry.Repository.UserRepository;
 import com.fung.fungry.Service.AddressService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +28,7 @@ public class AddressServiceIMPL implements AddressService {
     {
         AddressDTO addressDTO=new AddressDTO();
         addressDTO.setAddressId(address.getAddressId());
-        addressDTO.setState(address.getAddress());
+        addressDTO.setState(address.getState());
         addressDTO.setAddress(address.getAddress());
         addressDTO.setLandMark(address.getLandmark());
         addressDTO.setZipCode(address.getZipcode());
@@ -40,7 +42,7 @@ public class AddressServiceIMPL implements AddressService {
         log.info("Started creating address for userId={} ",userId);User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found for userId={}", userId);
-                    return new RuntimeException("No Such User Present");
+                    return new ResourceNotFoundException("UserNotFound");
                 });
         Address addressToAdd=new Address();
         addressToAdd.setAddress(address.getAddress());
@@ -65,14 +67,14 @@ public class AddressServiceIMPL implements AddressService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found for userId={}", userId);
-                    return new RuntimeException("No Such User Present");
+                    return new ResourceNotFoundException("UserNotFound");
                 });
-        Address address=addressRepository.findById(addressId).orElseThrow(()->new RuntimeException("No Such address Found"));
+        Address address=addressRepository.findById(addressId).orElseThrow(()->new ResourceNotFoundException("NO such address found"));
         if (!address.getUser().getUserId().equals(userId))
         {
 
             log.warn("cannot delete the address for user={},with addressId={}",userId,addressId);
-            throw new RuntimeException("You Cant Delete Address");
+            throw   new UnauthorisedException("You Are Forbidden to do this action");
 
         }
 
@@ -94,15 +96,15 @@ public class AddressServiceIMPL implements AddressService {
         log.info("Updating addressId={} for userId={}", addressId, userId);User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found for userId={}", userId);
-                    return new RuntimeException("No Such User Present");
+                    return new ResourceNotFoundException("UserNotFound");
                 });
-        Address address=addressRepository.findById(addressId).orElseThrow(()->new RuntimeException("No such Address"));
+        Address address=addressRepository.findById(addressId).orElseThrow(()->new ResourceNotFoundException("No such address found"));
         if (!address.getUser().getUserId().equals(userId))
         {
 
             log.warn("User {} attempted to update address {} not belonging to them",
                     userId, addressId);
-            throw new RuntimeException("You cannot update address");
+            throw   new UnauthorisedException("You are unauthorised for this action");
         }
 
         address.setAddress(addressDTO.getAddress());
@@ -120,16 +122,16 @@ public class AddressServiceIMPL implements AddressService {
     @Override
     public AddressDTO getAddressByAddressId(Long addressId, Long userId) {
 
-        Address address =addressRepository.findById(addressId).orElseThrow(()->new RuntimeException("No Such Address Found"));
+        Address address =addressRepository.findById(addressId).orElseThrow(()->new ResourceNotFoundException("No such address found"));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found for userId={}", userId);
-                    return new RuntimeException("No Such User Present");
+                    return new ResourceNotFoundException("UserNotFound");
                 });
         if(!address.getUser().getUserId().equals(user.getUserId()))
         {
             log.warn("User{} attempted to access address {} not belonging to them",userId,addressId);
-            throw new RuntimeException("Mismatch in user and Address");
+            throw   new UnauthorisedException("This Address does not belongs to user");
         }
 
         return mapToDTO(address);
@@ -142,7 +144,7 @@ public class AddressServiceIMPL implements AddressService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found for userId={}", userId);
-                    return new RuntimeException("No Such User Present");
+                    return new ResourceNotFoundException("UserNotFound");
                 });
         List<Address> addressList=user.getAddressList();
         List<AddressDTO> addressDTOS=new ArrayList<>();

@@ -1,5 +1,8 @@
 package com.fung.fungry.ServiceIMPL;
 
+import com.fung.fungry.Exception.CartOperationException;
+import com.fung.fungry.Exception.MenuItemException;
+import com.fung.fungry.Exception.ResourceNotFoundException;
 import com.fung.fungry.Model.Cart;
 import com.fung.fungry.Model.CartItem;
 import com.fung.fungry.Model.MenuItem;
@@ -8,7 +11,7 @@ import com.fung.fungry.ModelDTO.CartDTO;
 import com.fung.fungry.ModelDTO.CartItemDTO;
 import com.fung.fungry.Repository.*;
 import com.fung.fungry.Service.CartService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +30,6 @@ public class CartServiceIMPL implements CartService {
     UserRepository userRepository;
     private final
     CartRepository cartRepository;
-    private final
-    RestaurantRepository restaurantRepository;
     private final
     MenuItemRepository menuItemRepository;
     private final
@@ -64,9 +65,9 @@ public class CartServiceIMPL implements CartService {
     @Override
     public CartDTO viewCart(Long userId) {
         User user=userRepository.findById(userId).orElseThrow(()->{
-            log.error("User not found for {}",userId); return new RuntimeException("User Not Found");
+            log.error("User not found for {}",userId); return new ResourceNotFoundException("User Not Found");
         });
-        Cart cart=cartRepository.findById(user.getCart().getCartId()).orElseThrow(()->new RuntimeException("No Cart Found"));
+        Cart cart=cartRepository.findById(user.getCart().getCartId()).orElseThrow(()-> new ResourceNotFoundException("Cart Not Found"));
         CartDTO cartDTO=cartToDTO(cart);
         return cartDTO;
     }
@@ -79,7 +80,7 @@ public class CartServiceIMPL implements CartService {
 
 
         User user=userRepository.findById(userId).orElseThrow(()->{
-            log.error("User not found for {}",userId); return new RuntimeException("User Not Found");
+            log.error("User not found for {}",userId); return new ResourceNotFoundException("User Not Found");
         });
         Cart cart = cartRepository.findByUser_UserId(userId).orElse(null);
         if(cart==null)
@@ -95,10 +96,10 @@ public class CartServiceIMPL implements CartService {
             log.info("cart items is null");
             cart.setCartItems(new ArrayList<>());
         }
-        MenuItem menuItem=menuItemRepository.findById(menuItemId).orElseThrow(()->new RuntimeException("No such Menu item"));
+        MenuItem menuItem=menuItemRepository.findById(menuItemId).orElseThrow(()-> new ResourceNotFoundException("MenuItem Not Found"));
         if (!menuItem.getIsAvailable())
         {
-            throw new RuntimeException("The Item is Unavailable right now");
+            throw new MenuItemException("The Item is Unavailable right now");
         }
 
         // NEW: block adding items from a different restaurant while cart is non-empty
@@ -107,7 +108,7 @@ public class CartServiceIMPL implements CartService {
                 && !cart.getRestaurant().getRestaurantId().equals(menuItem.getRestaurant().getRestaurantId())) {
             log.warn("cart already has items from restaurant={}, cannot add item from restaurant={}",
                     cart.getRestaurant().getRestaurantId(), menuItem.getRestaurant().getRestaurantId());
-            throw new RuntimeException("Your cart has items from " + cart.getRestaurant().getName()
+            throw new CartOperationException("Your cart has items from " + cart.getRestaurant().getName()
                     + ". Clear your cart to order from a different restaurant.");
         }
 
@@ -145,19 +146,19 @@ public class CartServiceIMPL implements CartService {
     public CartDTO updateItemQuantityByOne(Long cartItemId, Long userId) {
 
 
-        Cart cart=cartRepository.findByUser_UserId(userId).orElseThrow(()->new RuntimeException("Cart Not Found"));
+        Cart cart=cartRepository.findByUser_UserId(userId).orElseThrow(()-> new ResourceNotFoundException("Cart Not Found"));
 
         CartItem cartItem =cart.getCartItems().stream().filter(
                 cartItemLocal -> cartItemLocal.getCartItemId().equals(cartItemId))
                 .findFirst()
-                .orElseThrow(()->new RuntimeException("No such CartItem"));
+                .orElseThrow(()-> new ResourceNotFoundException("CartItem Not Found"));
 
 
         if(cartItem.getQuantity()+1>cartItem.getMenuItem().getAvailableQuantity()||!cartItem.getMenuItem().getIsAvailable()||
                 cartItem.getMenuItem().getAvailableQuantity()==0)
         {
             log.info("either the quantity is exceeding storage or out of stock for cartitem={} ",cartItemId);
-            throw new RuntimeException("You cannot add items");
+            throw new CartOperationException("You cannot add items");
 
         }
         cartItem.setQuantity(cartItem.getQuantity()+1);
@@ -173,8 +174,8 @@ public class CartServiceIMPL implements CartService {
     @Transactional
     @Override
     public CartDTO clearAll(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("No Such User"));
-        Cart cart = cartRepository.findById(user.getCart().getCartId()).orElseThrow(() -> new RuntimeException("No such cart available"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("No Such User"));
+        Cart cart = cartRepository.findById(user.getCart().getCartId()).orElseThrow(() -> new ResourceNotFoundException("No such cart available"));
         cart.getCartItems().clear();
         cart.setTotalAmt(0L);   // ← added
 
@@ -185,12 +186,12 @@ public class CartServiceIMPL implements CartService {
     @Transactional
     @Override
     public CartDTO removeItem(Long userId, Long cartItemId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("No such user found"));
+        User user = userRepository.findById(userId).orElseThrow(() ->  new ResourceNotFoundException("User Not Found"));
         Cart cart = user.getCart();
-        CartItem cartItem = cartItemRepository.findById(cartItemId).orElseThrow(() -> new RuntimeException("No such cart Item"));
+        CartItem cartItem = cartItemRepository.findById(cartItemId).orElseThrow(() ->  new ResourceNotFoundException("User Not Found"));
         if (!user.getCart().getCartId().equals(cartItem.getCart().getCartId())) {
             log.warn("user cart mismatch for user_id={}", userId);
-            throw new RuntimeException("User Cart Mismatch");
+            throw new CartOperationException("User Cart Mismatch");
         }
         cart.getCartItems().remove(cartItem);
         log.info("removed the cartitems={}", cartItemId);
