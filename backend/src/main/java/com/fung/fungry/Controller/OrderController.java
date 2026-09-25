@@ -18,14 +18,29 @@ public class OrderController {
 
    private final OrderServiceIMPL orderServiceIMPL;
 
-   @PostMapping("/{addressId}")
+   @PostMapping("/")
     public ResponseEntity<OrderDTO> create(
-           @PathVariable Long addressId, @AuthenticationPrincipal UserPrincipal principal)
+           @AuthenticationPrincipal UserPrincipal principal)
    {
        Long userId=principal.getUser().getUserId();
-       OrderDTO orderDTO=orderServiceIMPL.createOrder(userId,addressId);
+       OrderDTO orderDTO=orderServiceIMPL.createOrder(userId);
        return ResponseEntity.ok(orderDTO);
    }
+    @PutMapping("/{orderId}/address/{addressId}")
+    public ResponseEntity<OrderDTO> setAddress(@PathVariable Long orderId,
+                                               @PathVariable Long addressId,
+                                               @AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = principal.getUser().getUserId();
+        OrderDTO orderDTO = orderServiceIMPL.setOrderAddress(orderId, addressId, userId);
+        return ResponseEntity.ok(orderDTO);
+    }
+    @PostMapping("/confirmCod/{orderId}")
+    public ResponseEntity<Void> confirmCod(@PathVariable Long orderId,
+                                           @AuthenticationPrincipal UserPrincipal principal) {
+        Long userId = principal.getUser().getUserId();
+        orderServiceIMPL.confirmCodOrder(orderId, userId);
+        return ResponseEntity.noContent().build();
+    }
    @DeleteMapping("/{orderId}")
     public ResponseEntity<Void > delete(@PathVariable Long orderId,
                                         @AuthenticationPrincipal UserPrincipal principal)
@@ -65,7 +80,7 @@ public class OrderController {
         List<OrderDTO> orderDTO=orderServiceIMPL.viewAllOrdersForRest(userId,restId);
         return ResponseEntity.ok(orderDTO);
     }
-    @GetMapping("/updateOrderStatus/{orderId}/{restId}")
+    @PutMapping("/updateOrderStatus/{orderId}/{restId}")
     public ResponseEntity<OrderDTO> updateStatus(@PathVariable Long orderId , @PathVariable
                                                  Long restId, @RequestParam OrderStatus orderStatus)
     {

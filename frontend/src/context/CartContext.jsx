@@ -11,48 +11,53 @@ export function CartProvider({ children }) {
   const [loading, setLoading] = useState(false)
 
   const fetchCart = useCallback(async () => {
-  if (!user?.id || role !== ROLES.CUSTOMER) {
-    setCart(null)
-    return null
-  }
-  setLoading(true)
-  try {
-    const data = await cartApi.getCart()   // ← was cartApi.getCart(user.id)
+    if (!user?.id || role !== ROLES.CUSTOMER) {
+      setCart(null)
+      return null
+    }
+    setLoading(true)
+    try {
+      const data = await cartApi.getCart()
+      setCart(data)
+      return data
+    } catch {
+      setCart(null)
+      return null
+    } finally {
+      setLoading(false)
+    }
+  }, [user?.id, role])
+
+  useEffect(() => {
+    fetchCart()
+  }, [fetchCart])
+
+  const addItem = useCallback(async (menuItemId) => {
+    if (!user?.id) return
+    await cartApi.addToCart(menuItemId)
+    return fetchCart()
+  }, [user?.id, fetchCart])
+
+  const increaseItem = useCallback(async (cartItemId) => {
+    if (!user?.id) return
+    const data = await cartApi.increaseQuantity(cartItemId)
     setCart(data)
     return data
-  } catch {
-    setCart(null)
-    return null
-  } finally {
-    setLoading(false)
-  }
-}, [user?.id, role])
-const addItem = useCallback(async (menuItemId) => {
-  if (!user?.id) return
-  await cartApi.addToCart(menuItemId)
-  return fetchCart()
-}, [user?.id, fetchCart])
+  }, [user?.id])
 
-const increaseItem = useCallback(async (cartItemId) => {
-  if (!user?.id) return
-  const data = await cartApi.increaseQuantity(cartItemId)
-  setCart(data)
-  return data
-}, [user?.id])
+  const removeItem = useCallback(async (cartItemId) => {
+    if (!user?.id) return
+    const data = await cartApi.removeFromCart(cartItemId)
+    setCart(data)
+    return data
+  }, [user?.id])
 
-const removeItem = useCallback(async (cartItemId) => {
-  if (!user?.id) return
-  const data = await cartApi.removeFromCart(cartItemId)
-  setCart(data)
-  return data
-}, [user?.id])
-
-const clear = useCallback(async () => {
-  if (!user?.id) return
-  const data = await cartApi.clearCart()
-  setCart(data)
-  return data
-}, [user?.id])
+  const clear = useCallback(async () => {
+    if (!user?.id) return
+    const data = await cartApi.clearCart()
+    setCart(data)
+    return data
+  }, [user?.id])
 
   const itemCount = useMemo(() => {
     if (!cart?.cartItemDTOS) return 0
@@ -61,9 +66,9 @@ const clear = useCallback(async () => {
   const total = cart?.totalAmt ?? 0
 
   const value = useMemo(
-  () => ({ cart, loading, itemCount, total, fetchCart, addItem, increaseItem, removeItem, clear }),
-  [cart, loading, itemCount, total, fetchCart, addItem, increaseItem, removeItem, clear]
-)
+    () => ({ cart, loading, itemCount, total, fetchCart, addItem, increaseItem, removeItem, clear }),
+    [cart, loading, itemCount, total, fetchCart, addItem, increaseItem, removeItem, clear]
+  )
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }

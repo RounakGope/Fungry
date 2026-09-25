@@ -47,7 +47,8 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api-v2.0/auth/**").permitAll()
-                        .requestMatchers( "/api-v2.0/users").permitAll() // registration
+                        .requestMatchers( "/api-v2.0/users").permitAll()
+                        .requestMatchers("/api-v2.0/payment/webhook").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(restAuthEntryPoint));

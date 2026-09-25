@@ -1,6 +1,7 @@
 package com.fung.fungry.Model;
 
 import com.fung.fungry.Enums.OrderStatus;
+import com.fung.fungry.Enums.PaymentMode;
 import com.fung.fungry.Enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -36,7 +37,7 @@ public class Order {
 
     private Boolean deleted;
     @ManyToOne(fetch = FetchType.LAZY)
-            @JoinColumn(name = "address_id",nullable = false)
+            @JoinColumn(name = "address_id",nullable = true)
    private Address address;
     private int expectedTimeInMinutes;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -50,6 +51,11 @@ public class Order {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PaymentStatus paymentStatus;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentMode paymentMode;
+
+    private String stripePaymentIntentId;
 
 
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "order")

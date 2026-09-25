@@ -10,18 +10,32 @@ export const normalizeRole = (data) => {
   return data?.name || data?.role || data?.value || String(data)
 }
 
+// Must exactly match backend OrderStatus enum
 export const ORDER_STATUSES = [
-  'PLACED',
   'CREATED',
   'CONFIRMED',
   'PREPARING',
   'OUT_FOR_DELIVERY',
   'DELIVERED',
   'CANCELED',
-  'PAYMENT_PENDING',
 ]
 
-export const CANCELABLE_STATUSES = ['PLACED', 'CREATED', 'PAYMENT_PENDING']
+// Single source of truth for the owner's allowed forward transitions.
+// Mirrors ALLOWED_NEXT_STATUS in OrderServiceImpl — keep these in sync.
+export const NEXT_STATUS_MAP = {
+  CONFIRMED: 'PREPARING',
+  PREPARING: 'OUT_FOR_DELIVERY',
+  OUT_FOR_DELIVERY: 'DELIVERED',
+}
+
+// No further owner action possible once here
+export const TERMINAL_STATUSES = ['DELIVERED', 'CANCELED']
+
+// Statuses a customer can still cancel from.
+// NOTE: adjust this to match whatever your actual cancel-eligibility rule is on the backend —
+// I'm assuming cancellation is blocked once the restaurant starts preparing.
+export const CANCELABLE_STATUSES = ['CREATED', 'CONFIRMED']
+
 export const formatCurrency = (amount) => {
   if (amount == null) return '—'
   return new Intl.NumberFormat('en-IN', {

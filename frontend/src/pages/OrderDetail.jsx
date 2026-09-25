@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import * as orderApi from '../api/order'
-import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { CANCELABLE_STATUSES, formatCurrency, formatDate, getErrorMessage } from '../utils/constants'
 import Badge from '../components/Badge'
@@ -12,7 +11,6 @@ import Modal from '../components/Modal'
 
 export default function OrderDetail() {
   const { orderId } = useParams()
-  const { user } = useAuth()
   const toast = useToast()
 
   const [order, setOrder] = useState(null)
@@ -24,8 +22,8 @@ export default function OrderDetail() {
   const load = async () => {
     try {
       const [orderData, orderAmount] = await Promise.all([
-        orderApi.getOrderByUser(orderId, user.id),
-        orderApi.getOrderAmount(orderId, user.id).catch(() => null),
+        orderApi.getOrderByUser(orderId),
+        orderApi.getOrderAmount(orderId).catch(() => null),
       ])
       setOrder(orderData)
       setAmount(orderAmount ?? orderData.totalAmt)
@@ -40,20 +38,27 @@ export default function OrderDetail() {
     load()
     const interval = setInterval(async () => {
       try {
-        const status = await orderApi.getOrderStatus(orderId, user.id)
+        const status = await orderApi.getOrderStatus(orderId)
         setOrder((prev) => (prev ? { ...prev, status } : prev))
       } catch {
         /* polling failure is non-critical */
       }
     }, 10000)
     return () => clearInterval(interval)
-  }, [orderId, user.id])
+  }, [orderId])
+
   const canCancel = order && CANCELABLE_STATUSES.includes(order.status)
+
+  // Order was created with online payment but the webhook hasn't confirmed it yet.
+  // Cancelling here would mark the order cancelled without triggering a refund,
+  // since PaymentStatus is still PENDING even though Stripe may have already
+  // captured the charge — the backend only refunds when PaymentStatus is SUCCESS.
+  const isPaymentProcessing = order?.paymentMode === 'ONLINE' && order?.paymentStatus === 'PENDING'
 
   const handleCancel = async () => {
     setCancelling(true)
     try {
-      await orderApi.cancelOrder(orderId, user.id)
+      await orderApi.cancelOrder(orderId)
       toast.success('Order cancelled')
       setCancelOpen(false)
       await load()
@@ -80,6 +85,14 @@ export default function OrderDetail() {
         <Badge status={order.status} />
       </div>
 
+      {isPaymentProcessing && (
+        <Card className="mb-4 border-amber-500/40 bg-amber-500/10">
+          <p className="text-sm text-amber-200">
+            Confirming your payment — this usually takes a few seconds. The page will update automatically.
+          </p>
+        </Card>
+      )}
+
       <Card className="mb-4">
         <div className="flex justify-between text-sm">
           <span className="text-white/70">Total</span>
@@ -89,6 +102,14 @@ export default function OrderDetail() {
           <div className="mt-3 flex justify-between text-sm">
             <span className="text-white/70">Restaurant</span>
             <span className="text-white">{order.restaurantName}</span>
+          </div>
+        )}
+        {order.paymentMode && (
+          <div className="mt-3 flex justify-between text-sm">
+            <span className="text-white/70">Payment</span>
+            <span className="text-white">
+              {order.paymentMode === 'CASH' ? 'Cash on delivery' : 'Paid online'}
+            </span>
           </div>
         )}
       </Card>
@@ -108,7 +129,18 @@ export default function OrderDetail() {
       )}
 
       {canCancel && (
-        <Button variant="danger" onClick={() => setCancelOpen(true)}>Cancel order</Button>
+        <Button
+          variant="danger"
+          disabled={isPaymentProcessing}
+          onClick={() => setCancelOpen(true)}
+        >
+          Cancel order
+        </Button>
+      )}
+      {canCancel && isPaymentProcessing && (
+        <p className="mt-2 text-xs text-white/50">
+          Please wait until payment is confirmed before cancelling.
+        </p>
       )}
 
       <Modal

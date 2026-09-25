@@ -12,7 +12,7 @@ import java.util.Optional;
 //businness logic
 public interface OrderService{
 
-    public OrderDTO createOrder( Long userId, Long addressId);
+    public OrderDTO createOrder(Long userId);
 
     public void removeOrder(Long orderId,Long userId);
 
@@ -28,12 +28,20 @@ public interface OrderService{
 
     //public Optional<List<Order>> addOrderItem();
 
+
     public OrderStatus getOrderStatus(Long orderId,Long userId);
 
+    public void reduceMenuItems(Long menuItemId,Integer quantity);
+
+    public void revertMenuItems(Long menuItemId,Integer quantity);
+
+    public void expireStaleOrder(Long orderId);
     public Long getOrderAmount(Long orderId,Long userId);
 
     public void cancelOrder(Long orderId,Long userId);
 
+    public void confirmCodOrder(Long orderId, Long userId);
+    public OrderDTO setOrderAddress(Long orderId, Long addressId, Long userId);
     //ADMIN
 
 

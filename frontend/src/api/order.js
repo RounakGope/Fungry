@@ -1,8 +1,16 @@
 import api from './client'
 
-/** Create an order from the logged-in user's cart, delivered to the given address. */
-export const createOrder = (addressId) =>
-  api.post(`/order/${addressId}`).then((r) => r.data)
+/** Create an order from the logged-in user's cart. Address is set separately. */
+export const createOrder = () =>
+  api.post('/order/').then((r) => r.data)
+
+/** Attach a delivery address to an existing order. */
+export const setOrderAddress = (orderId, addressId) =>
+  api.put(`/order/${orderId}/address/${addressId}`).then((r) => r.data)
+
+/** Confirm an order as cash-on-delivery. */
+export const confirmCodOrder = (orderId) =>
+  api.post(`/order/confirmCod/${orderId}`).then((r) => r.data)
 
 /** Delete an order (must belong to the logged-in user). */
 export const deleteOrder = (orderId) =>
@@ -27,7 +35,7 @@ export const getOrdersByRestaurant = (restId) =>
 /** Update an order's status. See note below — this endpoint has no auth check today. */
 export const updateOrderStatus = (orderId, restId, orderStatus) =>
   api
-    .get(`/order/updateOrderStatus/${orderId}/${restId}`, { params: { orderStatus } })
+    .put(`/order/updateOrderStatus/${orderId}/${restId}`, null, { params: { orderStatus } })
     .then((r) => r.data)
 
 /** Get the status of a specific order (must belong to the logged-in user). */
