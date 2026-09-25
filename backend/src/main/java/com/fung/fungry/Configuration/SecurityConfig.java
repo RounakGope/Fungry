@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers("/api-v2.0/auth/**").permitAll()
                         .requestMatchers( "/api-v2.0/users").permitAll()
                         .requestMatchers("/api-v2.0/payment/webhook").permitAll()
+                        .requestMatchers("/actuator/health").permitAll() // uptime / keep-warm pings
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(restAuthEntryPoint));

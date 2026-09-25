@@ -20,8 +20,12 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
+# Run as an unprivileged user, not root
+RUN addgroup -S spring && adduser -S spring -G spring
+
 # Copy ONLY the built jar from the build stage
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build --chown=spring:spring /app/target/*.jar app.jar
+USER spring
 
 # Default/documentation port — Render overrides this via $PORT at runtime
 EXPOSE 9080

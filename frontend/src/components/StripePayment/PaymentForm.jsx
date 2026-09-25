@@ -1,5 +1,5 @@
 // src/components/StripePayment/PaymentForm.jsx
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 import Button from '../Button'
 import { useOrderStatusPoll } from '../../hooks/useOrderStatusPoll'
@@ -12,10 +12,15 @@ export default function PaymentForm({ orderId, onConfirmed }) {
   const [waitingOnWebhook, setWaitingOnWebhook] = useState(false)
 
   const pollStatus = useOrderStatusPoll(orderId, waitingOnWebhook)
+  const confirmedRef = useRef(false)
 
-  if (pollStatus === 'CONFIRMED') {
-    onConfirmed()
-  }
+  // Navigate away in an effect, never during render, and only once.
+  useEffect(() => {
+    if (pollStatus === 'CONFIRMED' && !confirmedRef.current) {
+      confirmedRef.current = true
+      onConfirmed()
+    }
+  }, [pollStatus, onConfirmed])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
